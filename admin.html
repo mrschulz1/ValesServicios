@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-6">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+    <!-- Encabezado con navegación de regreso -->
+    <div class="flex justify-between items-center border-b pb-4 border-slate-200">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Panel de Control de Órdenes</h1>
+        <p class="text-xs text-slate-500">Historial, filtros y eliminación de registros</p>
+      </div>
+      <a href="index.html" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm">
+        ⬅️ Nuevo Registro
+      </a>
+    </div>
+
+    <!-- LISTADO, FILTROS Y BÚSQUEDA -->
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h2 class="text-lg font-bold text-slate-900">Órdenes Registradas</h2>
+        
+        <!-- Filtros de búsqueda en tiempo real -->
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <input type="text" id="buscarGeneral" placeholder="Buscar patente o empresa..." class="rounded-lg border-slate-300 p-2 border text-sm w-full sm:w-60 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+          <select id="filtrarPago" class="rounded-lg border-slate-300 p-2 border text-sm focus:border-indigo-500">
+            <option value="Todos">Todos los pagos</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
+          </select>
+          
+          <button type="button" onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-1">
+            <span>💾</span> Exportar Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de datos -->
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Total</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Medio Pago</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody" class="bg-white divide-y divide-slate-200">
+            <!-- Cargado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Inicializar Supabase (REEMPLAZA CON TUS CREDENCIALES)
+    const SUPABASE_URL = "TU_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const tablaBody = document.getElementById('tablaBody');
+    const buscarGeneralInput = document.getElementById('buscarGeneral');
+    const filtrarPagoSelect = document.getElementById('filtrarPago');
+
+    // Cargar datos al iniciar y configurar listeners para filtros
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarRegistros();
+      buscarGeneralInput.addEventListener('input', cargarRegistros);
+      filtrarPagoSelect.addEventListener('change', cargarRegistros);
+    });
+
+    // LEER Y FILTRAR REGISTROS (CRUD: READ)
+    async function cargarRegistros() {
+      let query = supabase
+        .from('ordenes')
+        .select('*')
+        .order('id', { ascending: false });
+
+      const busqueda = buscarGeneralInput.value.trim();
+      if (busqueda) {
+        query = query.or(`patente.ilike.%${busqueda}%,nombre_empresa.ilike.%${busqueda}%`);
+      }
+
+      const pagoFiltro = filtrarPagoSelect.value;
+      if (pagoFiltro !== 'Todos') {
+        query = query.eq('medio_pago', pagoFiltro);
+      }
+
+      const { data: ordenes, error } = await query;
+
+      if (error) {
+        console.error('Error al cargar datos:', error);
+        return;
+      }
+
+      renderTabla(ordenes);
+    }
+
+    // RENDERIZAR TABLA EN EL HTML
+    function renderTabla(ordenes) {
+      tablaBody.innerHTML = '';
+
+      if (ordenes.length === 0) {
+        tablaBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400 text-sm">No se encontraron registros.</td></tr>`;
+        return;
+      }
+
+      ordenes.forEach(org => {
+        const fechaLocal = new Date(org.created_at).toLocaleDateString('es-CL', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        if (org.medio_pago === 'Tarjeta') badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
+        if (org.medio_pago === 'Transferencia') badgeColor = "bg-purple-50 text-purple-700 border-purple-200";
+
+        const fila = document.createElement('tr');
+        fila.className = "hover:bg-slate-50 transition";
+        fila.innerHTML = `
+          <td class="px-4 py-3.5 text-sm font-mono font-bold text-indigo-600">#${org.id}</td>
+          <td class="px-4 py-3.5 text-xs text-slate-500">${fechaLocal}</td>
+          <td class="px-4 py-3.5 text-sm">
+            <div class="font-semibold text-slate-900">${org.nombre_empresa}</div>
+            <div class="text-xs text-slate-500">${org.marca} • <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">${org.patente}</span></div>
+          </td>
+          <td class="px-4 py-3.5 text-sm font-bold text-slate-900">$${Number(org.valor_total).toLocaleString('es-CL')}</td>
+          <td class="px-4 py-3.5 text-sm">
+            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${badgeColor}">
+              ${org.medio_pago}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-sm text-center space-x-3">
+            <button onclick="verDetalle('${encodeURIComponent(JSON.stringify(org))}')" class="text-indigo-600 hover:text-indigo-900 font-semibold">Ver</button>
+            <button onclick="eliminarRegistro(${org.id})" class="text-rose-600 hover:text-rose-900 font-semibold">Eliminar</button>
+          </td>
+        `;
+        tablaBody.appendChild(fila);
+      });
+    }
+
+    // MOSTRAR INFORMACIÓN DETALLADA (CRUD: READ SINGLE)
+    function verDetalle(orgEncriptada) {
+      const org = JSON.parse(decodeURIComponent(orgEncriptada));
+      const fechaFull = new Date(org.created_at).toLocaleString('es-CL');
+      
+      alert(
+        `ORDEN DE TRABAJO - FOLIO #${org.id}\n` +
+        `----------------------------------------\n` +
+        `Fecha Registro: ${fechaFull}\n` +
+        `Empresa: ${org.nombre_empresa}\n` +
+        `Vehículo: ${org.marca} [${org.patente}]\n\n` +
+        `Descripción de los Trabajos:\n` +
+        `${org.detalle || 'Sin observaciones.'}\n\n` +
+        `----------------------------------------\n` +
+        `Valor Neto:  $${Number(org.valor_neto).toLocaleString('es-CL')}\n` +
+        `Valor Total: $${Number(org.valor_total).toLocaleString('es-CL')} (IVA Incluido)\n` +
+        `Medio de Pago: ${org.medio_pago}`
+      );
+    }
+
+    // ELIMINAR REGISTRO (CRUD: DELETE)
+    async function eliminarRegistro(id) {
+      if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el folio #${id}?`)) {
+        const { error } = await supabase
+          .from('ordenes')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          alert('Error al eliminar: ' + error.message);
+        } else {
+          cargarRegistros();
+        }
+      }
+    }
+
+    // EXPORTAR EXCEL
+    function exportarExcel() {
+      let tabla = document.getElementById("tablaBody");
+      let filas = tabla.getElementsByTagName("tr");
+      
+      if (filas.length === 0 || (filas.length === 1 && filas[0].innerText.includes("No se encontraron"))) {
+        alert("No hay registros en pantalla para exportar.");
+        return;
+      }
+
+      let csv = ["Folio,Fecha,Empresa,Patente,Marca,Total,Medio de Pago"];
+
+      for (let i = 0; i < filas.length; i++) {
+        let celdas = filas[i].getElementsByTagName("td");
+        if (celdas.length < 5) continue;
+        
+        let folio = celdas[0].innerText.replace('#', '').trim();
+        let fecha = celdas[1].innerText.trim();
+        
+        let empresaElement = celdas[2].querySelector('.font-semibold');
+        let empresa = empresaElement ? empresaElement.innerText.replace(/,/g, ' ').trim() : '';
+        
+        let vehiculoTexto = celdas[2].querySelector('.text-slate-500') ? celdas[2].querySelector('.text-slate-500').innerText : '';
+        let marca = vehiculoTexto.split('•')[0] ? vehiculoTexto.split('•')[0].trim() : '';
+        let patente = celdas[2].querySelector('.font-mono') ? celdas[2].querySelector('.font-mono').innerText.trim() : '';
+
+        let total = celdas[3].innerText.replace(/[^0-9]/g, '').trim();
+        let pago = celdas[4].innerText.trim();
+
+        csv.push(`${folio},${fecha},${empresa},${patente},${marca},${total},${pago}`);
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
+      let encodedUri = encodeURI(csvContent);
+      let link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `reporte_ordenes_${new Date().toLocaleDateString('es-CL').replace(/\//g, '-')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>

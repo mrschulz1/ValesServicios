@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingreso de Servicios</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
+
+  <!-- Botón discreto para ir a administración en la esquina superior derecha -->
+  <div class="flex justify-end w-full max-w-lg mx-auto">
+    <a href="admin.html" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
+      ⚙️ Panel de Control
+    </a>
+  </div>
+
+  <div class="w-full max-w-lg mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-200 my-auto">
+    <div class="border-b pb-4 border-slate-100 mb-4 text-center">
+      <h1 class="text-xl font-bold text-slate-900">VALES ELECTRONIOS DE SERVICIO</h1>
+      <p class="text-xs text-slate-500 mt-1">Completa los datos para registrar el servicio</p>
+    </div>
+    
+    <form id="registroForm" class="space-y-4">
+      <!-- Empresa -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 uppercase">Nombre de Empresa</label>
+        <input type="text" id="nombre_empresa" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border text-sm">
+      </div>
+
+      <!-- Vehículo (Marca y Patente) -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Marca</label>
+          <input type="text" id="marca" placeholder="Ej: Audi" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Patente</label>
+          <input type="text" id="patente" placeholder="ABCD12" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm uppercase">
+        </div>
+      </div>
+
+      <!-- Detalle -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 uppercase">Detalle del Servicio</label>
+        <textarea id="detalle" rows="3" placeholder="Descripción del trabajo..." class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm"></textarea>
+      </div>
+
+      <!-- Valores -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Neto ($)</label>
+          <input type="number" id="valor_neto" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Total ($)</label>
+          <input type="number" id="valor_total" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold bg-slate-50">
+        </div>
+      </div>
+
+      <!-- Medio de Pago -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Medio de Pago</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition border-slate-200">
+            <input type="radio" name="medio_pago" value="Efectivo" checked class="text-indigo-600 focus:ring-indigo-500">
+            <span class="text-xs mt-1 font-medium">Efectivo</span>
+          </label>
+          <label class="flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition border-slate-200">
+            <input type="radio" name="medio_pago" value="Tarjeta" class="text-indigo-600 focus:ring-indigo-500">
+            <span class="text-xs mt-1 font-medium">Tarjeta</span>
+          </label>
+          <label class="flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition border-slate-200">
+            <input type="radio" name="medio_pago" value="Transferencia" class="text-indigo-600 focus:ring-indigo-500">
+            <span class="text-xs mt-1 font-medium">Transf.</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-150 shadow-sm">
+        Guardar Orden de Trabajo
+      </button>
+    </form>
+  </div>
+
+  <div class="text-center text-xs text-slate-400 py-4">
+    Taller Mecánico © 2026
+  </div>
+
+  <script>
+    // Inicializar Supabase (REEMPLAZA CON TUS CREDENCIALES)
+    const SUPABASE_URL = "TU_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "TU_SUPABASE_ANON_KEY";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('registroForm');
+    const inputNeto = document.getElementById('valor_neto');
+    const inputTotal = document.getElementById('valor_total');
+
+    // CÁLCULO AUTOMÁTICO DE IVA (19%)
+    inputNeto.addEventListener('input', () => {
+      const neto = parseFloat(inputNeto.value) || 0;
+      inputTotal.value = Math.round(neto * 1.19);
+    });
+
+    // GUARDAR NUEVO REGISTRO
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const datos = {
+        nombre_empresa: document.getElementById('nombre_empresa').value,
+        marca: document.getElementById('marca').value,
+        patente: document.getElementById('patente').value.toUpperCase().trim(),
+        detalle: document.getElementById('detalle').value,
+        valor_neto: parseFloat(inputNeto.value),
+        valor_total: parseFloat(inputTotal.value),
+        medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+      };
+
+      const { data, error } = await supabase
+        .from('ordenes')
+        .insert([datos])
+        .select();
+
+      if (error) {
+        alert('Error al guardar: ' + error.message);
+      } else {
+        alert(`¡Guardado! Folio generado: #${data[0].id}`);
+        form.reset();
+      }
+    });
+  </script>
+</body>
+</html>
