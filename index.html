@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Órdenes y Registro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-6">
+
+  <div class="max-w-7xl mx-auto space-y-6">
+    <div class="flex justify-between items-center border-b pb-4 border-slate-200">
+      <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Vales de servicios
+        
+      </h1>
+      <span class="text-sm bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium border border-indigo-150">Base de Datos Activa</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- COLUMNA 1: FORMULARIO DE INGRESO -->
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-fit">
+        <h2 class="text-lg font-bold mb-4 text-slate-900 flex items-center gap-2">
+          <span>📝 Nueva Orden</span>
+        </h2>
+        
+        <form id="registroForm" class="space-y-4">
+          <!-- Empresa -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase">Nombre de Empresa</label>
+            <input type="text" id="nombre_empresa" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border text-sm">
+          </div>
+
+          <!-- Vehículo (Marca y Patente) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase">Marca</label>
+              <input type="text" id="marca" placeholder="Ej: Audi" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase">Patente</label>
+              <input type="text" id="patente" placeholder="ABCD12" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm uppercase">
+            </div>
+          </div>
+
+          <!-- Detalle -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase">Detalle del Servicio</label>
+            <textarea id="detalle" rows="3" placeholder="Descripción del trabajo..." class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm"></textarea>
+          </div>
+
+          <!-- Valores -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Neto ($)</label>
+              <input type="number" id="valor_neto" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Total ($)</label>
+              <input type="number" id="valor_total" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold bg-slate-50">
+            </div>
+          </div>
+
+          <!-- Medio de Pago -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Medio de Pago</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition border-slate-200">
+                <input type="radio" name="medio_pago" value="Efectivo" checked class="text-indigo-600 focus:ring-indigo-500">
+                <span class="text-xs mt-1 font-medium">Efectivo</span>
+              </label>
+              <label class="flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition border-slate-200">
+                <input type="radio" name="medio_pago" value="Tarjeta" class="text-indigo-600 focus:ring-indigo-500">
+                <span class="text-xs mt-1 font-medium">Tarjeta</span>
+              </label>
+              <label class="flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition border-slate-200">
+                <input type="radio" name="medio_pago" value="Transferencia" class="text-indigo-600 focus:ring-indigo-500">
+                <span class="text-xs mt-1 font-medium">Transf.</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-150 shadow-sm">
+            Guardar Registro
+          </button>
+        </form>
+      </div>
+
+      <!-- COLUMNA 2 y 3: LISTADO, FILTROS Y BÚSQUEDA -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h2 class="text-lg font-bold text-slate-900">Listado de Órdenes</h2>
+          <!-- Filtros de búsqueda en tiempo real -->
+<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+  <input type="text" id="buscarGeneral" placeholder="Buscar por patente o empresa..." class="rounded-lg border-slate-300 p-2 border text-sm w-full sm:w-60 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+  <select id="filtrarPago" class="rounded-lg border-slate-300 p-2 border text-sm focus:border-indigo-500">
+    <option value="Todos">Todos los pagos</option>
+    <option value="Efectivo">Efectivo</option>
+    <option value="Tarjeta">Tarjeta</option>
+    <option value="Transferencia">Transferencia</option>
+  </select>
+  
+  <!-- 👇 COPIA Y PEGA ESTE BOTÓN AQUÍ 👇 -->
+  <button type="button" onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-1">
+    <span>💾</span> Exportar Excel
+  </button>
+</div>
+          
+          <!-- Filtros de búsqueda en tiempo real -->
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <input type="text" id="buscarGeneral" placeholder="Buscar por patente o empresa..." class="rounded-lg border-slate-300 p-2 border text-sm w-full sm:w-60 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+            <select id="filtrarPago" class="rounded-lg border-slate-300 p-2 border text-sm focus:border-indigo-500">
+              <option value="Todos">Todos los pagos</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabla de datos -->
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Total</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Medio Pago</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaBody" class="bg-white divide-y divide-slate-200">
+              <!-- Cargado dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Inicializar Supabase (reemplaza con tus credenciales de Supabase)
+    const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
+    const SUPABASE_ANON_KEY = "Victor$201994.";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('registroForm');
+    const tablaBody = document.getElementById('tablaBody');
+    const buscarGeneralInput = document.getElementById('buscarGeneral');
+    const filtrarPagoSelect = document.getElementById('filtrarPago');
+    
+    const inputNeto = document.getElementById('valor_neto');
+    const inputTotal = document.getElementById('valor_total');
+
+    // CÁLCULO AUTOMÁTICO DE IVA (19%) AL ESCRIBIR EL NETO
+    inputNeto.addEventListener('input', () => {
+      const neto = parseFloat(inputNeto.value) || 0;
+      inputTotal.value = Math.round(neto * 1.19); // Calcula el total aproximado
+    });
+
+    // Cargar datos al iniciar y configurar listeners para filtros
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarRegistros();
+      buscarGeneralInput.addEventListener('input', cargarRegistros);
+      filtrarPagoSelect.addEventListener('change', cargarRegistros);
+    });
+
+    // GUARDAR NUEVO REGISTRO
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const datos = {
+        nombre_empresa: document.getElementById('nombre_empresa').value,
+        marca: document.getElementById('marca').value,
+        patente: document.getElementById('patente').value.toUpperCase().trim(),
+        detalle: document.getElementById('detalle').value,
+        valor_neto: parseFloat(inputNeto.value),
+        valor_total: parseFloat(inputTotal.value),
+        medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+      };
+
+      const { data, error } = await supabase
+        .from('ordenes')
+        .insert([datos])
+        .select();
+
+      if (error) {
+        alert('Error al guardar: ' + error.message);
+      } else {
+        alert(`Guardado con éxito. Folio generado automáticamente: #${data[0].id}`);
+        form.reset();
+        cargarRegistros();
+      }
+    });
+
+    // LEER Y FILTRAR REGISTROS (CRUD: READ)
+    async function cargarRegistros() {
+      let query = supabase
+        .from('ordenes')
+        .select('*')
+        .order('id', { ascending: false }); // El folio más nuevo primero
+
+      // Búsqueda inteligente por Patente o Nombre de Empresa
+      const busqueda = buscarGeneralInput.value.trim();
+      if (busqueda) {
+        // Filtra si coincide la patente o la empresa
+        query = query.or(`patente.ilike.%${busqueda}%,nombre_empresa.ilike.%${busqueda}%`);
+      }
+
+      // Filtro por Medio de Pago
+      const pagoFiltro = filtrarPagoSelect.value;
+      if (pagoFiltro !== 'Todos') {
+        query = query.eq('medio_pago', pagoFiltro);
+      }
+
+      const { data: ordenes, error } = await query;
+
+      if (error) {
+        console.error('Error al cargar datos:', error);
+        return;
+      }
+
+      renderTabla(ordenes);
+    }
+
+    // RENDERIZAR TABLA EN EL HTML
+    function renderTabla(ordenes) {
+      tablaBody.innerHTML = '';
+
+      if (ordenes.length === 0) {
+        tablaBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400 text-sm">No se encontraron registros.</td></tr>`;
+        return;
+      }
+
+      ordenes.forEach(org => {
+        const fechaLocal = new Date(org.created_at).toLocaleDateString('es-CL', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        if (org.medio_pago === 'Tarjeta') badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
+        if (org.medio_pago === 'Transferencia') badgeColor = "bg-purple-50 text-purple-700 border-purple-200";
+
+        const fila = document.createElement('tr');
+        fila.className = "hover:bg-slate-50 transition";
+        fila.innerHTML = `
+          <td class="px-4 py-3.5 text-sm font-mono font-bold text-indigo-600">#${org.id}</td>
+          <td class="px-4 py-3.5 text-xs text-slate-500">${fechaLocal}</td>
+          <td class="px-4 py-3.5 text-sm">
+            <div class="font-semibold text-slate-900">${org.nombre_empresa}</div>
+            <div class="text-xs text-slate-500">${org.marca} • <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">${org.patente}</span></div>
+          </td>
+          <td class="px-4 py-3.5 text-sm font-bold text-slate-900">$${Number(org.valor_total).toLocaleString('es-CL')}</td>
+          <td class="px-4 py-3.5 text-sm">
+            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${badgeColor}">
+              ${org.medio_pago}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-sm text-center space-x-3">
+            <button onclick="verDetalle('${encodeURIComponent(JSON.stringify(org))}')" class="text-indigo-600 hover:text-indigo-900 font-semibold">Ver</button>
+            <button onclick="eliminarRegistro(${org.id})" class="text-rose-600 hover:text-rose-900 font-semibold">Eliminar</button>
+          </td>
+        `;
+        tablaBody.appendChild(fila);
+      });
+    }
+
+    // MOSTRAR INFORMACIÓN DETALLADA (CRUD: READ SINGLE)
+    function verDetalle(orgEncriptada) {
+      const org = JSON.parse(decodeURIComponent(orgEncriptada));
+      const fechaFull = new Date(org.created_at).toLocaleString('es-CL');
+      
+      alert(
+        `ORDEN DE TRABAJO - FOLIO #${org.id}\n` +
+        `----------------------------------------\n` +
+        `Fecha Registro: ${fechaFull}\n` +
+        `Empresa: ${org.nombre_empresa}\n` +
+        `Vehículo: ${org.marca} [${org.patente}]\n\n` +
+        `Descripción de los Trabajos:\n` +
+        `${org.detalle || 'Sin observaciones.'}\n\n` +
+        `----------------------------------------\n` +
+        `Valor Neto:  $${Number(org.valor_neto).toLocaleString('es-CL')}\n` +
+        `Valor Total: $${Number(org.valor_total).toLocaleString('es-CL')} (IVA Incluido)\n` +
+        `Medio de Pago: ${org.medio_pago}`
+      );
+    }
+
+    // ELIMINAR REGISTRO (CRUD: DELETE)
+    async function eliminarRegistro(id) {
+      if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el folio #${id}?`)) {
+        const { error } = await supabase
+          .from('ordenes')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          alert('Error al eliminar: ' + error.message);
+        } else {
+          cargarRegistros();
+        }
+      }
+    }
+    function exportarExcel() {
+  // Obtenemos las filas de la tabla actual
+  let tabla = document.getElementById("tablaBody");
+  let filas = tabla.getElementsByTagName("tr");
+  let csv = ["Folio,Fecha,Empresa,Total,Medio de Pago"]; // Encabezados
+
+  for (let i = 0; i < filas.length; i++) {
+    let celdas = filas[i].getElementsByTagName("td");
+    if (celdas.length < 5) continue; // Salta la fila si está vacía
+    
+    let folio = celdas[0].innerText.replace('#', '');
+    let fecha = celdas[1].innerText;
+    // Limpiamos comas para evitar conflictos en el CSV
+    let empresa = celdas[2].querySelector('.font-semibold').innerText.replace(/,/g, '');
+    let total = celdas[3].innerText.replace(/[^0-9]/g, ''); // Deja solo números
+    let pago = celdas[4].innerText.trim();
+
+    csv.push(`${folio},${fecha},${empresa},${total},${pago}`);
+  }
+
+  // Crear archivo y descargarlo
+  let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
+  let encodedUri = encodeURI(csvContent);
+  let link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `reporte_ordenes_${new Date().toLocaleDateString('es-CL')}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+  </script>
+</body>
+</html>
