@@ -18,7 +18,7 @@
 
   <div class="w-full max-w-lg mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-200 my-auto">
     <div class="border-b pb-4 border-slate-100 mb-4 text-center">
-      <h1 class="text-xl font-bold text-slate-900">VALES ELECTRONIOS DE SERVICIO</h1>
+      <h1 class="text-xl font-bold text-slate-900">VALES ELECTRONICOS DE SERVICIO</h1>
       <p class="text-xs text-slate-500 mt-1">Completa los datos para registrar el servicio</p>
     </div>
     
@@ -89,11 +89,10 @@
   </div>
 
   <script>
-    // Inicializar Supabase (REEMPLAZA CON TUS CREDENCIALES)
-    // Inicializar Supabase (REEMPLAZA CON TUS CREDENCIALES)
+    // Inicializar Supabase CORREGIDO
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById('registroForm');
     const inputNeto = document.getElementById('valor_neto');
