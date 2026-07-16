@@ -7,42 +7,39 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-4 md:p-6">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
 
-  <div class="max-w-6xl mx-auto space-y-6">
-    <!-- Encabezado con navegación de regreso -->
-    <div class="flex justify-between items-center border-b pb-4 border-slate-200">
+  <div class="w-full max-w-6xl mx-auto space-y-6">
+    <!-- Encabezado con botón de nuevo registro -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900">Panel de Control de Órdenes</h1>
+        <h1 class="text-xl font-bold text-slate-900">Panel de Control de Órdenes</h1>
         <p class="text-xs text-slate-500">Historial, filtros y eliminación de registros</p>
       </div>
-      <a href="index.html" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm">
+      <a href="index.html" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
         ⬅️ Nuevo Registro
       </a>
     </div>
 
-    <!-- LISTADO, FILTROS Y BÚSQUEDA -->
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 class="text-lg font-bold text-slate-900">Órdenes Registradas</h2>
-        
-        <!-- Filtros de búsqueda en tiempo real -->
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <input type="text" id="buscarGeneral" placeholder="Buscar patente o empresa..." class="rounded-lg border-slate-300 p-2 border text-sm w-full sm:w-60 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-          <select id="filtrarPago" class="rounded-lg border-slate-300 p-2 border text-sm focus:border-indigo-500">
-            <option value="Todos">Todos los pagos</option>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Tarjeta">Tarjeta</option>
-            <option value="Transferencia">Transferencia</option>
-          </select>
-          
-          <button type="button" onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-1">
-            <span>💾</span> Exportar Excel
-          </button>
-        </div>
-      </div>
+    <!-- Filtros de búsqueda -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
+      <input type="text" id="buscarGeneral" placeholder="Buscar patente o empresa..." class="flex-grow rounded-lg border-slate-300 p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+      
+      <select id="filtrarPago" class="rounded-lg border-slate-300 p-2.5 border text-sm text-slate-600 bg-white focus:border-indigo-500">
+        <option value="Todos">Todos los pagos</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarjeta">Tarjeta</option>
+        <option value="Transferencia">Transferencia</option>
+      </select>
 
-      <!-- Tabla de datos -->
+      <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm inline-flex items-center gap-2">
+        📥 Exportar Excel
+      </button>
+    </div>
+
+    <!-- Tabla de órdenes -->
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-md font-bold text-slate-900 mb-4">Órdenes Registradas</h2>
       <div class="overflow-x-auto rounded-lg border border-slate-200">
         <table class="min-w-full divide-y divide-slate-200">
           <thead class="bg-slate-50">
@@ -63,9 +60,12 @@
     </div>
   </div>
 
+  <div class="text-center text-xs text-slate-400 py-4">
+    Taller Mecánico © 2026
+  </div>
+
   <script>
-    // Inicializar Supabase (REEMPLAZA CON TUS CREDENCIALES)
-    // Inicializar Supabase (REEMPLAZA CON TUS CREDENCIALES)
+    // Inicializar Supabase CORREGIDO
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
     const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -105,128 +105,76 @@
         return;
       }
 
-      renderTabla(ordenes);
-    }
-
-    // RENDERIZAR TABLA EN EL HTML
-    function renderTabla(ordenes) {
       tablaBody.innerHTML = '';
-
-      if (ordenes.length === 0) {
-        tablaBody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400 text-sm">No se encontraron registros.</td></tr>`;
-        return;
-      }
-
-      ordenes.forEach(org => {
-        const fechaLocal = new Date(org.created_at).toLocaleDateString('es-CL', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-        
-        let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
-        if (org.medio_pago === 'Tarjeta') badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
-        if (org.medio_pago === 'Transferencia') badgeColor = "bg-purple-50 text-purple-700 border-purple-200";
-
-        const fila = document.createElement('tr');
-        fila.className = "hover:bg-slate-50 transition";
-        fila.innerHTML = `
-          <td class="px-4 py-3.5 text-sm font-mono font-bold text-indigo-600">#${org.id}</td>
-          <td class="px-4 py-3.5 text-xs text-slate-500">${fechaLocal}</td>
-          <td class="px-4 py-3.5 text-sm">
-            <div class="font-semibold text-slate-900">${org.nombre_empresa}</div>
-            <div class="text-xs text-slate-500">${org.marca} • <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">${org.patente}</span></div>
+      ordenes.forEach(o => {
+        const fechaFormateada = new Date(o.created_at).toLocaleDateString('es-CL');
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-sm font-semibold text-slate-900">#${o.id}</td>
+          <td class="px-4 py-3 text-sm text-slate-500">${fechaFormateada}</td>
+          <td class="px-4 py-3 text-sm">
+            <div class="font-medium text-slate-900">${o.nombre_empresa}</div>
+            <div class="text-xs text-slate-500">${o.marca} - <span class="font-semibold text-indigo-600">${o.patente}</span></div>
           </td>
-          <td class="px-4 py-3.5 text-sm font-bold text-slate-900">$${Number(org.valor_total).toLocaleString('es-CL')}</td>
-          <td class="px-4 py-3.5 text-sm">
-            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${badgeColor}">
-              ${org.medio_pago}
-            </span>
+          <td class="px-4 py-3 text-sm font-bold text-slate-900">$${o.valor_total.toLocaleString('es-CL')}</td>
+          <td class="px-4 py-3 text-sm">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              o.medio_pago === 'Efectivo' ? 'bg-green-100 text-green-800' :
+              o.medio_pago === 'Tarjeta' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+            }">${o.medio_pago}</span>
           </td>
-          <td class="px-4 py-3.5 text-sm text-center space-x-3">
-            <button onclick="verDetalle('${encodeURIComponent(JSON.stringify(org))}')" class="text-indigo-600 hover:text-indigo-900 font-semibold">Ver</button>
-            <button onclick="eliminarRegistro(${org.id})" class="text-rose-600 hover:text-rose-900 font-semibold">Eliminar</button>
+          <td class="px-4 py-3 text-sm text-center">
+            <button onclick="eliminarRegistro(${o.id})" class="text-red-600 hover:text-red-900 font-medium text-xs bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md transition">
+              Eliminar
+            </button>
           </td>
         `;
-        tablaBody.appendChild(fila);
+        tablaBody.appendChild(tr);
       });
-    }
-
-    // MOSTRAR INFORMACIÓN DETALLADA (CRUD: READ SINGLE)
-    function verDetalle(orgEncriptada) {
-      const org = JSON.parse(decodeURIComponent(orgEncriptada));
-      const fechaFull = new Date(org.created_at).toLocaleString('es-CL');
-      
-      alert(
-        `ORDEN DE TRABAJO - FOLIO #${org.id}\n` +
-        `----------------------------------------\n` +
-        `Fecha Registro: ${fechaFull}\n` +
-        `Empresa: ${org.nombre_empresa}\n` +
-        `Vehículo: ${org.marca} [${org.patente}]\n\n` +
-        `Descripción de los Trabajos:\n` +
-        `${org.detalle || 'Sin observaciones.'}\n\n` +
-        `----------------------------------------\n` +
-        `Valor Neto:  $${Number(org.valor_neto).toLocaleString('es-CL')}\n` +
-        `Valor Total: $${Number(org.valor_total).toLocaleString('es-CL')} (IVA Incluido)\n` +
-        `Medio de Pago: ${org.medio_pago}`
-      );
     }
 
     // ELIMINAR REGISTRO (CRUD: DELETE)
     async function eliminarRegistro(id) {
-      if (confirm(`¿Estás seguro de que deseas eliminar permanentemente el folio #${id}?`)) {
-        const { error } = await supabase
-          .from('ordenes')
-          .delete()
-          .eq('id', id);
+      if (!confirm(`¿Está seguro de que desea eliminar la orden #${id}?`)) return;
 
-        if (error) {
-          alert('Error al eliminar: ' + error.message);
-        } else {
-          cargarRegistros();
-        }
+      const { error } = await supabase
+        .from('ordenes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al eliminar: ' + error.message);
+      } else {
+        alert('Orden eliminada correctamente.');
+        cargarRegistros();
       }
     }
 
-    // EXPORTAR EXCEL
-    function exportarExcel() {
-      let tabla = document.getElementById("tablaBody");
-      let filas = tabla.getElementsByTagName("tr");
-      
-      if (filas.length === 0 || (filas.length === 1 && filas[0].innerText.includes("No se encontraron"))) {
-        alert("No hay registros en pantalla para exportar.");
+    // EXPORTAR A EXCEL (CSV simple compatible con Excel)
+    async function exportarExcel() {
+      const { data: ordenes, error } = await supabase
+        .from('ordenes')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) {
+        alert('Error al obtener datos para exportar.');
         return;
       }
 
-      let csv = ["Folio,Fecha,Empresa,Patente,Marca,Total,Medio de Pago"];
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
 
-      for (let i = 0; i < filas.length; i++) {
-        let celdas = filas[i].getElementsByTagName("td");
-        if (celdas.length < 5) continue;
-        
-        let folio = celdas[0].innerText.replace('#', '').trim();
-        let fecha = celdas[1].innerText.trim();
-        
-        let empresaElement = celdas[2].querySelector('.font-semibold');
-        let empresa = empresaElement ? empresaElement.innerText.replace(/,/g, ' ').trim() : '';
-        
-        let vehiculoTexto = celdas[2].querySelector('.text-slate-500') ? celdas[2].querySelector('.text-slate-500').innerText : '';
-        let marca = vehiculoTexto.split('•')[0] ? vehiculoTexto.split('•')[0].trim() : '';
-        let patente = celdas[2].querySelector('.font-mono') ? celdas[2].querySelector('.font-mono').innerText.trim() : '';
+      ordenes.forEach(o => {
+        const fecha = new Date(o.created_at).toLocaleDateString('es-CL');
+        csvContent += `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ''}";${o.valor_net0 || o.valor_neto};${o.valor_total};"${o.medio_pago}"\n`;
+      });
 
-        let total = celdas[3].innerText.replace(/[^0-9]/g, '').trim();
-        let pago = celdas[4].innerText.trim();
-
-        csv.push(`${folio},${fecha},${empresa},${patente},${marca},${total},${pago}`);
-      }
-
-      let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
-      let encodedUri = encodeURI(csvContent);
-      let link = document.createElement("a");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `reporte_ordenes_${new Date().toLocaleDateString('es-CL').replace(/\//g, '-')}.csv`);
+      link.setAttribute("download", `Ordenes_Trabajo_${new Date().toLocaleDateString('es-CL')}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
