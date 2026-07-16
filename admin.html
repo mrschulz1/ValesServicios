@@ -68,8 +68,7 @@
     // Inicializar Supabase CORREGIDO
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    const supabaseCliente = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const tablaBody = document.getElementById('tablaBody');
     const buscarGeneralInput = document.getElementById('buscarGeneral');
     const filtrarPagoSelect = document.getElementById('filtrarPago');
@@ -138,7 +137,7 @@
     async function eliminarRegistro(id) {
       if (!confirm(`¿Está seguro de que desea eliminar la orden #${id}?`)) return;
 
-      const { error } = await supabase
+      const { error } = await supabaseCliente
         .from('ordenes')
         .delete()
         .eq('id', id);
