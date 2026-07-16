@@ -92,8 +92,7 @@
     // Inicializar Supabase CORREGIDO
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    const supabaseCliente = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const form = document.getElementById('registroForm');
     const inputNeto = document.getElementById('valor_neto');
     const inputTotal = document.getElementById('valor_total');
@@ -118,7 +117,7 @@
         medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseCliente
         .from('ordenes')
         .insert([datos])
         .select();
