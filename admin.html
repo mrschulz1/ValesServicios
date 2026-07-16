@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -68,10 +69,14 @@
     // Inicializar Supabase CORREGIDO
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
-    const supabaseCliente = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const tablaBody = document.getElementById('tablaBody');
     const buscarGeneralInput = document.getElementById('buscarGeneral');
     const filtrarPagoSelect = document.getElementById('filtrarPago');
+
+
+
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Cargar datos al iniciar y configurar listeners para filtros
     document.addEventListener('DOMContentLoaded', () => {
