@@ -75,15 +75,15 @@
         <textarea id="detalle" rows="3" placeholder="Descripción del trabajo..." class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm"></textarea>
       </div>
 
-      <!-- Valores -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Neto ($)</label>
-          <input type="number" id="valor_neto" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold">
-        </div>
+        <!-- Valores -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Neto ($)</label>
+            <input type="number" id="valor_neto" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold" placeholder="Ej: 10000">
+          </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase">Valor Total ($)</label>
-          <input type="number" id="valor_total" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold bg-slate-50">
+          <input type="number" id="valor_total" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 p-2.5 border text-sm font-semibold bg-slate-50" placeholder="Ej: 11900">>
         </div>
       </div>
 
@@ -168,9 +168,24 @@
     verificarSesion();
 
     // --- 2. CÁLCULO AUTOMÁTICO DE IVA (19%) ---
+
+    // 1. Si el usuario escribe en VALOR NETO -> Calcula el Total
     inputNeto.addEventListener('input', () => {
       const neto = parseFloat(inputNeto.value) || 0;
-      inputTotal.value = Math.round(neto * 1.19);
+      if (neto > 0) {
+        inputTotal.value = Math.round(neto * 1.19);
+      } else {
+        inputTotal.value = '';
+      }
+    });
+    // 2. Si el usuario escribe en VALOR TOTAL -> Calcula el Neto
+    inputTotal.addEventListener('input', () => {
+      const total = parseFloat(inputTotal.value) || 0;
+      if (total > 0) {
+        inputNeto.value = Math.round(total / 1.19);
+      } else {
+        inputNeto.value = '';
+      }
     });
 
     // --- 3. GUARDAR NUEVO REGISTRO ---
@@ -204,7 +219,7 @@
         patente: document.getElementById('patente').value.toUpperCase().trim(),
         detalle: document.getElementById('detalle').value,
         valor_neto: parseFloat(inputNeto.value),
-        valor_total: parseFloat(inputTotal.value),
+        valor_total: parseFloat(inputTotal.value),  
         medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
       };
 
