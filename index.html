@@ -91,8 +91,13 @@
   <script>
     // Inicializar Supabase CORREGIDO
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
+    const { createClient } = supabase;
+
+    const client = createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
 
     const form = document.getElementById('registroForm');
     const inputNeto = document.getElementById('valor_neto');
