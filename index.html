@@ -9,8 +9,36 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
 
-  <!-- Botón discreto para ir a administración en la esquina superior derecha -->
-  <div class="flex justify-end w-full max-w-lg mx-auto">
+  <!-- Modal de Autenticación Genérico -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">🔑</div>
+        <h2 class="text-lg font-bold text-slate-900">Acceso al Sistema</h2>
+        <p class="text-xs text-slate-500">Ingresa con tus credenciales del taller</p>
+      </div>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Correo Electrónico</label>
+          <input type="email" id="loginEmail" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="usuario@taller.cl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Contraseña</label>
+          <input type="password" id="loginPassword" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">
+          Iniciar Sesión
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Botones de Navegación y Cerrar Sesión -->
+  <div class="flex justify-between items-center w-full max-w-lg mx-auto mb-2">
+    <button id="btnCerrarSesion" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
+      🚪 Cerrar Sesión
+    </button>
     <a href="admin.html" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
       ⚙️ Panel de Control
     </a>
@@ -89,7 +117,7 @@
   </div>
 
   <script>
-    // Inicializar Supabase CORREGIDO
+    // Inicializar Supabase
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
     const { createClient } = supabase;
@@ -99,21 +127,78 @@
         SUPABASE_ANON_KEY
     );
 
+    // Elementos DOM
+    const loginModal = document.getElementById('loginModal');
+    const loginForm = document.getElementById('loginForm');
+    const btnCerrarSesion = document.getElementById('btnCerrarSesion');
     const form = document.getElementById('registroForm');
     const inputNeto = document.getElementById('valor_neto');
     const inputTotal = document.getElementById('valor_total');
 
-    // CÁLCULO AUTOMÁTICO DE IVA (19%)
+    // --- 1. LÓGICA DE SESIÓN Y AUTENTICACIÓN ---
+    async function verificarSesion() {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        loginModal.classList.add('hidden');
+      } else {
+        loginModal.classList.remove('hidden');
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        alert('Credenciales incorrectas: ' + error.message);
+      } else {
+        loginModal.classList.add('hidden');
+      }
+    });
+
+    btnCerrarSesion.addEventListener('click', async () => {
+      await client.auth.signOut();
+      window.location.reload();
+    });
+
+    // Validar sesión al cargar
+    verificarSesion();
+
+    // --- 2. CÁLCULO AUTOMÁTICO DE IVA (19%) ---
     inputNeto.addEventListener('input', () => {
       const neto = parseFloat(inputNeto.value) || 0;
       inputTotal.value = Math.round(neto * 1.19);
     });
 
-    // GUARDAR NUEVO REGISTRO
+    // --- 3. GUARDAR NUEVO REGISTRO ---
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Consultar último folio registrado para dar continuidad
+      const { data: ultimasOrdenes, error: errorFolio } = await client
+        .from('ordenes')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1);
+
+      if (errorFolio) {
+        alert('Error al consultar correlativo: ' + errorFolio.message);
+        return;
+      }
+
+      let siguienteFolio = 12900;
+      if (ultimasOrdenes && ultimasOrdenes.length > 0) {
+        const ultimoId = ultimasOrdenes[0].id;
+        if (ultimoId >= 12900) {
+          siguienteFolio = ultimoId + 1;
+        }
+      }
+
       const datos = {
+        id: siguienteFolio,
         nombre_empresa: document.getElementById('nombre_empresa').value,
         marca: document.getElementById('marca').value,
         patente: document.getElementById('patente').value.toUpperCase().trim(),
@@ -123,7 +208,7 @@
         medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
       };
 
-        const { data, error } = await client
+      const { data, error } = await client
         .from('ordenes')
         .insert([datos])
         .select();
