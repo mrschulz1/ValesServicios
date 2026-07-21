@@ -9,16 +9,46 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
 
+  <!-- Modal de Autenticación Genérico -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">🔑</div>
+        <h2 class="text-lg font-bold text-slate-900">Acceso al Sistema</h2>
+        <p class="text-xs text-slate-500">Ingresa con tus credenciales del taller</p>
+      </div>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Correo Electrónico</label>
+          <input type="email" id="loginEmail" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="usuario@taller.cl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Contraseña</label>
+          <input type="password" id="loginPassword" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">
+          Iniciar Sesión
+        </button>
+      </form>
+    </div>
+  </div>
+
   <div class="w-full max-w-6xl mx-auto space-y-6">
-    <!-- Encabezado con botón de nuevo registro -->
+    <!-- Encabezado con botones de navegación y sesión -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div>
         <h1 class="text-xl font-bold text-slate-900">Panel de Control de Órdenes</h1>
         <p class="text-xs text-slate-500">Historial, filtros y eliminación de registros</p>
       </div>
-      <a href="index.html" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
-        ⬅️ Nuevo Registro
-      </a>
+      <div class="flex items-center gap-2">
+        <button id="btnCerrarSesion" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition shadow-sm">
+          🚪 Cerrar Sesión
+        </button>
+        <a href="index.html" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
+          ⬅️ Nuevo Registro
+        </a>
+      </div>
     </div>
 
     <!-- Filtros de búsqueda -->
@@ -65,29 +95,64 @@
   </div>
 
   <script>
-    // Inicializar Supabase CORREGIDO
+    // Inicializar Supabase
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
 
     const { createClient } = supabase;
 
     const client = createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
 
+    // Elementos DOM
+    const loginModal = document.getElementById('loginModal');
+    const loginForm = document.getElementById('loginForm');
+    const btnCerrarSesion = document.getElementById('btnCerrarSesion');
     const tablaBody = document.getElementById('tablaBody');
     const buscarGeneralInput = document.getElementById('buscarGeneral');
     const filtrarPagoSelect = document.getElementById('filtrarPago');
 
-    // Cargar datos al iniciar y configurar listeners para filtros
+    // --- 1. CONTROL DE SESIÓN Y AUTENTICACIÓN ---
+    async function verificarSesion() {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        loginModal.classList.add('hidden');
+        cargarRegistros();
+      } else {
+        loginModal.classList.remove('hidden');
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        alert('Credenciales incorrectas: ' + error.message);
+      } else {
+        loginModal.classList.add('hidden');
+        cargarRegistros();
+      }
+    });
+
+    btnCerrarSesion.addEventListener('click', async () => {
+      await client.auth.signOut();
+      window.location.reload();
+    });
+
+    // Inicializar listeners y verificación
     document.addEventListener('DOMContentLoaded', () => {
-      cargarRegistros();
+      verificarSesion();
       buscarGeneralInput.addEventListener('input', cargarRegistros);
       filtrarPagoSelect.addEventListener('change', cargarRegistros);
     });
 
-    // LEER Y FILTRAR REGISTROS (CRUD: READ)
+    // --- 2. LEER Y FILTRAR REGISTROS (CRUD: READ) ---
     async function cargarRegistros() {
       let query = client
         .from('ordenes')
@@ -112,8 +177,14 @@
       }
 
       tablaBody.innerHTML = '';
+
+      if (!ordenes || ordenes.length === 0) {
+        tablaBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-sm text-slate-400">No se encontraron órdenes registradas.</td></tr>`;
+        return;
+      }
+
       ordenes.forEach(o => {
-        const fechaFormateada = new Date(o.created_at).toLocaleDateString('es-CL');
+        const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
         tr.innerHTML = `
@@ -123,7 +194,7 @@
             <div class="font-medium text-slate-900">${o.nombre_empresa}</div>
             <div class="text-xs text-slate-500">${o.marca} - <span class="font-semibold text-indigo-600">${o.patente}</span></div>
           </td>
-          <td class="px-4 py-3 text-sm font-bold text-slate-900">$${o.valor_total.toLocaleString('es-CL')}</td>
+          <td class="px-4 py-3 text-sm font-bold text-slate-900">$${(o.valor_total || 0).toLocaleString('es-CL')}</td>
           <td class="px-4 py-3 text-sm">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
               o.medio_pago === 'Efectivo' ? 'bg-green-100 text-green-800' :
@@ -140,7 +211,7 @@
       });
     }
 
-    // ELIMINAR REGISTRO (CRUD: DELETE)
+    // --- 3. ELIMINAR REGISTRO (CRUD: DELETE) ---
     async function eliminarRegistro(id) {
       if (!confirm(`¿Está seguro de que desea eliminar la orden #${id}?`)) return;
 
@@ -157,7 +228,7 @@
       }
     }
 
-    // EXPORTAR A EXCEL (CSV simple compatible con Excel)
+    // --- 4. EXPORTAR A EXCEL (CSV) ---
     async function exportarExcel() {
       const { data: ordenes, error } = await client
         .from('ordenes')
@@ -173,8 +244,8 @@
       csvContent += "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
 
       ordenes.forEach(o => {
-        const fecha = new Date(o.created_at).toLocaleDateString('es-CL');
-        csvContent += `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ''}";${o.valor_net0 || o.valor_neto};${o.valor_total};"${o.medio_pago}"\n`;
+        const fecha = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
+        csvContent += `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ''}";${o.valor_neto || 0};${o.valor_total || 0};"${o.medio_pago}"\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
