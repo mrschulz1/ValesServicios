@@ -4,536 +4,187 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
 
-<div class="w-full max-w-6xl mx-auto space-y-6">
-
-  <!-- ENCABEZADO -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-
-    <div>
-      <h1 class="text-xl font-bold text-slate-900">
-        Panel de Control de Órdenes
-      </h1>
-
-      <p class="text-xs text-slate-500">
-        Historial, filtros y administración
-      </p>
+  <div class="w-full max-w-6xl mx-auto space-y-6">
+    <!-- Encabezado con botón de nuevo registro -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900">Panel de Control de Órdenes</h1>
+        <p class="text-xs text-slate-500">Historial, filtros y eliminación de registros</p>
+      </div>
+      <a href="index.html" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
+        ⬅️ Nuevo Registro
+      </a>
     </div>
 
-    <a href="index.html"
-      class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
-      ⬅️ Nuevo Registro
-    </a>
+    <!-- Filtros de búsqueda -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
+      <input type="text" id="buscarGeneral" placeholder="Buscar patente o empresa..." class="flex-grow rounded-lg border-slate-300 p-2.5 border text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+      
+      <select id="filtrarPago" class="rounded-lg border-slate-300 p-2.5 border text-sm text-slate-600 bg-white focus:border-indigo-500">
+        <option value="Todos">Todos los pagos</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarjeta">Tarjeta</option>
+        <option value="Transferencia">Transferencia</option>
+      </select>
 
+      <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm inline-flex items-center gap-2">
+        📥 Exportar Excel
+      </button>
+    </div>
+
+    <!-- Tabla de órdenes -->
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-md font-bold text-slate-900 mb-4">Órdenes Registradas</h2>
+      <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <table class="min-w-full divide-y divide-slate-200">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Total</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Medio Pago</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody" class="bg-white divide-y divide-slate-200">
+            <!-- Cargado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
-
-  <!-- FILTROS -->
-  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3">
-
-    <input 
-      id="buscarGeneral"
-      type="text"
-      placeholder="Buscar patente o empresa..."
-      class="flex-grow rounded-lg border p-2.5 text-sm"
-    >
-
-
-    <select 
-      id="filtrarPago"
-      class="rounded-lg border p-2.5 text-sm">
-
-      <option value="Todos">
-        Todos los pagos
-      </option>
-
-      <option value="Efectivo">
-        Efectivo
-      </option>
-
-      <option value="Tarjeta">
-        Tarjeta
-      </option>
-
-      <option value="Transferencia">
-        Transferencia
-      </option>
-
-    </select>
-
-
-    <button 
-      onclick="exportarExcel()"
-      class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm">
-
-      📥 Exportar Excel
-
-    </button>
-
+  <div class="text-center text-xs text-slate-400 py-4">
+    Taller Mecánico © 2026
   </div>
 
+  <script>
+    // Inicializar Supabase CORREGIDO
+    const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQW4tQdygSAwd4XA_pRETQ_EA";
 
+    const { createClient } = supabase;
 
-  <!-- TABLA -->
-
-  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-
-    <h2 class="font-bold mb-4">
-      Órdenes Registradas
-    </h2>
-
-
-    <table class="min-w-full">
-
-      <thead class="bg-slate-50">
-
-        <tr class="text-xs text-left">
-
-          <th class="p-3">
-            Folio
-          </th>
-
-          <th class="p-3">
-            Fecha
-          </th>
-
-          <th class="p-3">
-            Empresa / Patente
-          </th>
-
-          <th class="p-3">
-            Total
-          </th>
-
-          <th class="p-3">
-            Pago
-          </th>
-
-          <th class="p-3">
-            Acción
-          </th>
-
-        </tr>
-
-      </thead>
-
-
-      <tbody id="tablaBody">
-      </tbody>
-
-
-    </table>
-
-  </div>
-
-
-</div>
-
-
-<div class="text-center text-xs text-slate-400 py-4">
-  Taller Mecánico © 2026
-</div>
-
-<script>
-
-const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
-
-const SUPABASE_ANON_KEY = "Sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
-
-
-// Inicialización correcta Supabase v2
-const { createClient } = supabase;
-
-const client = createClient(
+    const client = createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
 
+    const tablaBody = document.getElementById('tablaBody');
+    const buscarGeneralInput = document.getElementById('buscarGeneral');
+    const filtrarPagoSelect = document.getElementById('filtrarPago');
 
+    // Cargar datos al iniciar y configurar listeners para filtros
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarRegistros();
+      buscarGeneralInput.addEventListener('input', cargarRegistros);
+      filtrarPagoSelect.addEventListener('change', cargarRegistros);
+    });
 
-const tablaBody = document.getElementById("tablaBody");
+    // LEER Y FILTRAR REGISTROS (CRUD: READ)
+    async function cargarRegistros() {
+      let query = client
+        .from('ordenes')
+        .select('*')
+        .order('id', { ascending: false });
 
-const buscarGeneralInput = document.getElementById("buscarGeneral");
+      const busqueda = buscarGeneralInput.value.trim();
+      if (busqueda) {
+        query = query.or(`patente.ilike.%${busqueda}%,nombre_empresa.ilike.%${busqueda}%`);
+      }
 
-const filtrarPagoSelect = document.getElementById("filtrarPago");
+      const pagoFiltro = filtrarPagoSelect.value;
+      if (pagoFiltro !== 'Todos') {
+        query = query.eq('medio_pago', pagoFiltro);
+      }
 
+      const { data: ordenes, error } = await query;
 
-
-
-// Cargar registros al iniciar
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    cargarRegistros();
-
-
-    buscarGeneralInput.addEventListener(
-        "input",
-        cargarRegistros
-    );
-
-
-    filtrarPagoSelect.addEventListener(
-        "change",
-        cargarRegistros
-    );
-
-});
-
-
-
-
-
-// =============================
-// LEER REGISTROS
-// =============================
-
-async function cargarRegistros(){
-
-
-    let query = client
-        .from("ordenes")
-        .select("*")
-        .order("id", {
-            ascending:false
-        });
-
-
-
-    const busqueda = buscarGeneralInput.value
-        .trim();
-
-
-
-    if(busqueda){
-
-        query = query.or(
-            `patente.ilike.%${busqueda}%,nombre_empresa.ilike.%${busqueda}%`
-        );
-
-    }
-
-
-
-    const pagoFiltro = filtrarPagoSelect.value;
-
-
-
-    if(pagoFiltro !== "Todos"){
-
-        query = query.eq(
-            "medio_pago",
-            pagoFiltro
-        );
-
-    }
-
-
-
-    const {
-        data: ordenes,
-        error
-
-    } = await query;
-
-
-
-
-    if(error){
-
-        console.error(
-            "Error cargando registros:",
-            error
-        );
-
-        alert(
-            error.message
-        );
-
+      if (error) {
+        console.error('Error al cargar datos:', error);
         return;
+      }
 
-    }
-
-
-
-
-    tablaBody.innerHTML = "";
-
-
-
-    ordenes.forEach(o => {
-
-
-        const fecha = o.created_at
-            ? new Date(o.created_at)
-                .toLocaleDateString("es-CL")
-            : "";
-
-
-
-        const fila = `
-
-        <tr class="border-t hover:bg-slate-50">
-
-
-            <td class="p-3 font-semibold">
-                #${o.id}
-            </td>
-
-
-
-            <td class="p-3 text-sm">
-                ${fecha}
-            </td>
-
-
-
-            <td class="p-3">
-
-                <div class="font-medium">
-                    ${o.nombre_empresa}
-                </div>
-
-                <div class="text-xs text-slate-500">
-
-                    ${o.marca} -
-                    ${o.patente}
-
-                </div>
-
-            </td>
-
-
-
-            <td class="p-3 font-bold">
-
-                $${Number(o.valor_total)
-                    .toLocaleString("es-CL")}
-
-            </td>
-
-
-
-            <td class="p-3">
-
-                ${o.medio_pago}
-
-            </td>
-
-
-
-            <td class="p-3">
-
-                <button
-
-                onclick="eliminarRegistro(${o.id})"
-
-                class="text-red-600 hover:text-red-800 text-sm">
-
-                    Eliminar
-
-                </button>
-
-            </td>
-
-
-
-        </tr>
-
+      tablaBody.innerHTML = '';
+      ordenes.forEach(o => {
+        const fechaFormateada = new Date(o.created_at).toLocaleDateString('es-CL');
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-sm font-semibold text-slate-900">#${o.id}</td>
+          <td class="px-4 py-3 text-sm text-slate-500">${fechaFormateada}</td>
+          <td class="px-4 py-3 text-sm">
+            <div class="font-medium text-slate-900">${o.nombre_empresa}</div>
+            <div class="text-xs text-slate-500">${o.marca} - <span class="font-semibold text-indigo-600">${o.patente}</span></div>
+          </td>
+          <td class="px-4 py-3 text-sm font-bold text-slate-900">$${o.valor_total.toLocaleString('es-CL')}</td>
+          <td class="px-4 py-3 text-sm">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              o.medio_pago === 'Efectivo' ? 'bg-green-100 text-green-800' :
+              o.medio_pago === 'Tarjeta' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+            }">${o.medio_pago}</span>
+          </td>
+          <td class="px-4 py-3 text-sm text-center">
+            <button onclick="eliminarRegistro(${o.id})" class="text-red-600 hover:text-red-900 font-medium text-xs bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md transition">
+              Eliminar
+            </button>
+          </td>
         `;
-
-
-
-        tablaBody.innerHTML += fila;
-
-
-    });
-
-
-}
-
-
-
-
-
-
-// =============================
-// ELIMINAR REGISTRO
-// =============================
-
-async function eliminarRegistro(id){
-
-
-    if(
-        !confirm(
-            `¿Eliminar orden #${id}?`
-        )
-    ){
-
-        return;
-
+        tablaBody.appendChild(tr);
+      });
     }
 
+    // ELIMINAR REGISTRO (CRUD: DELETE)
+    async function eliminarRegistro(id) {
+      if (!confirm(`¿Está seguro de que desea eliminar la orden #${id}?`)) return;
 
-
-    const {
-        error
-
-    } = await client
-
-        .from("ordenes")
-
+      const { error } = await client
+        .from('ordenes')
         .delete()
+        .eq('id', id);
 
-        .eq(
-            "id",
-            id
-        );
-
-
-
-
-    if(error){
-
-        alert(
-            error.message
-        );
-
-    }else{
-
-
-        alert(
-            "Orden eliminada correctamente"
-        );
-
-
+      if (error) {
+        alert('Error al eliminar: ' + error.message);
+      } else {
+        alert('Orden eliminada correctamente.');
         cargarRegistros();
-
+      }
     }
 
+    // EXPORTAR A EXCEL (CSV simple compatible con Excel)
+    async function exportarExcel() {
+      const { data: ordenes, error } = await client
+        .from('ordenes')
+        .select('*')
+        .order('id', { ascending: false });
 
-}
-// =============================
-// EXPORTAR EXCEL CSV
-// =============================
-
-async function exportarExcel(){
-
-
-    const {
-        data: ordenes,
-        error
-
-    } = await client
-
-        .from("ordenes")
-
-        .select("*")
-
-        .order(
-            "id",
-            {
-                ascending:false
-            }
-        );
-
-
-
-
-    if(error){
-
-        alert(
-            "Error al exportar: " + error.message
-        );
-
+      if (error) {
+        alert('Error al obtener datos para exportar.');
         return;
+      }
 
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
+
+      ordenes.forEach(o => {
+        const fecha = new Date(o.created_at).toLocaleDateString('es-CL');
+        csvContent += `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ''}";${o.valor_net0 || o.valor_neto};${o.valor_total};"${o.medio_pago}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Ordenes_Trabajo_${new Date().toLocaleDateString('es-CL')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
-
-
-
-
-    let csvContent =
-    "data:text/csv;charset=utf-8,\uFEFF";
-
-
-
-    csvContent +=
-    "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
-
-
-
-
-    ordenes.forEach(o => {
-
-
-        const fecha = o.created_at
-
-            ? new Date(o.created_at)
-                .toLocaleDateString("es-CL")
-
-            : "";
-
-
-
-        csvContent +=
-
-        `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ""}";${o.valor_neto || 0};${o.valor_total || 0};"${o.medio_pago}"\n`;
-
-
-    });
-
-
-
-
-
-    const encodedUri =
-        encodeURI(csvContent);
-
-
-
-    const link =
-        document.createElement("a");
-
-
-
-    link.setAttribute(
-        "href",
-        encodedUri
-    );
-
-
-
-    link.setAttribute(
-        "download",
-        `Ordenes_Trabajo_${new Date().toLocaleDateString("es-CL")}.csv`
-    );
-
-
-
-    document.body.appendChild(link);
-
-
-
-    link.click();
-
-
-
-    document.body.removeChild(link);
-
-
-}
-
-
-
-</script>
-
-
+  </script>
 </body>
 </html>
