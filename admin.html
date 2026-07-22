@@ -71,10 +71,10 @@
     <!-- Tabla de órdenes -->
     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
       <h2 class="text-md font-bold text-slate-900 mb-4">Vales Registrados</h2>
-      <div class="overflow-x-auto rounded-lg border border-slate-200">
-        <table class="min-w-full divide-y divide-slate-200">
-          <thead class="bg-slate-50">
-            <tr>
+      <div class="relative max-h-[600px] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+        <table class="w-full text-left border-collapse">
+          <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm">
+            <tr class="text-slate-600 text-xs font-semibold uppercase tracking-wider"></tr>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
@@ -84,7 +84,7 @@
               <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaBody" class="bg-white divide-y divide-slate-200">
+          <tbody id="tablaBody" class="divide-y divide-slate-200 bg-white">
             <!-- Cargado dinámicamente -->
           </tbody>
         </table>
