@@ -68,13 +68,8 @@
           <label class="block text-gray-700 text-sm font-bold mb-2">Selecciona 1 opcion</label>
           <div class="grid grid-cols-2 gap-3 p-3 border border-gray-300 rounded-lg bg-gray-50">
 
-           <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4">
-            <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 hover:shadow-sm transition-all">
-              <input type="radio" name="empresa_option" value="Particular" class="text-blue-600 focus:ring-blue-500">
-              <span class="ml-2.5 text-sm font-medium text-slate-700">Particular</span>
-            </label>
-            
-            <label class="flex items-center space-x-2 cursor-pointer">
+      
+           <label class="flex items-center space-x-2 cursor-pointer">
               <input type="radio" name="empresa_option" value="Senefa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="text-sm font-medium text-gray-800">Senefa</span>
             </label>
@@ -108,7 +103,8 @@
               <input type="radio" name="empresa_option" value="Vimont" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="text-sm font-medium text-gray-800">Vimont</span>
             </label>
-          </div>
+          </div> 
+
       </div>
         <!-- <input type="text" id="nombre_empresa" required class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border text-sm">
       </div><--> 
@@ -180,8 +176,9 @@
         </div>
       </div>
 
-      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-150 shadow-sm">
-        Guardar Vale de Servicio
+      <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        <span>Guardar Vale de Servicio</span>
       </button>
     </form>
   </div>
