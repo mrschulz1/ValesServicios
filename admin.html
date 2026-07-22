@@ -78,7 +78,8 @@
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Total</th>
+              <th class="p-3 text-right">Neto</th> 
+              <th class="p-3 text-right">Total</th>   
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Medio Pago</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
             </tr>
@@ -195,6 +196,7 @@
             <div class="font-medium text-slate-900">${o.nombre_empresa}</div>
             <div class="text-xs text-slate-500">${o.marca} - <span class="font-semibold text-indigo-600">${o.patente}</span></div>
           </td>
+          <td class="px-4 py-3 text-sm font-medium text-slate-600">$${(o.valor_neto || 0).toLocaleString('es-CL')}</td>
           <td class="px-4 py-3 text-sm font-bold text-slate-900">$${(o.valor_total || 0).toLocaleString('es-CL')}</td>
           <td class="px-4 py-3 text-sm">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
