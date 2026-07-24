@@ -74,11 +74,11 @@
       <div class="relative max-h-[600px] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
         <table class="w-full text-left border-collapse">
           <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm">
-            <tr class="text-slate-600 text-xs font-semibold uppercase tracking-wider"></tr>
+            <tr class="text-slate-600 text-xs font-semibold uppercase tracking-wider">
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
-              <th class="ppx-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Neto</th> 
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Neto</th> 
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Total</th>   
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Medio Pago</th>
               <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
@@ -95,6 +95,9 @@
   <div class="text-center text-xs text-slate-400 py-4">
     Alineaciones Bustamante © 2026
   </div>
+
+  <!-- Contenedor para Notificaciones Flotantes (Toasts) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
 
   <script>
     // Inicializar Supabase
@@ -152,6 +155,11 @@
       verificarSesion();
       buscarGeneralInput.addEventListener('input', cargarRegistros);
       filtrarPagoSelect.addEventListener('change', cargarRegistros);
+
+      // Solicitar permiso para notificaciones nativas del sistema
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
     });
 
     // --- 2. LEER Y FILTRAR REGISTROS (CRUD: READ) ---
@@ -181,7 +189,7 @@
       tablaBody.innerHTML = '';
 
       if (!ordenes || ordenes.length === 0) {
-        tablaBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-sm text-slate-400">No se encontraron órdenes registradas.</td></tr>`;
+        tablaBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-sm text-slate-400">No se encontraron órdenes registradas.</td></tr>`;
         return;
       }
 
@@ -193,8 +201,8 @@
           <td class="px-4 py-3 text-sm font-semibold text-slate-900">#${o.id}</td>
           <td class="px-4 py-3 text-sm text-slate-500">${fechaFormateada}</td>
           <td class="px-4 py-3 text-sm">
-            <div class="font-medium text-slate-900">${o.nombre_empresa}</div>
-            <div class="text-xs text-slate-500">${o.marca} - <span class="font-semibold text-indigo-600">${o.patente}</span></div>
+            <div class="font-medium text-slate-900">${o.nombre_empresa || 'S/N'}</div>
+            <div class="text-xs text-slate-500">${o.marca || ''} - <span class="font-semibold text-indigo-600">${o.patente || ''}</span></div>
           </td>
           <td class="px-4 py-3 text-sm font-bold text-slate-900">$${(o.valor_neto || 0).toLocaleString('es-CL')}</td>
           <td class="px-4 py-3 text-sm font-bold text-slate-900">$${(o.valor_total || 0).toLocaleString('es-CL')}</td>
@@ -202,7 +210,7 @@
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
               o.medio_pago === 'Efectivo' ? 'bg-green-100 text-green-800' :
               o.medio_pago === 'Tarjeta' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-            }">${o.medio_pago}</span>
+            }">${o.medio_pago || 'Efectivo'}</span>
           </td>
           <td class="px-4 py-3 text-sm text-center">
             <button onclick="eliminarRegistro(${o.id})" class="text-red-600 hover:text-red-900 font-medium text-xs bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md transition">
@@ -259,6 +267,83 @@
       link.click();
       document.body.removeChild(link);
     }
+
+    // --- 5. NOTIFICACIONES EN TIEMPO REAL (REALTIME) ---
+    function reproducirSonidoNotificacion() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Re5
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // La5
+
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } catch (e) {
+        console.log("Audio no permitido aún por interacción del usuario");
+      }
+    }
+
+    function mostrarToastNuevoVale(vale) {
+      const container = document.getElementById("toastContainer");
+      
+      const toast = document.createElement("div");
+      toast.className = "pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all transform translate-y-5 opacity-0 duration-300";
+      
+      toast.innerHTML = `
+        <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400">¡Nuevo Vale Registrado!</h4>
+          <p class="text-xs text-slate-300">Vale #${vale.id} - Patente: <span class="font-bold text-white">${vale.patente || 'S/N'}</span></p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.remove("translate-y-5", "opacity-0"), 50);
+
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Escuchar inserciones en tiempo real en la tabla 'ordenes'
+    client
+      .channel('cambios-vales')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ordenes' }, (payload) => {
+        const nuevoVale = payload.new;
+
+        // 1. Sonido
+        reproducirSonidoNotificacion();
+
+        // 2. Alerta visual (Toast)
+        mostrarToastNuevoVale(nuevoVale);
+
+        // 3. Notificación de escritorio si está en segundo plano
+        if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+          new Notification("Nuevo Vale Ingresado 🚗", {
+            body: `Vale #${nuevoVale.id} | Patente: ${nuevoVale.patente || ''} - Total: $${(nuevoVale.valor_total || 0).toLocaleString('es-CL')}`,
+            icon: 'logooriginal.png'
+          });
+        }
+
+        // 4. Actualizar tabla automáticamente
+        cargarRegistros();
+      })
+      .subscribe();
   </script>
 </body>
 </html>
