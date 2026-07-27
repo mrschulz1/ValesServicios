@@ -21,7 +21,7 @@
       
       <form id="loginForm" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase">Token</label>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Token / Email</label>
           <input type="email" id="loginEmail" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="usuario@taller.cl">
         </div>
         <div>
@@ -35,12 +35,12 @@
     </div>
   </div>
 
-  <div class="w-full max-w-6xl mx-auto space-y-6">
-    <!-- Encabezado con botones de navegación y sesión -->
+  <div class="w-full max-w-7xl mx-auto space-y-6">
+    <!-- Encabezado -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div>
         <h1 class="text-xl font-bold text-slate-900">Panel de Control de Vales</h1>
-        <p class="text-xs text-slate-500">Historial, filtros y eliminación de registros</p>
+        <p class="text-xs text-slate-500">Gestión y edición directa en tabla</p>
       </div>
       <div class="flex items-center gap-2">
         <button id="btnCerrarSesion" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-medium transition shadow-sm">
@@ -75,14 +75,14 @@
         <table class="w-full text-left border-collapse">
           <thead class="sticky top-0 bg-slate-100 z-10 shadow-sm">
             <tr class="text-slate-600 text-xs font-semibold uppercase tracking-wider">
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Folio</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Fecha</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Empresa / Patente</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Detalle</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Neto</th> 
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Total</th>   
-              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Medio Pago</th>
-              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase">Acciones</th>
+              <th class="px-3 py-3 text-left">Folio</th>
+              <th class="px-3 py-3 text-left">Fecha</th>
+              <th class="px-3 py-3 text-left">Empresa / Patente / Marca</th>
+              <th class="px-3 py-3 text-left">Detalle</th>
+              <th class="px-3 py-3 text-left w-28">Neto</th> 
+              <th class="px-3 py-3 text-left w-28">Total</th>   
+              <th class="px-3 py-3 text-left w-32">Medio Pago</th>
+              <th class="px-3 py-3 text-center w-24">Acciones</th>
             </tr>
           </thead>
           <tbody id="tablaBody" class="divide-y divide-slate-200 bg-white">
@@ -97,22 +97,18 @@
     Alineaciones Bustamante © 2026
   </div>
 
-  <!-- Contenedor para Notificaciones Flotantes (Toasts) -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
 
   <script>
-    // Inicializar Supabase
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
 
     const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const client = createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
+    let listaOrdenes = [];
+    let idEditandoActualmente = null;
 
-    // Elementos DOM
     const loginModal = document.getElementById('loginModal');
     const loginForm = document.getElementById('loginForm');
     const btnCerrarSesion = document.getElementById('btnCerrarSesion');
@@ -120,7 +116,7 @@
     const buscarGeneralInput = document.getElementById('buscarGeneral');
     const filtrarPagoSelect = document.getElementById('filtrarPago');
 
-    // --- 1. CONTROL DE SESIÓN Y AUTENTICACIÓN ---
+    // --- 1. AUTENTICACIÓN ---
     async function verificarSesion() {
       const { data: { session } } = await client.auth.getSession();
       if (session) {
@@ -137,7 +133,6 @@
       const password = document.getElementById('loginPassword').value;
 
       const { data, error } = await client.auth.signInWithPassword({ email, password });
-
       if (error) {
         alert('Credenciales incorrectas: ' + error.message);
       } else {
@@ -151,23 +146,15 @@
       window.location.reload();
     });
 
-    // Inicializar listeners y verificación
     document.addEventListener('DOMContentLoaded', () => {
       verificarSesion();
       buscarGeneralInput.addEventListener('input', cargarRegistros);
       filtrarPagoSelect.addEventListener('change', cargarRegistros);
-
-      if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
     });
 
-    // --- 2. LEER Y FILTRAR REGISTROS (CRUD: READ) ---
+    // --- 2. CARGAR Y RENDERIZAR TABLA ---
     async function cargarRegistros() {
-      let query = client
-        .from('ordenes')
-        .select('*')
-        .order('id', { ascending: false });
+      let query = client.from('ordenes').select('*').order('id', { ascending: false });
 
       const busqueda = buscarGeneralInput.value.trim();
       if (busqueda) {
@@ -180,12 +167,9 @@
       }
 
       const { data: ordenes, error } = await query;
+      if (error) return console.error('Error al cargar datos:', error);
 
-      if (error) {
-        console.error('Error al cargar datos:', error);
-        return;
-      }
-
+      listaOrdenes = ordenes || [];
       tablaBody.innerHTML = '';
 
       if (!ordenes || ordenes.length === 0) {
@@ -194,68 +178,155 @@
       }
 
       ordenes.forEach(o => {
-        const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
         const tr = document.createElement('tr');
+        tr.id = `fila-${o.id}`;
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-        tr.innerHTML = `
-          <td class="px-4 py-3 text-sm font-semibold text-slate-900">#${o.id}</td>
-          <td class="px-4 py-3 text-sm text-slate-500">${fechaFormateada}</td>
-          <td class="px-4 py-3 text-sm">
-            <div class="font-medium text-slate-900">${o.nombre_empresa || 'S/N'}</div>
-            <div class="text-xs text-slate-500">${o.marca || ''} - <span class="font-semibold text-indigo-600">${o.patente || ''}</span></div>
-          </td>
-          
-          <!-- COLUMNA DETALLE -->
-          <td class="px-4 py-3 text-sm text-slate-600 max-w-xs break-words whitespace-normal">
-            ${o.detalle || '<span class="text-slate-400 italic">Sin detalle</span>'}
-          </td>
-
-          <td class="px-4 py-3 text-sm font-bold text-slate-900">$${(o.valor_neto || 0).toLocaleString('es-CL')}</td>
-          <td class="px-4 py-3 text-sm font-bold text-slate-900">$${(o.valor_total || 0).toLocaleString('es-CL')}</td>
-          <td class="px-4 py-3 text-sm">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              o.medio_pago === 'Efectivo' ? 'bg-green-100 text-green-800' :
-              o.medio_pago === 'Tarjeta' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-            }">${o.medio_pago || 'Efectivo'}</span>
-          </td>
-          <td class="px-4 py-3 text-sm text-center">
-            <button onclick="eliminarRegistro(${o.id})" class="text-red-600 hover:text-red-900 font-medium text-xs bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md transition">
-              Eliminar
-            </button>
-          </td>
-        `;
+        
+        if (idEditandoActualmente === o.id) {
+          renderFilaEditable(tr, o);
+        } else {
+          renderFilaNormal(tr, o);
+        }
+        
         tablaBody.appendChild(tr);
       });
     }
 
-    // --- 3. ELIMINAR REGISTRO (CRUD: DELETE) ---
-    async function eliminarRegistro(id) {
-      if (!confirm(`¿Está seguro de que desea eliminar la orden #${id}?`)) return;
+    // MODO LECTURA NORMAL DE LA FILA
+    function renderFilaNormal(tr, o) {
+      const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
+      tr.innerHTML = `
+        <td class="px-3 py-3 text-sm font-semibold text-slate-900">#${o.id}</td>
+        <td class="px-3 py-3 text-sm text-slate-500">${fechaFormateada}</td>
+        <td class="px-3 py-3 text-sm">
+          <div class="font-medium text-slate-900">${o.nombre_empresa || 'S/N'}</div>
+          <div class="text-xs text-slate-500">${o.marca || ''} - <span class="font-semibold text-indigo-600">${o.patente || ''}</span></div>
+        </td>
+        <td class="px-3 py-3 text-sm text-slate-600 max-w-xs break-words whitespace-normal">
+          ${o.detalle || '<span class="text-slate-400 italic">Sin detalle</span>'}
+        </td>
+        <td class="px-3 py-3 text-sm font-bold text-slate-900">$${(o.valor_neto || 0).toLocaleString('es-CL')}</td>
+        <td class="px-3 py-3 text-sm font-bold text-slate-900">$${(o.valor_total || 0).toLocaleString('es-CL')}</td>
+        <td class="px-3 py-3 text-sm">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            o.medio_pago === 'Efectivo' ? 'bg-green-100 text-green-800' :
+            o.medio_pago === 'Tarjeta' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+          }">${o.medio_pago || 'Efectivo'}</span>
+        </td>
+        <td class="px-3 py-3 text-sm text-center">
+          <div class="flex items-center justify-center gap-1">
+            <button onclick="activarEdicionFila(${o.id})" class="text-slate-600 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-slate-200 transition font-bold text-lg leading-none" title="Editar vale">
+              ⋮
+          </div>
+        </td>
+      `;
+    }
+
+    // MODO EDICIÓN DIRECTO EN LA TABLA
+    function renderFilaEditable(tr, o) {
+      tr.className = "bg-amber-50/60 border-b border-amber-200";
+      const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
+      
+      tr.innerHTML = `
+        <td class="px-2 py-2 text-xs font-bold text-slate-900">#${o.id}</td>
+        <td class="px-2 py-2 text-xs text-slate-500">${fechaFormateada}</td>
+        <td class="px-2 py-2 space-y-1">
+          <input type="text" id="editEmpresa-${o.id}" value="${o.nombre_empresa || ''}" placeholder="Empresa" class="w-full text-xs p-1 border rounded bg-white">
+          <div class="flex gap-1">
+            <input type="text" id="editPatente-${o.id}" value="${o.patente || ''}" placeholder="Patente" class="w-1/2 text-xs p-1 border rounded bg-white font-bold uppercase">
+            <input type="text" id="editMarca-${o.id}" value="${o.marca || ''}" placeholder="Marca/Modelo" class="w-1/2 text-xs p-1 border rounded bg-white">
+          </div>
+        </td>
+        <td class="px-2 py-2">
+          <textarea id="editDetalle-${o.id}" rows="2" class="w-full text-xs p-1 border rounded bg-white resize-none">${o.detalle || ''}</textarea>
+        </td>
+        <td class="px-2 py-2">
+          <input type="number" id="editNeto-${o.id}" value="${o.valor_neto || 0}" oninput="calcularIvaEnLinea(${o.id})" class="w-full text-xs p-1 border rounded bg-white font-bold">
+        </td>
+        <td class="px-2 py-2">
+          <input type="number" id="editTotal-${o.id}" value="${o.valor_total || 0}" class="w-full text-xs p-1 border rounded bg-white font-bold text-emerald-700">
+        </td>
+        <td class="px-2 py-2">
+          <select id="editMedioPago-${o.id}" class="w-full text-xs p-1 border rounded bg-white">
+            <option value="Efectivo" ${o.medio_pago === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+            <option value="Tarjeta" ${o.medio_pago === 'Tarjeta' ? 'selected' : ''}>Tarjeta</option>
+            <option value="Transferencia" ${o.medio_pago === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
+          </select>
+        </td>
+        <td class="px-2 py-2 text-center">
+          <div class="flex flex-col gap-1 items-center">
+            <button onclick="guardarEdicionFila(${o.id})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-1 px-2 rounded transition">
+              💾 Guardar
+            </button>
+            <button onclick="cancelarEdicionFila()" class="w-full bg-slate-300 hover:bg-slate-400 text-slate-700 text-xs font-bold py-1 px-2 rounded transition">
+              ✖ Cancelar
+            </button>
+          </button>
+            <button onclick="eliminarRegistro(${o.id})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-1 px-2 rounded transition">
+              🗑️ Eliminar 
+            </button>
+          </div>
+        </td>
+      `;
+    }
+
+    // --- 3. ACCIONES DE EDICIÓN EN LÍNEA ---
+    function activarEdicionFila(id) {
+      idEditandoActualmente = id;
+      cargarRegistros();
+    }
+
+    function cancelarEdicionFila() {
+      idEditandoActualmente = null;
+      cargarRegistros();
+    }
+
+    function calcularIvaEnLinea(id) {
+      const neto = parseFloat(document.getElementById(`editNeto-${id}`).value) || 0;
+      document.getElementById(`editTotal-${id}`).value = Math.round(neto * 1.19);
+    }
+
+    async function guardarEdicionFila(id) {
+      const datosActualizados = {
+        nombre_empresa: document.getElementById(`editEmpresa-${id}`).value.trim(),
+        patente: document.getElementById(`editPatente-${id}`).value.trim().toUpperCase(),
+        marca: document.getElementById(`editMarca-${id}`).value.trim(),
+        detalle: document.getElementById(`editDetalle-${id}`).value.trim(),
+        valor_neto: parseFloat(document.getElementById(`editNeto-${id}`).value) || 0,
+        valor_total: parseFloat(document.getElementById(`editTotal-${id}`).value) || 0,
+        medio_pago: document.getElementById(`editMedioPago-${id}`).value
+      };
 
       const { error } = await client
         .from('ordenes')
-        .delete()
+        .update(datosActualizados)
         .eq('id', id);
 
       if (error) {
-        alert('Error al eliminar: ' + error.message);
+        alert('Error al actualizar: ' + error.message);
       } else {
-        alert('Orden eliminada correctamente.');
+        idEditandoActualmente = null;
         cargarRegistros();
       }
     }
 
-    // --- 4. EXPORTAR A EXCEL (CSV) ---
-    async function exportarExcel() {
-      const { data: ordenes, error } = await client
-        .from('ordenes')
-        .select('*')
-        .order('id', { ascending: false });
+    // --- 4. ELIMINAR Y EXPORTAR ---
+    async function eliminarRegistro(id) {
+      if (!confirm(`¿Está seguro de que desea eliminar la orden #${id}?`)) return;
+
+      const { error } = await client.from('ordenes').delete().eq('id', id);
 
       if (error) {
-        alert('Error al obtener datos para exportar.');
-        return;
+        alert('Error al eliminar: ' + error.message);
+      } else {
+        cargarRegistros();
       }
+    }
+
+    async function exportarExcel() {
+      const { data: ordenes, error } = await client.from('ordenes').select('*').order('id', { ascending: false });
+
+      if (error) return alert('Error al obtener datos.');
 
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       csvContent += "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
@@ -274,79 +345,13 @@
       document.body.removeChild(link);
     }
 
-    // --- 5. NOTIFICACIONES EN TIEMPO REAL (REALTIME) ---
-    function reproducirSonidoNotificacion() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
-
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-      } catch (e) {
-        console.log("Audio no permitido aún");
-      }
-    }
-
-    function mostrarToastNuevoVale(vale) {
-      const container = document.getElementById("toastContainer");
-      
-      const toast = document.createElement("div");
-      toast.className = "pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all transform translate-y-5 opacity-0 duration-300";
-      
-      toast.innerHTML = `
-        <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-          </svg>
-        </div>
-        <div>
-          <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400">¡Nuevo Vale Registrado!</h4>
-          <p class="text-xs text-slate-300">Vale #${vale.id} - Patente: <span class="font-bold text-white">${vale.patente || 'S/N'}</span></p>
-        </div>
-      `;
-
-      container.appendChild(toast);
-
-      setTimeout(() => toast.classList.remove("translate-y-5", "opacity-0"), 50);
-
-      setTimeout(() => {
-        toast.classList.add("opacity-0", "translate-y-2");
-        setTimeout(() => toast.remove(), 300);
-      }, 4000);
-    }
-
+    // --- 5. REALTIME ---
     client
       .channel('cambios-vales')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ordenes' }, (payload) => {
-        console.log('¡Nuevo registro en tiempo real!', payload);
-        const nuevoVale = payload.new;
-
-        reproducirSonidoNotificacion();
-        mostrarToastNuevoVale(nuevoVale);
-
-        if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
-          new Notification("Nuevo Vale Ingresado 🚗", {
-            body: `Vale #${nuevoVale.id} | Patente: ${nuevoVale.patente || ''} - Total: $${(nuevoVale.valor_total || 0).toLocaleString('es-CL')}`,
-            icon: 'logooriginal.png'
-          });
-        }
-
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, () => {
         cargarRegistros();
       })
-      .subscribe((status) => {
-        console.log('Estado Realtime:', status);
-      });
+      .subscribe();
   </script>
 </body>
 </html>
