@@ -108,6 +108,7 @@
 
     let listaOrdenes = [];
     let idEditandoActualmente = null;
+    let idNuevoValeReciente = null; // Guardará el ID del último vale ingresado
 
     const loginModal = document.getElementById('loginModal');
     const loginForm = document.getElementById('loginForm');
@@ -180,12 +181,19 @@
       ordenes.forEach(o => {
         const tr = document.createElement('tr');
         tr.id = `fila-${o.id}`;
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-        
+
         if (idEditandoActualmente === o.id) {
           renderFilaEditable(tr, o);
         } else {
           renderFilaNormal(tr, o);
+        }
+
+        // Si es el vale recién ingresado, aplicar la animación/resaltado en verde
+        if (idNuevoValeReciente === o.id) {
+          tr.classList.add('bg-emerald-100', 'transition-colors', 'duration-1000');
+          setTimeout(() => {
+            tr.classList.remove('bg-emerald-100');
+          }, 4000);
         }
         
         tablaBody.appendChild(tr);
@@ -194,9 +202,16 @@
 
     // MODO LECTURA NORMAL DE LA FILA
     function renderFilaNormal(tr, o) {
-      const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
+      const fechaFormateada = o.created_at ? new Date(o.created_at.split('T')[0] + 'T00:00:00').toLocaleDateString('es-CL') : 'N/A';
+      const esReciente = idNuevoValeReciente === o.id;
+
+      tr.className = `hover:bg-slate-50 transition border-b border-slate-100 ${esReciente ? 'bg-emerald-50 font-medium' : ''}`;
+      
       tr.innerHTML = `
-        <td class="px-3 py-3 text-sm font-semibold text-slate-900">#${o.id}</td>
+        <td class="px-3 py-3 text-sm font-semibold text-slate-900">
+          #${o.id}
+          ${esReciente ? '<span class="ml-1 px-1.5 py-0.5 text-[10px] bg-emerald-600 text-white rounded-full uppercase font-bold animate-pulse">Nuevo</span>' : ''}
+        </td>
         <td class="px-3 py-3 text-sm text-slate-500">${fechaFormateada}</td>
         <td class="px-3 py-3 text-sm">
           <div class="font-medium text-slate-900">${o.nombre_empresa || 'S/N'}</div>
@@ -217,6 +232,10 @@
           <div class="flex items-center justify-center gap-1">
             <button onclick="activarEdicionFila(${o.id})" class="text-slate-600 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-slate-200 transition font-bold text-lg leading-none" title="Editar vale">
               ⋮
+            </button>
+            <button onclick="eliminarRegistro(${o.id})" class="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition" title="Eliminar vale">
+              🗑️
+            </button>
           </div>
         </td>
       `;
@@ -225,7 +244,7 @@
     // MODO EDICIÓN DIRECTO EN LA TABLA
     function renderFilaEditable(tr, o) {
       tr.className = "bg-amber-50/60 border-b border-amber-200";
-      const fechaFormateada = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
+      const fechaFormateada = o.created_at ? new Date(o.created_at.split('T')[0] + 'T00:00:00').toLocaleDateString('es-CL') : 'N/A';  
       
       tr.innerHTML = `
         <td class="px-2 py-2 text-xs font-bold text-slate-900">#${o.id}</td>
@@ -261,10 +280,6 @@
             <button onclick="cancelarEdicionFila()" class="w-full bg-slate-300 hover:bg-slate-400 text-slate-700 text-xs font-bold py-1 px-2 rounded transition">
               ✖ Cancelar
             </button>
-          </button>
-            <button onclick="eliminarRegistro(${o.id})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-1 px-2 rounded transition">
-              🗑️ Eliminar 
-            </button>
           </div>
         </td>
       `;
@@ -297,10 +312,11 @@
         medio_pago: document.getElementById(`editMedioPago-${id}`).value
       };
 
-      const { error } = await client
+      const { data, error } = await client
         .from('ordenes')
         .update(datosActualizados)
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) {
         alert('Error al actualizar: ' + error.message);
@@ -332,7 +348,7 @@
       csvContent += "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
 
       ordenes.forEach(o => {
-        const fecha = o.created_at ? new Date(o.created_at).toLocaleDateString('es-CL') : 'N/A';
+        const fecha = o.created_at ? new Date(o.created_at.split('T')[0] + 'T00:00:00').toLocaleDateString('es-CL') : 'N/A';
         csvContent += `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ''}";${o.valor_neto || 0};${o.valor_total || 0};"${o.medio_pago}"\n`;
       });
 
@@ -345,13 +361,72 @@
       document.body.removeChild(link);
     }
 
-    // --- 5. REALTIME ---
+    // --- 5. NOTIFICACIONES Y REALTIME MEJORADO ---
+    function reproducirSonidoNotificacion() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } catch (e) {
+        console.log("Audio no permitido aún");
+      }
+    }
+
+    function mostrarToastNuevoVale(vale) {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = "pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all transform translate-y-5 opacity-0 duration-300";
+      
+      toast.innerHTML = `
+        <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400">¡Nuevo Vale Registrado!</h4>
+          <p class="text-xs text-slate-300">Vale #${vale.id} - Patente: <span class="font-bold text-white">${vale.patente || 'S/N'}</span></p>
+        </div>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove("translate-y-5", "opacity-0"), 50);
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // SUSCRIPCIÓN EN TIEMPO REAL
     client
-      .channel('cambios-vales')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, () => {
+      .channel('cambios-vales-admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, (payload) => {
+        console.log('Cambio detectado en tiempo real:', payload);
+
+        if (payload.eventType === 'INSERT') {
+          idNuevoValeReciente = payload.new.id; // Marcar ID del vale recién ingresado
+          reproducirSonidoNotificacion();
+          mostrarToastNuevoVale(payload.new);
+        }
+
         cargarRegistros();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Estado Realtime Admin:', status);
+      });
   </script>
 </body>
 </html>
