@@ -3,429 +3,493 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Informe Técnico de Geometría - Alineaciones Bustamante</title>
-  <link rel="icon" type="image/png" href="logooriginal.png">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Panel Administrador - Órdenes de Trabajo</title>
+  
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Google Fonts (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
-    @media print {
-      .no-print { display: none !important; }
-      body { background-color: #fff !important; padding: 0 !important; }
-      .print-shadow-none { shadow: none !important; border: none !important; }
-      input, select, textarea { border: none !important; background: transparent !important; appearance: none; padding: 0 !important; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #334155;
+    }
+    .card-dashboard {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+    .table-custom th {
+      background-color: #f8fafc;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      font-weight: 700;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .table-custom td {
+      vertical-align: middle;
+      font-size: 0.875rem;
+    }
+    .badge-soft-success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    .badge-soft-primary {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    .badge-soft-purple {
+      background-color: #f3e8ff;
+      color: #6b21a8;
+    }
+    .row-highlight-new {
+      animation: highlightFade 4s ease-out forwards;
+    }
+    @keyframes highlightFade {
+      0% { background-color: #d1fae5; }
+      100% { background-color: transparent; }
+    }
+    .btn-action {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
+<body>
 
-  <!-- Modal de Autenticación Genérico -->
-  <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200">
-      <div class="text-center mb-6">
-        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">🔑</div>
-        <h2 class="text-lg font-bold text-slate-900">Informe de Geometría</h2>
-        <h3 class="text-md font-semibold text-slate-700">Alineaciones Bustamante</h3>
-        <p class="text-xs text-slate-500 mt-1">Ingresa con credenciales del taller</p>
+  <!-- CONTENEDOR DE TOASTS (NOTIFICACIONES EN TIEMPO REAL) -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;">
+    <div id="liveToast" class="toast align-items-center text-bg-dark border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body d-flex items-center gap-2">
+          <i class="bi bi-bell-fill text-success fs-5"></i>
+          <div>
+            <strong class="d-block text-success-emphasis" id="toastTitle">¡Nuevo Vale!</strong>
+            <span id="toastBody" class="small text-light-50">Se ha generado un nuevo registro.</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
-      
-      <form id="loginForm" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase">Correo Electrónico</label>
-          <input type="email" id="loginEmail" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="usuario@taller.cl">
+    </div>
+  </div>
+
+  <!-- MODAL LOGIN (Muestra al inicio si no hay sesión) -->
+  <div class="modal fade" id="loginModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-body p-4 p-md-5">
+          <div class="text-center mb-4">
+            <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex p-3 mb-2">
+              <i class="bi bi-shield-lock-fill fs-2"></i>
+            </div>
+            <h4 class="fw-bold mb-1">Acceso Administrador</h4>
+            <p class="text-muted small">Ingresa tus credenciales para gestionar el sistema</p>
+          </div>
+          <form id="loginForm">
+            <div class="mb-3">
+              <label class="form-label text-uppercase fs-7 fw-bold text-muted">Correo Electrónico</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                <input type="email" id="loginEmail" class="form-control border-start-0" required placeholder="admin@empresa.cl">
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label text-uppercase fs-7 fw-bold text-muted">Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key"></i></span>
+                <input type="password" id="loginPassword" class="form-control border-start-0" required placeholder="••••••••">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-full py-2.5 fw-bold shadow-sm rounded-3">
+              Iniciar Sesión <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </form>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase">Contraseña</label>
-          <input type="password" id="loginPassword" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="••••••••">
-        </div>
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">
-          Iniciar Sesión
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR PRINCIPAL -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-3">
+    <div class="container-fluid px-md-5">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark" href="#">
+        <span class="bg-primary text-white rounded-3 p-1.5 d-inline-flex"><i class="bi bi-receipt-cutoff"></i></span>
+        <span>ControlVales <span class="badge bg-primary-subtle text-primary fs-8 font-normal ms-1">Admin</span></span>
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        <button onclick="exportarExcel()" class="btn btn-outline-success btn-sm font-medium d-flex align-items-center gap-2 rounded-2">
+          <i class="bi bi-file-earmark-spreadsheet"></i> Exportar CSV
         </button>
-      </form>
+        <button id="btnCerrarSesion" class="btn btn-light btn-sm text-secondary font-medium d-flex align-items-center gap-1 rounded-2 border">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </div>
     </div>
-  </div>
+  </nav>
 
-  <!-- Botones de Navegación y Cerrar Sesión -->
-  <div class="flex justify-between items-center w-full max-w-5xl mx-auto mb-4 no-print">
-    <button id="btnCerrarSesion" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1">
-      🚪 Cerrar Sesión
-    </button>
-    <div class="flex gap-2">
-      <a href="vales.html" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
-        🎟️ Vales de Servicio
-      </a>
-      <a href="admin.html" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
-        ⚙️ Administración
-      </a>
-    </div>
-  </div>
-
-  <!-- Contenedor Principal del Informe -->
-  <div class="w-full max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none my-auto">
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="container-fluid px-md-5 py-4">
     
-    <!-- Encabezado con Logo y Folio -->
-    <div class="border-b pb-4 border-slate-200 mb-6 flex justify-between items-start">
-      <div class="flex items-center space-x-4">
-        <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-16 object-contain">
-        <div>
-          <h1 class="text-xl font-bold text-slate-800 tracking-tight uppercase">Informe Técnico de Geometría y Alineación</h1>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Alineaciones Bustamante</p>
-        </div>
+    <!-- TITULO DE PAGINA -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+      <div>
+        <h3 class="fw-bold text-dark mb-0">Órdenes de Trabajo</h3>
+        <p class="text-muted small mb-0">Gestión de datos y recepción en tiempo real</p>
       </div>
-      <div class="text-right">
-        <div class="bg-slate-50 border border-slate-200 p-2 rounded-lg text-center min-w-[120px]">
-          <span class="block text-[10px] font-bold text-slate-400 uppercase">FOLIO INFORME</span>
-          <span id="folio" class="text-base font-bold text-indigo-600">FOL-0000</span>
-        </div>
-        <div class="mt-2">
-          <input type="date" id="fecha" class="text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 text-slate-700">
+    </div>
+
+    <!-- TARJETA FILTROS Y BÚSQUEDA -->
+    <div class="card card-dashboard mb-4">
+      <div class="card-body p-3">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label text-uppercase fs-8 font-bold text-muted mb-1">Búsqueda rápida</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+              <input type="text" id="buscarGeneral" class="form-control border-start-0" placeholder="Buscar por Patente, Empresa o Detalle de trabajo...">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-uppercase fs-8 font-bold text-muted mb-1">Medio de Pago</label>
+            <select id="filtrarPago" class="form-select form-select-sm">
+              <option value="Todos">Todos los métodos</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
 
-    <form id="informeForm">
-      <!-- Datos del Vehículo y Cliente -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cliente / Empresa</label>
-          <input type="text" id="cliente" placeholder="Nombre o Empresa" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Patente</label>
-          <div class="relative">
-            <i data-lucide="credit-card" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="patente" placeholder="ABCD12" required class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono tracking-wider text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all uppercase">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Vehículo / Modelo</label>
-          <div class="relative">
-            <i data-lucide="car" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="modelo" placeholder="EJ: AUDI A3" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all uppercase">
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Técnico Operador</label>
-          <input type="text" id="tecnico" placeholder="Nombre Técnico" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all">
-        </div>
+    <!-- TABLA PRINCIPAL DE DATOS -->
+    <div class="card card-dashboard overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="ps-3">Folio</th>
+              <th scope="col">Fecha</th>
+              <th scope="col">Empresa / Vehículo</th>
+              <th scope="col">Detalle</th>
+              <th scope="col">Neto</th>
+              <th scope="col">Total</th>
+              <th scope="col">Pago</th>
+              <th scope="col" class="text-end pe-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
       </div>
+    </div>
+  </main>
 
-      <!-- DIAGRAMA INTERACTIVO Y MEDICIONES -->
-      <div class="relative w-full h-[580px] bg-slate-50 border border-slate-200 rounded-xl mb-6 flex items-center justify-center overflow-hidden">
-        
-        <!-- SVG Vista Superior Vehículo -->
-        <svg class="h-[480px] opacity-80" viewBox="0 0 200 400" fill="none">
-          <rect x="35" y="30" width="130" height="340" rx="40" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/>
-          <path d="M 50 110 Q 100 95 150 110 L 142 140 Q 100 135 58 140 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-          <path d="M 55 290 Q 100 300 145 290 L 140 315 Q 100 320 60 315 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
-          <rect x="52" y="145" width="96" height="135" rx="10" fill="#94a3b8" opacity="0.4"/>
-          <rect x="18" y="55" width="22" height="50" rx="6" fill="#1e293b"/>
-          <rect x="160" y="55" width="22" height="50" rx="6" fill="#1e293b"/>
-          <rect x="18" y="295" width="22" height="50" rx="6" fill="#1e293b"/>
-          <rect x="160" y="295" width="22" height="50" rx="6" fill="#1e293b"/>
-          <line x1="40" y1="80" x2="160" y2="80" stroke="#475569" stroke-width="2" stroke-dasharray="4"/>
-          <line x1="40" y1="320" x2="160" y2="320" stroke="#475569" stroke-width="2" stroke-dasharray="4"/>
-          <line x1="100" y1="80" x2="100" y2="320" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6"/>
-        </svg>
+  <!-- Bootstrap 5.3 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- DELANTERA IZQUIERDA -->
-        <div class="absolute top-4 left-4 bg-white border border-slate-200 rounded-lg p-3 shadow-sm w-64">
-          <div class="flex justify-between items-center mb-2 border-b pb-1">
-            <span class="text-xs font-bold text-slate-800 uppercase">Delantera Izq.</span>
-            <div class="flex gap-1">
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-emerald-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-amber-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-rose-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-1 text-[10px] font-bold text-slate-400 text-center mb-1">
-            <span>MEDIDA</span><span>ANTES</span><span>DESPUÉS</span>
-          </div>
-          <div class="space-y-1.5 text-xs">
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Converg.</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-0 15">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+0 05">
-            </div>
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Cámber</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-1 20">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-0 45">
-            </div>
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Cáster</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+2 50">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+3 10">
-            </div>
-          </div>
-        </div>
-
-        <!-- DELANTERA DERECHA -->
-        <div class="absolute top-4 right-4 bg-white border border-slate-200 rounded-lg p-3 shadow-sm w-64">
-          <div class="flex justify-between items-center mb-2 border-b pb-1">
-            <span class="text-xs font-bold text-slate-800 uppercase">Delantera Der.</span>
-            <div class="flex gap-1">
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-emerald-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-amber-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-rose-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-1 text-[10px] font-bold text-slate-400 text-center mb-1">
-            <span>MEDIDA</span><span>ANTES</span><span>DESPUÉS</span>
-          </div>
-          <div class="space-y-1.5 text-xs">
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Converg.</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-0 10">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+0 05">
-            </div>
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Cámber</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-0 40">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-0 45">
-            </div>
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Cáster</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+3 00">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+3 15">
-            </div>
-          </div>
-        </div>
-
-        <!-- TRASERA IZQUIERDA -->
-        <div class="absolute bottom-4 left-4 bg-white border border-slate-200 rounded-lg p-3 shadow-sm w-64">
-          <div class="flex justify-between items-center mb-2 border-b pb-1">
-            <span class="text-xs font-bold text-slate-800 uppercase">Trasera Izq.</span>
-            <div class="flex gap-1">
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-emerald-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-amber-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-rose-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-1 text-[10px] font-bold text-slate-400 text-center mb-1">
-            <span>MEDIDA</span><span>ANTES</span><span>DESPUÉS</span>
-          </div>
-          <div class="space-y-1.5 text-xs">
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Converg.</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+0 08">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+0 02">
-            </div>
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Cámber</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-1 15">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-1 00">
-            </div>
-          </div>
-        </div>
-
-        <!-- TRASERA DERECHA -->
-        <div class="absolute bottom-4 right-4 bg-white border border-slate-200 rounded-lg p-3 shadow-sm w-64">
-          <div class="flex justify-between items-center mb-2 border-b pb-1">
-            <span class="text-xs font-bold text-slate-800 uppercase">Trasera Der.</span>
-            <div class="flex gap-1">
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-emerald-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-amber-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-              <button type="button" class="w-3.5 h-3.5 rounded-full bg-rose-500 opacity-30 hover:opacity-100 transition status-btn" onclick="setStatus(this)"></button>
-            </div>
-          </div>
-          <div class="grid grid-cols-3 gap-1 text-[10px] font-bold text-slate-400 text-center mb-1">
-            <span>MEDIDA</span><span>ANTES</span><span>DESPUÉS</span>
-          </div>
-          <div class="space-y-1.5 text-xs">
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Converg.</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+0 05">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="+0 02">
-            </div>
-            <div class="grid grid-cols-3 gap-1 items-center">
-              <span class="text-slate-600 font-medium">Cámber</span>
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-1 05">
-              <input type="text" class="auto-format px-1 py-0.5 text-center bg-slate-50 border rounded font-mono text-xs" placeholder="-1 00">
-            </div>
-          </div>
-        </div>
-
-        <!-- ÁNGULO DE EMPUJE -->
-        <div class="absolute bottom-4 bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-sm flex items-center space-x-3 text-xs">
-          <span class="font-bold text-slate-700">ÁNGULO DE EMPUJE:</span>
-          <span class="text-slate-500">Antes:</span>
-          <input type="text" class="auto-format w-14 px-1 py-0.5 text-center bg-slate-50 border rounded font-mono font-bold" placeholder="0 05">
-          <span class="text-slate-500">Después:</span>
-          <input type="text" class="auto-format w-14 px-1 py-0.5 text-center bg-slate-50 border rounded font-mono font-bold" placeholder="0 00">
-        </div>
-
-      </div>
-
-      <!-- RESULTADO Y OBSERVACIONES -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Diagnóstico General</label>
-          <select id="estado_general" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-600">
-            <option value="ok">🟢 Geometría en Tolerancia Óptima</option>
-            <option value="warning">🟡 Alineado con Desgaste / Observaciones</option>
-            <option value="danger">🔴 Desviación Severa / Daño Estructural</option>
-          </select>
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Observaciones Técnicas</label>
-          <textarea id="observaciones" rows="2" placeholder="Detalles sobre bujes, deformación de chasis, desgaste de neumáticos..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-indigo-600"></textarea>
-        </div>
-      </div>
-
-      <!-- PIE DE PÁGINA Y FIRMAS -->
-      <div class="border-t border-slate-200 pt-6 mt-6">
-        <div class="grid grid-cols-2 gap-12 text-center my-4">
-          <div class="border-t border-dashed border-slate-400 pt-2 text-xs font-bold text-slate-600">
-            Firma / Timbre Técnico
-          </div>
-          <div class="border-t border-dashed border-slate-400 pt-2 text-xs font-bold text-slate-600">
-            Conforme Recepción Cliente
-          </div>
-        </div>
-        <p class="text-[10px] text-slate-400 text-center mt-6">
-          Alineaciones Bustamante • Certificado de geometría y alineación de trenes bajo tolerancias de fabricante. Garantía válida por 30 días o 1,000 km.
-        </p>
-      </div>
-
-      <!-- BOTONES DE ACCIÓN -->
-      <div class="mt-6 flex justify-end gap-3 no-print">
-        <button type="button" onclick="window.print()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center gap-2">
-          <i data-lucide="printer" class="w-4 h-4"></i>
-          <span>Imprimir / PDF</span>
-        </button>
-        <button type="submit" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-md transition flex items-center gap-2">
-          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-          <span>Guardar Informe</span>
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <div class="text-center text-xs text-slate-400 py-4 no-print">
-    Alineaciones Bustamante © 2026
-  </div>
-
+  <!-- SCRIPT LÓGICA SUPABASE -->
   <script>
-    // Lucide Icons
-    lucide.createIcons();
-
-    // Inicializar Supabase
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
+
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // DOM Elements
-    const loginModal = document.getElementById('loginModal');
+    let listaOrdenes = [];
+    let idEditandoActualmente = null;
+    let idNuevoValeReciente = null;
+
+    // Componentes Bootstrap Modales y Toasts
+    let bsLoginModal;
+    let bsToast;
+
     const loginForm = document.getElementById('loginForm');
     const btnCerrarSesion = document.getElementById('btnCerrarSesion');
-    const form = document.getElementById('informeForm');
+    const tablaBody = document.getElementById('tablaBody');
+    const buscarGeneralInput = document.getElementById('buscarGeneral');
+    const filtrarPagoSelect = document.getElementById('filtrarPago');
 
-    document.getElementById('fecha').valueAsDate = new Date();
+    document.addEventListener('DOMContentLoaded', () => {
+      bsLoginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+      bsToast = new bootstrap.Toast(document.getElementById('liveToast'), { delay: 4000 });
 
-    // Autenticación
+      verificarSesion();
+
+      if (buscarGeneralInput) buscarGeneralInput.addEventListener('input', cargarRegistros);
+      if (filtrarPagoSelect) filtrarPagoSelect.addEventListener('change', cargarRegistros);
+    });
+
+    // Formatear Fecha
+    function formatearFechaChile(fechaIso) {
+      if (!fechaIso) return 'N/A';
+      const soloFecha = fechaIso.split('T')[0];
+      const partes = soloFecha.split('-');
+      if (partes.length !== 3) return 'N/A';
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    // Auth
     async function verificarSesion() {
       const { data: { session } } = await client.auth.getSession();
       if (session) {
-        loginModal.classList.add('hidden');
+        bsLoginModal.hide();
+        cargarRegistros();
       } else {
-        loginModal.classList.remove('hidden');
+        bsLoginModal.show();
       }
     }
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
 
-      const { error } = await client.auth.signInWithPassword({ email, password });
-      if (error) {
-        alert('Credenciales incorrectas: ' + error.message);
-      } else {
-        loginModal.classList.add('hidden');
-      }
-    });
-
-    btnCerrarSesion.addEventListener('click', async () => {
-      await client.auth.signOut();
-      window.location.reload();
-    });
-
-    verificarSesion();
-
-    // Semáforo Interactivo
-    function setStatus(btn) {
-      const parent = btn.parentElement;
-      const buttons = parent.querySelectorAll('.status-btn');
-      const isSelected = btn.classList.contains('ring-2');
-
-      buttons.forEach(b => b.classList.remove('ring-2', 'ring-offset-1', 'ring-slate-800', 'opacity-100'));
-      buttons.forEach(b => b.classList.add('opacity-30'));
-
-      if (!isSelected) {
-        btn.classList.remove('opacity-30');
-        btn.classList.add('opacity-100', 'ring-2', 'ring-offset-1', 'ring-slate-800');
-      }
-    }
-
-    // Formateo automático (° ' " /)
-    document.querySelectorAll('.auto-format').forEach(input => {
-      input.addEventListener('blur', function() {
-        let val = this.value.trim();
-        if (!val) return;
-
-        if (val.includes('/')) {
-          let parts = val.split('/');
-          this.value = parts.map(p => formatValue(p.trim())).join(' / ');
+        const { error } = await client.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert('Credenciales inválidas: ' + error.message);
         } else {
-          this.value = formatValue(val);
+          bsLoginModal.hide();
+          cargarRegistros();
         }
       });
-    });
-
-    function formatValue(val) {
-      if (!val) return '';
-      if (/^[+-]?\d+\s+\d+$/.test(val)) {
-        let parts = val.split(/\s+/);
-        return `${parts[0]}°${parts[1]}'`;
-      }
-      if (/^[+-]?\d+$/.test(val) && !val.includes('°') && !val.includes('"')) {
-        return `${val}°`;
-      }
-      if (val.endsWith('in') || val.endsWith('pulg')) {
-        return val.replace(/(in|pulg)/g, '').trim() + '"';
-      }
-      return val;
     }
 
-    // Guardar Informe en Supabase
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    if (btnCerrarSesion) {
+      btnCerrarSesion.addEventListener('click', async () => {
+        await client.auth.signOut();
+        window.location.reload();
+      });
+    }
 
-      const patente = document.getElementById('patente').value.toUpperCase().trim();
+    // Cargar Registros
+    async function cargarRegistros() {
+      let query = client.from('ordenes').select('*').order('id', { ascending: false });
+
+      const busqueda = buscarGeneralInput ? buscarGeneralInput.value.trim() : '';
+      if (busqueda) {
+        query = query.or(`patente.ilike.%${busqueda}%,nombre_empresa.ilike.%${busqueda}%,detalle.ilike.%${busqueda}%`);
+      }
+
+      const pagoFiltro = filtrarPagoSelect ? filtrarPagoSelect.value : 'Todos';
+      if (pagoFiltro !== 'Todos') {
+        query = query.eq('medio_pago', pagoFiltro);
+      }
+
+      const { data: ordenes, error } = await query;
+      if (error) return console.error('Error al cargar:', error);
+
+      listaOrdenes = ordenes || [];
+      if (!tablaBody) return;
+      tablaBody.innerHTML = '';
+
+      if (!ordenes || ordenes.length === 0) {
+        tablaBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted small">No se encontraron órdenes registradas.</td></tr>`;
+        return;
+      }
+
+      ordenes.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.id = `fila-${o.id}`;
+
+        if (idEditandoActualmente === o.id) {
+          renderFilaEditable(tr, o);
+        } else {
+          renderFilaNormal(tr, o);
+        }
+
+        if (idNuevoValeReciente === o.id) {
+          tr.classList.add('row-highlight-new');
+        }
+        
+        tablaBody.appendChild(tr);
+      });
+    }
+
+    // Render Normal
+    function renderFilaNormal(tr, o) {
+      const fechaFormateada = formatearFechaChile(o.created_at);
+      const esReciente = idNuevoValeReciente === o.id;
+
+      let badgePagoClass = 'badge-soft-success';
+      if (o.medio_pago === 'Tarjeta') badgePagoClass = 'badge-soft-primary';
+      if (o.medio_pago === 'Transferencia') badgePagoClass = 'badge-soft-purple';
+
+      tr.innerHTML = `
+        <td class="ps-3 fw-bold text-dark">
+          #${o.id}
+          ${esReciente ? '<span class="badge bg-success ms-1 fs-9 text-uppercase">Nuevo</span>' : ''}
+        </td>
+        <td class="text-secondary small">${fechaFormateada}</td>
+        <td>
+          <div class="fw-semibold text-dark">${o.nombre_empresa || 'S/N'}</div>
+          <div class="text-muted fs-8">${o.marca || ''} • <span class="badge bg-light text-dark border font-mono">${o.patente || 'S/P'}</span></div>
+        </td>
+        <td class="text-secondary small text-wrap" style="max-width: 250px;">
+          ${o.detalle || '<span class="text-muted italic">Sin detalle</span>'}
+        </td>
+        <td class="fw-semibold text-dark">$${(o.valor_neto || 0).toLocaleString('es-CL')}</td>
+        <td class="fw-bold text-dark">$${(o.valor_total || 0).toLocaleString('es-CL')}</td>
+        <td>
+          <span class="badge ${badgePagoClass} px-2 py-1 font-medium">${o.medio_pago || 'Efectivo'}</span>
+        </td>
+        <td class="text-end pe-3">
+          <button onclick="activarEdicionFila(${o.id})" class="btn btn-light btn-action text-secondary border me-1" title="Editar">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button onclick="eliminarRegistro(${o.id})" class="btn btn-light btn-action text-danger border" title="Eliminar">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      `;
+    }
+
+    // Render Editable en línea
+    function renderFilaEditable(tr, o) {
+      tr.className = "table-warning align-middle";
+      const fechaFormateada = formatearFechaChile(o.created_at);
       
-      const payload = {
-        cliente: document.getElementById('cliente').value,
-        patente: patente,
-        modelo: document.getElementById('modelo').value,
-        tecnico: document.getElementById('tecnico').value,
-        fecha: document.getElementById('fecha').value,
-        estado_general: document.getElementById('estado_general').value,
-        observaciones: document.getElementById('observaciones').value,
+      tr.innerHTML = `
+        <td class="ps-3 fw-bold">#${o.id}</td>
+        <td class="small text-muted">${fechaFormateada}</td>
+        <td>
+          <input type="text" id="editEmpresa-${o.id}" value="${o.nombre_empresa || ''}" placeholder="Empresa" class="form-control form-control-sm mb-1">
+          <div class="d-flex gap-1">
+            <input type="text" id="editPatente-${o.id}" value="${o.patente || ''}" placeholder="Patente" class="form-control form-control-sm text-uppercase fw-bold">
+            <input type="text" id="editMarca-${o.id}" value="${o.marca || ''}" placeholder="Marca" class="form-control form-control-sm">
+          </div>
+        </td>
+        <td>
+          <textarea id="editDetalle-${o.id}" rows="2" class="form-control form-control-sm">${o.detalle || ''}</textarea>
+        </td>
+        <td>
+          <input type="number" id="editNeto-${o.id}" value="${o.valor_neto || 0}" oninput="calcularIvaEnLinea(${o.id})" class="form-control form-control-sm fw-bold">
+        </td>
+        <td>
+          <input type="number" id="editTotal-${o.id}" value="${o.valor_total || 0}" class="form-control form-control-sm fw-bold text-success">
+        </td>
+        <td>
+          <select id="editMedioPago-${o.id}" class="form-select form-select-sm">
+            <option value="Efectivo" ${o.medio_pago === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+            <option value="Tarjeta" ${o.medio_pago === 'Tarjeta' ? 'selected' : ''}>Tarjeta</option>
+            <option value="Transferencia" ${o.medio_pago === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
+          </select>
+        </td>
+        <td class="text-end pe-3">
+          <div class="d-flex gap-1 justify-content-end">
+            <button onclick="guardarEdicionFila(${o.id})" class="btn btn-sm btn-success" title="Guardar">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button onclick="cancelarEdicionFila()" class="btn btn-sm btn-secondary" title="Cancelar">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </td>
+      `;
+    }
+
+    // Acciones Edición
+    function activarEdicionFila(id) {
+      idEditandoActualmente = id;
+      cargarRegistros();
+    }
+
+    function cancelarEdicionFila() {
+      idEditandoActualmente = null;
+      cargarRegistros();
+    }
+
+    function calcularIvaEnLinea(id) {
+      const neto = parseFloat(document.getElementById(`editNeto-${id}`).value) || 0;
+      document.getElementById(`editTotal-${id}`).value = Math.round(neto * 1.19);
+    }
+
+    async function guardarEdicionFila(id) {
+      const datosActualizados = {
+        nombre_empresa: document.getElementById(`editEmpresa-${id}`).value.trim(),
+        patente: document.getElementById(`editPatente-${id}`).value.trim().toUpperCase(),
+        marca: document.getElementById(`editMarca-${id}`).value.trim(),
+        detalle: document.getElementById(`editDetalle-${id}`).value.trim(),
+        valor_neto: parseFloat(document.getElementById(`editNeto-${id}`).value) || 0,
+        valor_total: parseFloat(document.getElementById(`editTotal-${id}`).value) || 0,
+        medio_pago: document.getElementById(`editMedioPago-${id}`).value
       };
 
-      const { data, error } = await client
-        .from('informes_geometria')
-        .insert([payload])
-        .select();
+      const { error } = await client.from('ordenes').update(datosActualizados).eq('id', id);
 
       if (error) {
-        alert('Error al guardar el informe: ' + error.message);
+        alert('Error al actualizar: ' + error.message);
       } else {
-        alert(`¡Informe Guardado con Éxito! Folio: FOL-${data[0].id || 'OK'}`);
+        idEditandoActualmente = null;
+        cargarRegistros();
       }
-    });
+    }
+
+    async function eliminarRegistro(id) {
+      if (!confirm(`¿Eliminar la orden #${id}?`)) return;
+
+      const { error } = await client.from('ordenes').delete().eq('id', id);
+      if (error) {
+        alert('Error al eliminar: ' + error.message);
+      } else {
+        cargarRegistros();
+      }
+    }
+
+    // Exportar Excel / CSV
+    async function exportarExcel() {
+      const { data: ordenes, error } = await client.from('ordenes').select('*').order('id', { ascending: false });
+      if (error) return alert('Error al obtener datos.');
+
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "Folio;Fecha;Empresa;Marca;Patente;Detalle;Neto;Total;Medio Pago\n";
+
+      ordenes.forEach(o => {
+        const fecha = formatearFechaChile(o.created_at);
+        csvContent += `${o.id};${fecha};"${o.nombre_empresa}";"${o.marca}";"${o.patente}";"${o.detalle || ''}";${o.valor_neto || 0};${o.valor_total || 0};"${o.medio_pago}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Ordenes_Trabajo_${new Date().toLocaleDateString('es-CL')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Realtime Notifications
+    function mostrarToastNuevoVale(vale) {
+      document.getElementById('toastTitle').textContent = `¡Nuevo Vale #${vale.id}!`;
+      document.getElementById('toastBody').textContent = `Vehículo: ${vale.patente || 'S/N'} (${vale.nombre_empresa || 'Empresa'})`;
+      bsToast.show();
+    }
+
+    client
+      .channel('cambios-vales-admin-bs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          idNuevoValeReciente = payload.new.id;
+          mostrarToastNuevoVale(payload.new);
+        }
+        cargarRegistros();
+      })
+      .subscribe();
   </script>
 </body>
 </html>
