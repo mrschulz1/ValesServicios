@@ -40,7 +40,7 @@
     
     <!-- Encabezado con Logo -->
     <div class="text-center mb-6 border-b border-slate-100 pb-5">
-      <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-2 object-contain" onerror="this.style.display='none'">
+      <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-2 object-contain" onerror="this.style.display='none'">
       <h1 class="text-xl font-bold text-slate-900 tracking-tight">VALES ELECTRÓNICOS DE SERVICIO</h1>
       <p class="text-xs font-medium text-slate-400 mt-0.5">Completa los datos para registrar el Vale</p>
     </div>
@@ -48,7 +48,7 @@
     <!-- Formulario -->
     <form id="formVale" class="space-y-5">
 
-      <!-- Sección 1: Selección de Empresa -->
+      <!-- Selección de Empresa -->
       <div>
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
           Nombre de Empresa <span class="text-slate-400 font-normal">(Selecciona 1 opción)</span>
@@ -96,7 +96,7 @@
         </div>
       </div>
 
-      <!-- Sección 2: Marca y Patente -->
+      <!-- Marca y Patente -->
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label for="marca" class="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
@@ -115,13 +115,13 @@
         </div>
       </div>
 
-      <!-- Sección 3: Detalle del Servicio -->
+      <!-- Detalle del Servicio -->
       <div>
         <label for="detalle" class="block text-xs font-bold text-slate-500 uppercase mb-1">Detalle del Servicio</label>
         <textarea id="detalle" rows="3" required placeholder="Descripción del trabajo realizado..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all resize-none"></textarea>
       </div>
 
-      <!-- Sección 4: Valores Monetarios -->
+      <!-- Valores Monetarios -->
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label for="valor_neto" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Neto ($)</label>
@@ -140,7 +140,7 @@
         </div>
       </div>
 
-      <!-- Sección 5: Medio de Pago -->
+      <!-- Medio de Pago -->
       <div>
         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Medio de Pago</label>
         <div class="grid grid-cols-3 gap-2">
@@ -163,88 +163,107 @@
 
       <!-- Botón de Envío -->
       <div class="pt-2">
-        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+        <button type="submit" id="btnGuardar" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
           <i data-lucide="save" class="w-5 h-5"></i>
-          <span>Guardar Vale de Servicio</span>
+          <span id="btnTexto">Guardar Vale de Servicio</span>
         </button>
       </div>
 
     </form>
 
-    <!-- Pie de página corporativo -->
     <p class="text-center text-xs text-slate-400 mt-6">Alineaciones Bustamante © 2026</p>
   </div>
 
-  <!-- Lucide Icons y Lógica JS -->
+  <!-- Lucide Icons y Lógica de Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <script>
-    // Inicializar Iconos
     lucide.createIcons();
 
-    // -------------------------------------------------------------
-    // CONEXIÓN CON SUPABASE Y LÓGICA DE ENVÍO
-    // (Asegúrate de tener tus variables de cliente configuradas)
-    // -------------------------------------------------------------
+    // =============================================================
+    // 1. CREDENCIALES DE SUPABASE
+    // =============================================================
+    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL
+    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              // Reemplaza por tu anonKey
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // =============================================================
+    // 2. LÓGICA DE CÁLCULO Y ENVÍO A LA BASE DE DATOS
+    // =============================================================
     const form = document.getElementById('formVale');
     const inputNeto = document.getElementById('valor_neto');
     const inputTotal = document.getElementById('valor_total');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const btnTexto = document.getElementById('btnTexto');
 
-    // Cálculo automático de Total según el Neto (opcional)
+    // Cálculo automático del Neto al Total (+19%)
     inputNeto?.addEventListener('input', () => {
       const neto = parseFloat(inputNeto.value) || 0;
-      if (neto > 0) {
-        inputTotal.value = Math.round(neto * 1.19);
-      } else {
-        inputTotal.value = '';
-      }
+      inputTotal.value = neto > 0 ? Math.round(neto * 1.19) : '';
     });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // 1. Validar selección de Empresa
       const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
       if (!empresaRadio) {
         alert('Por favor selecciona una empresa.');
         return;
       }
 
-      // 2. Definir Folio Siguiente (tu lógica actual)
-      let siguienteFolio = 1;
-      if (typeof ultimasOrdenes !== 'undefined' && ultimasOrdenes && ultimasOrdenes.length > 0) {
-        const ultimoId = ultimasOrdenes[0].id;
-        if (ultimoId >= 12900) {
-          siguienteFolio = ultimoId + 1;
+      // Deshabilitar botón durante el proceso
+      btnGuardar.disabled = true;
+      btnTexto.innerText = 'Guardando en base de datos...';
+
+      try {
+        // Consultar el último ID registrado en Supabase para obtener el correlativo
+        const { data: ultimasOrdenes, error: errConsulta } = await client
+          .from('ordenes')
+          .select('id')
+          .order('id', { ascending: false })
+          .limit(1);
+
+        if (errConsulta) throw errConsulta;
+
+        let siguienteFolio = 12900; // Folio inicial por defecto
+        if (ultimasOrdenes && ultimasOrdenes.length > 0) {
+          const ultimoId = ultimasOrdenes[0].id;
+          siguienteFolio = ultimoId >= 12900 ? ultimoId + 1 : 12900;
         }
-      }
 
-      // 3. Estructurar Objeto
-      const datos = {
-        id: siguienteFolio,
-        nombre_empresa: empresaRadio.value,
-        marca: document.getElementById('marca').value,
-        patente: document.getElementById('patente').value.toUpperCase().trim(),
-        detalle: document.getElementById('detalle').value,
-        valor_neto: parseFloat(inputNeto.value) || 0,
-        valor_total: parseFloat(inputTotal.value) || 0,  
-        medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
-      };
+        // Estructura del registro
+        const datos = {
+          id: siguienteFolio,
+          nombre_empresa: empresaRadio.value,
+          marca: document.getElementById('marca').value.toUpperCase().trim(),
+          patente: document.getElementById('patente').value.toUpperCase().trim(),
+          detalle: document.getElementById('detalle').value,
+          valor_neto: parseFloat(inputNeto.value) || 0,
+          valor_total: parseFloat(inputTotal.value) || 0,  
+          medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+        };
 
-      // 4. Inserción en Supabase (Sustituir 'client' por tu instancia de Supabase)
-      if (typeof client !== 'undefined') {
-        const { data, error } = await client
+        // Insertar en la tabla 'ordenes'
+        const { data, error: errInsert } = await client
           .from('ordenes')
           .insert([datos])
           .select();
 
-        if (error) {
-          alert('Error al guardar: ' + error.message);
-        } else {
-          alert(`¡Vale Guardado! Folio Vale: #${data[0].id}`);
-          form.reset();
-        }
-      } else {
-        console.log('Datos preparados para guardar:', datos);
+        if (errInsert) throw errInsert;
+
+        const folioGuardado = data[0].id;
+
+        // Notificación de éxito clara
+        alert(`✅ ¡VALE GUARDADO CON ÉXITO!\n\nNúmero de Folio: #${folioGuardado}\nVehículo: ${datos.marca} (${datos.patente})`);
+
+        form.reset();
+
+      } catch (err) {
+        alert(`❌ Error al guardar el vale: ${err.message}`);
+      } finally {
+        btnGuardar.disabled = false;
+        btnTexto.innerText = 'Guardar Vale de Servicio';
       }
     });
   </script>
