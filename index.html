@@ -3,193 +3,289 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ingreso de Vales de Servicio | Alineaciones Bustamante</title>
+  <title>Sistema de Vales de Servicio | Alineaciones Bustamante</title>
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
-
-  <!-- Tailwind CSS & Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-  </style>
+  <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between p-4 md:p-6">
 
-  <!-- Barra Superior de Navegación -->
-  <div class="max-w-xl mx-auto w-full flex justify-between items-center mb-6">
-    <button id="btnLogout" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all">
-      <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-      <span>Cerrar Sesión</span>
-    </button>
+  <!-- ============================================================= -->
+  <!-- 1. MODAL / PANTALLA DE LOGIN (SE MUESTRA SI NO HAY SESIÓN)     -->
+  <!-- ============================================================= -->
+  <div id="modalLogin" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 md:p-8">
+      <div class="text-center mb-6">
+        <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-3 object-contain" onerror="this.style.display='none'">
+        <h1 class="text-xl font-bold text-slate-900">Acceso al Sistema</h1>
+        <p class="text-xs text-slate-400 mt-1">Inicia sesión para registrar vales de servicio</p>
+      </div>
 
-    <a href="admin.html" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
-      <i data-lucide="settings" class="w-3.5 h-3.5"></i>
-      <span>Administración de Vales</span>
-    </a>
+      <form id="formLogin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Correo Electrónico</label>
+          <div class="relative">
+            <i data-lucide="mail" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="email" id="loginEmail" required placeholder="usuario@taller.cl" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contraseña</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          </div>
+        </div>
+
+        <div id="errorLogin" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-lg"></div>
+
+        <button type="submit" id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span id="btnTextoLogin">Ingresar</span>
+        </button>
+      </form>
+    </div>
   </div>
 
-  <!-- Contenedor Principal del Formulario -->
-  <div class="max-w-xl mx-auto w-full bg-white border border-slate-200/80 rounded-2xl shadow-xl p-6 md:p-8 my-auto">
+  <!-- ============================================================= -->
+  <!-- 2. CONTENIDO PRINCIPAL DEL FORMULARIO DE VALES                -->
+  <!-- ============================================================= -->
+  <div id="contenidoPrivado" class="hidden max-w-xl mx-auto w-full flex-col justify-between flex-1">
     
-    <!-- Encabezado con Logo -->
-    <div class="text-center mb-6 border-b border-slate-100 pb-5">
-      <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-2 object-contain" onerror="this.style.display='none'">
-      <h1 class="text-xl font-bold text-slate-900 tracking-tight">VALES ELECTRÓNICOS DE SERVICIO</h1>
-      <p class="text-xs font-medium text-slate-400 mt-0.5">Completa los datos para registrar el Vale</p>
+    <!-- Barra Superior -->
+    <div class="flex justify-between items-center mb-6">
+      <button id="btnLogout" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+
+      <a href="admin.html" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+        <span>Administración de Vales</span>
+      </a>
     </div>
 
-    <!-- Formulario -->
-    <form id="formVale" class="space-y-5">
-
-      <!-- Selección de Empresa -->
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-          Nombre de Empresa <span class="text-slate-400 font-normal">(Selecciona 1 opción)</span>
-        </label>
-        <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Particular" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Particular</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Senefa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Senefa</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="OD Automotriz" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">OD Automotriz</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Baudet" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Baudet</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Incubo" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Incubo</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Oporto Garces" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Oporto Garces</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Suarez" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Suarez</span>
-          </label>
-
-          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
-            <input type="radio" name="empresa_option" value="Vimont" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Vimont</span>
-          </label>
-        </div>
+    <!-- Contenedor del Formulario -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-6 md:p-8 my-auto">
+      
+      <div class="text-center mb-6 border-b border-slate-100 pb-5">
+        <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-2 object-contain" onerror="this.style.display='none'">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">VALES ELECTRÓNICOS DE SERVICIO</h1>
+        <p class="text-xs font-medium text-slate-400 mt-0.5">Completa los datos para registrar el Vale</p>
       </div>
 
-      <!-- Marca y Patente -->
-      <div class="grid grid-cols-2 gap-3">
+      <form id="formVale" class="space-y-5">
+
+        <!-- Selección de Empresa -->
         <div>
-          <label for="marca" class="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
-          <div class="relative">
-            <i data-lucide="car" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="marca" required placeholder="EJ: AUDI" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase">
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+            Nombre de Empresa <span class="text-slate-400 font-normal">(Selecciona 1 opción)</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Particular" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Particular</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Senefa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Senefa</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="OD Automotriz" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">OD Automotriz</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Baudet" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Baudet</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Incubo" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Incubo</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Oporto Garces" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Oporto Garces</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Suarez" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Suarez</span>
+            </label>
+
+            <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+              <input type="radio" name="empresa_option" value="Vimont" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Vimont</span>
+            </label>
           </div>
         </div>
 
-        <div>
-          <label for="patente" class="block text-xs font-bold text-slate-500 uppercase mb-1">Patente</label>
-          <div class="relative">
-            <i data-lucide="credit-card" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="patente" required placeholder="ABCD12" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-mono tracking-wider focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase">
+        <!-- Marca y Patente -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="marca" class="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
+            <div class="relative">
+              <i data-lucide="car" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="marca" required placeholder="EJ: AUDI" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase">
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Detalle del Servicio -->
-      <div>
-        <label for="detalle" class="block text-xs font-bold text-slate-500 uppercase mb-1">Detalle del Servicio</label>
-        <textarea id="detalle" rows="3" required placeholder="Descripción del trabajo realizado..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all resize-none"></textarea>
-      </div>
-
-      <!-- Valores Monetarios -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label for="valor_neto" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Neto ($)</label>
-          <div class="relative">
-            <i data-lucide="dollar-sign" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="number" id="valor_neto" placeholder="Ej: 10000" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          <div>
+            <label for="patente" class="block text-xs font-bold text-slate-500 uppercase mb-1">Patente</label>
+            <div class="relative">
+              <i data-lucide="credit-card" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="patente" required placeholder="ABCD12" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-mono tracking-wider focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase">
+            </div>
           </div>
         </div>
 
+        <!-- Detalle del Servicio -->
         <div>
-          <label for="valor_total" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Total ($)</label>
-          <div class="relative">
-            <i data-lucide="calculator" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="number" id="valor_total" placeholder="Ej: 11900" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-blue-600 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          <label for="detalle" class="block text-xs font-bold text-slate-500 uppercase mb-1">Detalle del Servicio</label>
+          <textarea id="detalle" rows="3" required placeholder="Descripción del trabajo realizado..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all resize-none"></textarea>
+        </div>
+
+        <!-- Valores Monetarios -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="valor_neto" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Neto ($)</label>
+            <div class="relative">
+              <i data-lucide="dollar-sign" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="number" id="valor_neto" placeholder="Ej: 10000" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+            </div>
+          </div>
+
+          <div>
+            <label for="valor_total" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Total ($)</label>
+            <div class="relative">
+              <i data-lucide="calculator" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="number" id="valor_total" placeholder="Ej: 11900" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-blue-600 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Medio de Pago -->
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Medio de Pago</label>
-        <div class="grid grid-cols-3 gap-2">
-          <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
-            <input type="radio" name="medio_pago" value="Efectivo" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Efectivo</span>
-          </label>
+        <!-- Medio de Pago -->
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Medio de Pago</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
+              <input type="radio" name="medio_pago" value="Efectivo" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Efectivo</span>
+            </label>
 
-          <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
-            <input type="radio" name="medio_pago" value="Tarjeta" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Tarjeta</span>
-          </label>
+            <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
+              <input type="radio" name="medio_pago" value="Tarjeta" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Tarjeta</span>
+            </label>
 
-          <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
-            <input type="radio" name="medio_pago" value="Empresa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-            <span class="ml-2 text-xs font-medium text-slate-700">Empresa</span>
-          </label>
+            <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
+              <input type="radio" name="medio_pago" value="Empresa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-xs font-medium text-slate-700">Empresa</span>
+            </label>
+          </div>
         </div>
-      </div>
 
-      <!-- Botón de Envío -->
-      <div class="pt-2">
-        <button type="submit" id="btnGuardar" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
-          <i data-lucide="save" class="w-5 h-5"></i>
-          <span id="btnTexto">Guardar Vale de Servicio</span>
-        </button>
-      </div>
+        <!-- Botón de Envío -->
+        <div class="pt-2">
+          <button type="submit" id="btnGuardar" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2">
+            <i data-lucide="save" class="w-5 h-5"></i>
+            <span id="btnTexto">Guardar Vale de Servicio</span>
+          </button>
+        </div>
 
-    </form>
+      </form>
 
-    <p class="text-center text-xs text-slate-400 mt-6">Alineaciones Bustamante © 2026</p>
+      <p class="text-center text-xs text-slate-400 mt-6">Alineaciones Bustamante © 2026</p>
+    </div>
   </div>
 
-  <!-- Lucide Icons y Lógica de Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>
     lucide.createIcons();
 
     // =============================================================
-    // 1. CREDENCIALES DE SUPABASE
+    // CREDENCIALES DE SUPABASE
     // =============================================================
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL de Supabase
+    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL
     const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              // Reemplaza por tu anonKey
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    const modalLogin = document.getElementById('modalLogin');
+    const contenidoPrivado = document.getElementById('contenidoPrivado');
+    const formLogin = document.getElementById('formLogin');
+    const errorLogin = document.getElementById('errorLogin');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnTextoLogin = document.getElementById('btnTextoLogin');
+
     // =============================================================
-    // 2. LÓGICA DE ENVÍO A SUPABASE
+    // COMPROBAR ESTADO DE SESIÓN AL CARGAR
+    // =============================================================
+    async function chequearEstadoSesion() {
+      const { data: { session } } = await client.auth.getSession();
+      
+      if (session) {
+        modalLogin.classList.add('hidden');
+        contenidoPrivado.classList.remove('hidden');
+        contenidoPrivado.classList.add('flex');
+      } else {
+        modalLogin.classList.remove('hidden');
+        contenidoPrivado.classList.add('hidden');
+      }
+    }
+    chequearEstadoSesion();
+
+    // Escuchar cambios de autenticación
+    client.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        modalLogin.classList.add('hidden');
+        contenidoPrivado.classList.remove('hidden');
+        contenidoPrivado.classList.add('flex');
+      } else {
+        modalLogin.classList.remove('hidden');
+        contenidoPrivado.classList.add('hidden');
+      }
+    });
+
+    // =============================================================
+    // LÓGICA DE LOGIN
+    // =============================================================
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      errorLogin.classList.add('hidden');
+      btnLogin.disabled = true;
+      btnTextoLogin.innerText = 'Verificando...';
+
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errorLogin.innerText = 'Acceso denegado: ' + error.message;
+        errorLogin.classList.remove('hidden');
+        btnLogin.disabled = false;
+        btnTextoLogin.innerText = 'Ingresar';
+      }
+    });
+
+    // Cerrar Sesión
+    document.getElementById('btnLogout')?.addEventListener('click', async () => {
+      await client.auth.signOut();
+    });
+
+    // =============================================================
+    // LÓGICA DE GUARDAR VALE (OBTIENE CORRELATIVO DESDE LA BD)
     // =============================================================
     const form = document.getElementById('formVale');
     const inputNeto = document.getElementById('valor_neto');
@@ -197,7 +293,6 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const btnTexto = document.getElementById('btnTexto');
 
-    // Cálculo automático de Neto a Total (+19%)
     inputNeto?.addEventListener('input', () => {
       const neto = parseFloat(inputNeto.value) || 0;
       inputTotal.value = neto > 0 ? Math.round(neto * 1.19) : '';
@@ -212,41 +307,38 @@
         return;
       }
 
-      // Bloquear botón para evitar doble clic
       btnGuardar.disabled = true;
-      btnTexto.innerText = 'Guardando en Supabase...';
+      btnTexto.innerText = 'Guardando en la BD...';
+
+      // Datos sin incluir 'id' para que la BD asigne el correlativo autonumérico
+      const datos = {
+        nombre_empresa: empresaRadio.value,
+        marca: document.getElementById('marca').value.toUpperCase().trim(),
+        patente: document.getElementById('patente').value.toUpperCase().trim(),
+        detalle: document.getElementById('detalle').value.trim(),
+        valor_neto: parseFloat(inputNeto.value) || 0,
+        valor_total: parseFloat(inputTotal.value) || 0,  
+        medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+      };
 
       try {
-        // Datos a insertar (NO enviamos 'id' para que la BD genere el autonumérico)
-        const datos = {
-          nombre_empresa: empresaRadio.value,
-          marca: document.getElementById('marca').value.toUpperCase().trim(),
-          patente: document.getElementById('patente').value.toUpperCase().trim(),
-          detalle: document.getElementById('detalle').value.trim(),
-          valor_neto: parseFloat(inputNeto.value) || 0,
-          valor_total: parseFloat(inputTotal.value) || 0,  
-          medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
-        };
-
-        // Insertar registro en la tabla 'ordenes'
         const { data, error } = await client
           .from('ordenes')
           .insert([datos])
-          .select(); // Devolver el registro con el ID asignado por Supabase
+          .select();
 
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const folioGenerado = data[0].id;
-          alert(`✅ ¡VALE GUARDADO CON ÉXITO!\n\nNúmero de Folio: #${folioGenerado}\nVehículo: ${datos.marca} (${datos.patente})`);
-          form.reset();
+          const folioCorrelativo = data[0].id; // id correlativo generado por Supabase
+          alert(`✅ ¡VALE REGISTRADO CON ÉXITO!\n\n📋 Folio N°: #${folioCorrelativo}\n🚘 Vehículo: ${datos.marca} (${datos.patente})`);
         } else {
-          alert('✅ Vale guardado correctamente.');
-          form.reset();
+          alert('✅ Vale registrado en la base de datos.');
         }
 
+        form.reset();
+
       } catch (err) {
-        console.error("Error al insertar en Supabase:", err);
         alert(`❌ Error al guardar en la base de datos:\n${err.message}`);
       } finally {
         btnGuardar.disabled = false;
