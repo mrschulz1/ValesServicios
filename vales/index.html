@@ -17,15 +17,15 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      color: #1e293b;
+      background-color: #f1f5f9;
+      color: #0f172a;
       min-height: 100vh;
     }
     .form-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 20px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
       max-width: 650px;
       margin: 0 auto;
     }
@@ -43,41 +43,36 @@
       color: #475569;
     }
     .btn-primary-custom {
-      background-color: #5352ed;
-      border-color: #5352ed;
+      background-color: #4f46e5;
+      border-color: #4f46e5;
       color: #ffffff;
       font-weight: 700;
-      padding: 0.75rem;
+      padding: 0.8rem;
       border-radius: 10px;
       transition: all 0.2s ease;
     }
     .btn-primary-custom:hover {
-      background-color: #3b3acb;
-      border-color: #3b3acb;
-      transform: translateY(-1px);
+      background-color: #4338ca;
+      border-color: #4338ca;
     }
     .btn-nav {
       font-size: 0.8125rem;
       font-weight: 600;
       border-radius: 20px;
       padding: 0.4rem 0.9rem;
+      background-color: #ffffff;
     }
     .payment-option-card {
-      border: 1px solid #e2e8f0;
+      border: 1px solid #cbd5e1;
       border-radius: 10px;
       padding: 0.6rem;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s ease;
       background-color: #ffffff;
     }
     .payment-option-card:hover {
-      border-color: #cbd5e1;
+      border-color: #4f46e5;
       background-color: #f8fafc;
-    }
-    .form-check-input:checked + .form-check-label {
-      font-weight: 700;
-      color: #5352ed;
     }
     .badge-numero-vale {
       background-color: #e0e7ff;
@@ -93,18 +88,18 @@
 
   <div class="container">
     
-    <!-- BARRA SUPERIOR DE NAVEGACIÓN (VOLVER A INDEX Y OTROS MODULOS) -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 max-w-650 mx-auto" style="max-width: 650px;">
-      <a href="/vales/index.html" class="btn btn-outline-secondary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
-        <i class="bi bi-house-door-fill"></i> Crear vale servicio
+    <!-- NAVEGACIÓN CON RUTAS CORREGIDAS (Sube un nivel con ../) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 mx-auto" style="max-width: 650px;">
+      <a href="../index.html" class="btn btn-outline-secondary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+        <i class="bi bi-house-door-fill"></i> Inicio
       </a>
       
       <div class="d-flex gap-2">
-        <a href="/informes/index.html" class="btn btn-outline-primary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
-          <i class="bi bi-file-earmark-text"></i> Crear Informe Geometría
+        <a href="../informes/index.html" class="btn btn-outline-primary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+          <i class="bi bi-file-earmark-text"></i> Informe Geometría
         </a>
-        <a href="/vales/admin.html" class="btn btn-light text-secondary border btn-nav d-flex align-items-center gap-1.5 shadow-sm">
-          <i class="bi bi-gear-fill"></i> Administracion Vales
+        <a href="../admin.html" class="btn btn-light text-secondary border btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+          <i class="bi bi-gear-fill"></i> Admin Vales
         </a>
       </div>
     </div>
@@ -112,7 +107,6 @@
     <!-- TARJETA DEL FORMULARIO -->
     <div class="card form-card p-4 p-sm-5">
       
-      <!-- ENCABEZADO -->
       <div class="text-center mb-4">
         <div class="d-inline-block badge-numero-vale mb-2">
           VALE N°: <span id="numValeText">Cargando...</span>
@@ -123,80 +117,59 @@
         <p class="text-muted fs-7 mb-0">Alineaciones Bustamante</p>
       </div>
 
-      <form id="formVale" class="needs-validation" novalidate>
+      <form id="formVale" novalidate>
         
-        <!-- NOMBRE DE EMPRESA -->
+        <!-- EMPRESAS -->
         <div class="mb-4">
           <label class="form-label form-label-custom mb-1">Nombre de Empresa</label>
-          <div class="text-muted fs-8 mb-2">Selecciona 1 opción</div>
-          
           <div class="radio-box-group">
             <div class="row g-2">
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empParticular" value="Particular" checked>
-                  <label class="form-check-label text-dark fs-7" for="empParticular">Particular</label>
+                  <label class="form-check-label fs-7" for="empParticular">Particular</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empSenefa" value="Senefa">
-                  <label class="form-check-label text-dark fs-7" for="empSenefa">Senefa</label>
+                  <label class="form-check-label fs-7" for="empSenefa">Senefa</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empOD" value="OD Automotriz">
-                  <label class="form-check-label text-dark fs-7" for="empOD">OD Automotriz</label>
-                </div>
-                <div class="col-6 col-sm-4">
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="empresa" id="empOD" value="Larrain y Valdes">
-                    <label class="form-check-label text-dark fs-7" for="empOD">Larrain y Valdes</label>
-                  </div>
+                  <label class="form-check-label fs-7" for="empOD">OD Automotriz</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="empresa" id="empIncubo" value="Arvi">
-                  <label class="form-check-label text-dark fs-7" for="empIncubo">Arvi</label>
-                </div>
-              </div>
-              <div class="col-6 col-sm-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="empresa" id="empIncubo" value="salazar">
-                  <label class="form-check-label text-dark fs-7" for="empIncubo">salazar</label>
-                </div>
-              </div>           
-              
-              <div class="col-6 col-sm-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="empresa" id="empBaudet" value="Baudet">
-                  <label class="form-check-label text-dark fs-7" for="empBaudet">Baudet</label>
+                  <input class="form-check-input" type="radio" name="empresa" id="empBaudet" value="Baudet y Lira">
+                  <label class="form-check-label fs-7" for="empBaudet">Baudet y Lira</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empIncubo" value="Incubo">
-                  <label class="form-check-label text-dark fs-7" for="empIncubo">Incubo</label>
+                  <label class="form-check-label fs-7" for="empIncubo">Incubo</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empOporto" value="Oporto Garces">
-                  <label class="form-check-label text-dark fs-7" for="empOporto">Oporto Garces</label>
+                  <label class="form-check-label fs-7" for="empOporto">Oporto Garces</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empSuarez" value="Suarez">
-                  <label class="form-check-label text-dark fs-7" for="empSuarez">Suarez</label>
+                  <label class="form-check-label fs-7" for="empSuarez">Suarez</label>
                 </div>
               </div>
               <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empVimont" value="Vimont">
-                  <label class="form-check-label text-dark fs-7" for="empVimont">Vimont</label>
+                  <label class="form-check-label fs-7" for="empVimont">Vimont</label>
                 </div>
               </div>
             </div>
@@ -215,21 +188,21 @@
           </div>
         </div>
 
-        <!-- DETALLE DEL SERVICIO -->
+        <!-- DETALLE -->
         <div class="mb-3">
           <label for="inputDetalle" class="form-label form-label-custom">Detalle del Servicio</label>
-          <textarea class="form-control fs-7" id="inputDetalle" rows="3" placeholder="Descripción del servicio realizado..." required></textarea>
+          <textarea class="form-control fs-7" id="inputDetalle" rows="3" placeholder="Descripción del servicio..." required></textarea>
         </div>
 
-        <!-- CÁLCULO DE VALORES BIDIRECCIONAL -->
+        <!-- CÁLCULO BIDIRECCIONAL NETO Y TOTAL -->
         <div class="row g-3 mb-3">
           <div class="col-6">
             <label for="inputNeto" class="form-label form-label-custom">Valor Neto ($)</label>
-            <input type="number" class="form-control form-control-lg fs-7 fw-semibold" id="inputNeto" placeholder="Ej: 10000" step="any">
+            <input type="number" class="form-control form-control-lg fs-7 fw-semibold" id="inputNeto" placeholder="10000" step="any">
           </div>
           <div class="col-6">
-            <label for="inputTotal" class="form-label form-label-custom">Valor Total / Con IVA ($)</label>
-            <input type="number" class="form-control form-control-lg fs-7 fw-bold text-success" id="inputTotal" placeholder="Ej: 11900" step="any" required>
+            <label for="inputTotal" class="form-label form-label-custom">Valor Total ($)</label>
+            <input type="number" class="form-control form-control-lg fs-7 fw-bold text-success" id="inputTotal" placeholder="11900" step="any" required>
           </div>
         </div>
 
@@ -239,46 +212,34 @@
           <div class="row g-2">
             <div class="col-4">
               <label class="payment-option-card w-100" for="pagoEfectivo">
-                <div class="form-check d-flex justify-content-center align-items-center gap-1 p-0 m-0">
-                  <input class="form-check-input m-0" type="radio" name="medioPago" id="pagoEfectivo" value="Efectivo" checked>
-                  <span class="form-check-label fs-7 ms-1">Efectivo</span>
-                </div>
+                <input class="form-check-input me-1" type="radio" name="medioPago" id="pagoEfectivo" value="Efectivo" checked>
+                <span class="fs-7 ms-1">Efectivo</span>
               </label>
             </div>
             <div class="col-4">
               <label class="payment-option-card w-100" for="pagoTarjeta">
-                <div class="form-check d-flex justify-content-center align-items-center gap-1 p-0 m-0">
-                  <input class="form-check-input m-0" type="radio" name="medioPago" id="pagoTarjeta" value="Tarjeta">
-                  <span class="form-check-label fs-7 ms-1">Tarjeta</span>
-                </div>
+                <input class="form-check-input me-1" type="radio" name="medioPago" id="pagoTarjeta" value="Tarjeta">
+                <span class="fs-7 ms-1">Tarjeta</span>
               </label>
             </div>
             <div class="col-4">
               <label class="payment-option-card w-100" for="pagoEmpresa">
-                <div class="form-check d-flex justify-content-center align-items-center gap-1 p-0 m-0">
-                  <input class="form-check-input m-0" type="radio" name="medioPago" id="pagoEmpresa" value="Transferencia">
-                  <span class="form-check-label fs-7 ms-1">Transferencia</span>
-                </div>
+                <input class="form-check-input me-1" type="radio" name="medioPago" id="pagoEmpresa" value="Transferencia">
+                <span class="fs-7 ms-1">Transferencia</span>
               </label>
             </div>
           </div>
         </div>
 
-        <!-- BOTÓN GUARDAR -->
         <button type="submit" id="btnGuardar" class="btn btn-primary-custom w-100 shadow-sm mb-3">
           Guardar Vale de Servicio
         </button>
-
-        <div class="text-center text-muted fs-8">
-          Alineaciones Bustamante © 2026
-        </div>
 
       </form>
     </div>
   </div>
 
   <script>
-    // Configuración de cliente Supabase
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
 
@@ -291,9 +252,9 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const numValeText = document.getElementById('numValeText');
 
-    let numeroValeActual = 12676; // Correlativo inicial predeterminado
+    let numeroValeActual = 12676; // Correlativo por defecto
 
-    // 1. OBTENER EL ÚLTIMO NÚMERO DE VALE DESDE LA BD
+    // Obtener proximo correlativo desde Supabase
     async function obtenerProximoNumeroVale() {
       try {
         const { data, error } = await client
@@ -302,9 +263,7 @@
           .order('id', { ascending: false })
           .limit(1);
 
-        if (error) {
-          console.warn("No se pudo obtener correlativo previo, usando inicial:", error.message);
-        } else if (data && data.length > 0) {
+        if (!error && data && data.length > 0) {
           const ultimo = data[0].numero_vale || data[0].id;
           if (ultimo && !isNaN(ultimo)) {
             numeroValeActual = parseInt(ultimo) + 1;
@@ -316,10 +275,9 @@
       numValeText.textContent = numeroValeActual;
     }
 
-    // Call inicial
     obtenerProximoNumeroVale();
 
-    // 2. CÁLCULO BIDIRECCIONAL AUTOMÁTICO (NETO <-> TOTAL)
+    // Cálculo Bidireccional Neto <-> Total
     inputNeto.addEventListener('input', () => {
       const neto = parseFloat(inputNeto.value);
       if (!isNaN(neto) && neto >= 0) {
@@ -338,7 +296,7 @@
       }
     });
 
-    // 3. GUARDADO ROBUSTO EN SUPABASE
+    // Guardar Vale
     formVale.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -349,17 +307,16 @@
       const valorNeto = parseFloat(inputNeto.value) || Math.round(valorTotal / 1.19);
 
       if (!patente || !marca || !valorTotal) {
-        alert('Por favor completa los campos requeridos (Marca, Patente y Valor).');
+        alert('Por favor completa Marca, Patente y Valores.');
         return;
       }
 
       btnGuardar.disabled = true;
-      btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando Vale N° ${numeroValeActual}...`;
+      btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
 
       const empresaSeleccionada = document.querySelector('input[name="empresa"]:checked')?.value || 'Particular';
       const medioPago = document.querySelector('input[name="medioPago"]:checked')?.value || 'Efectivo';
 
-      // Objeto preparado para ser compatible con cualquier estructura de columnas en tu tabla
       const registro = {
         numero_vale: numeroValeActual,
         fecha: new Date().toISOString().split('T')[0],
@@ -383,14 +340,13 @@
 
       if (error) {
         console.error('Error Supabase:', error);
-        alert('Ocurrió un error al guardar en la base de datos:\n' + error.message + '\n\nVerifica las políticas RLS o columnas de tu tabla "ordenes".');
+        alert('Error al guardar: ' + error.message);
       } else {
-        alert(`¡Vale N° ${numeroValeActual} registrado exitosamente!`);
+        alert(`¡Vale N° ${numeroValeActual} guardado exitosamente!`);
         formVale.reset();
         document.getElementById('empParticular').checked = true;
         document.getElementById('pagoEfectivo').checked = true;
         
-        // Actualizar el número correlativo para el siguiente vale
         numeroValeActual++;
         numValeText.textContent = numeroValeActual;
       }
