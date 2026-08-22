@@ -12,18 +12,44 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Exportar a Excel (SheetJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     body { font-family: 'Inter', sans-serif; }
+    
+    /* Animación para resaltar registros nuevos */
+    @keyframes highlightRow {
+      0% { background-color: #dcfce7; } /* Verde claro */
+      50% { background-color: #f0fdf4; }
+      100% { background-color: transparent; }
+    }
+    .nueva-fila {
+      animation: highlightRow 5s ease-out;
+    }
   </style>
 </head>
 
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between p-4 md:p-6">
 
+  <!-- Alerta Flotante para Nuevos Vales -->
+  <div id="alertaNuevoVale" class="fixed top-5 right-5 z-50 hidden transition-all transform duration-300">
+    <div class="bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3">
+      <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
+        <i data-lucide="bell-ring" class="w-5 h-5 animate-bounce"></i>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold">¡Nuevo Vale Registrado!</h4>
+        <p id="alertaTexto" class="text-xs text-slate-300">Se ha ingresado una nueva orden en el sistema.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Contenedor Principal -->
-  <div class="max-w-6xl mx-auto w-full space-y-6">
+  <div class="max-w-7xl mx-auto w-full space-y-6">
 
     <!-- Encabezado y Navegación -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
@@ -48,29 +74,25 @@
       </div>
     </div>
 
-    <!-- Barra de Filtros y Métricas Rápidas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Barra de Filtros y Acciones -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
       
       <!-- Buscador -->
-      <div class="md:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex items-center space-x-3">
-        <div class="relative w-full">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-          <input type="text" id="inputBuscar" placeholder="Buscar por Patente, Empresa, Marca o Folio..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
-        </div>
+      <div class="relative w-full md:w-96">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input type="text" id="inputBuscar" placeholder="Buscar por Patente, Empresa, Marca o Folio..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+        <button id="btnExportarExcel" class="flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+          <span>Exportar a Excel</span>
+        </button>
+
         <button id="btnRefrescar" class="p-2.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-200 transition-all" title="Actualizar datos">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         </button>
-      </div>
-
-      <!-- Resumen Total -->
-      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 shadow-sm text-white flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-blue-100">Total Recaudado</p>
-          <h2 id="totalAcumulado" class="text-2xl font-bold tracking-tight mt-0.5">$0</h2>
-        </div>
-        <div class="p-3 bg-white/10 rounded-xl border border-white/20">
-          <i data-lucide="dollar-sign" class="w-6 h-6 text-white"></i>
-        </div>
       </div>
 
     </div>
@@ -82,6 +104,7 @@
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <th class="py-3.5 px-4">Folio</th>
+              <th class="py-3.5 px-4">Fecha Creación</th>
               <th class="py-3.5 px-4">Empresa</th>
               <th class="py-3.5 px-4">Vehículo</th>
               <th class="py-3.5 px-4">Patente</th>
@@ -93,7 +116,7 @@
           </thead>
           <tbody id="tablaCuerpo" class="divide-y divide-slate-100 text-sm text-slate-700">
             <tr>
-              <td colspan="8" class="text-center py-8 text-slate-400">
+              <td colspan="9" class="text-center py-8 text-slate-400">
                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
                 <span>Cargando Vales de Servicio...</span>
               </td>
@@ -103,7 +126,7 @@
       </div>
     </div>
 
-    <!-- Pie de página corporativo -->
+    <!-- Pie de página -->
     <p class="text-center text-xs text-slate-400">Alineaciones Bustamante © 2026</p>
 
   </div>
@@ -115,18 +138,20 @@
     lucide.createIcons();
 
     // =============================================================
-    // 1. CONFIGURA AQUÍ TUS CREDENCIALES DE SUPABASE
+    // 1. CONFIGURA TUS CREDENCIALES DE SUPABASE
     // =============================================================
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';
+    const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co'; // Reemplaza por tu URL
+    const SUPABASE_ANON_KEY = 'eyJhbGciOi...';              // Reemplaza por tu anonKey
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // =============================================================
-    // 2. CONSULTA Y RENDERIZADO DE VALES DESDE LA BASE DE DATOS
-    // =============================================================
     let ordenesLocales = [];
+    let ordenesFiltradas = [];
+    let primerCarga = true;
 
+    // =============================================================
+    // 2. CARGA Y CONSULTA DE VALES
+    // =============================================================
     async function cargarOrdenes() {
       const tbody = document.getElementById('tablaCuerpo');
 
@@ -139,43 +164,63 @@
         if (error) throw error;
 
         ordenesLocales = data || [];
-        renderizarTabla(ordenesLocales);
+        ordenesFiltradas = [...ordenesLocales];
+        renderizarTabla(ordenesFiltradas);
+
+        // Suscribirse a cambios en tiempo real una sola vez
+        if (primerCarga) {
+          escucharNuevosVales();
+          primerCarga = false;
+        }
 
       } catch (err) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" class="text-center py-8 text-rose-500 font-medium">
+            <td colspan="9" class="text-center py-8 text-rose-500 font-medium">
               Error al consultar los registros: ${err.message}
             </td>
           </tr>`;
       }
     }
 
-    function renderizarTabla(lista) {
+    // Formatear Fecha
+    function formatearFecha(fechaIso) {
+      if (!fechaIso) return '-';
+      const fecha = new Date(fechaIso);
+      return fecha.toLocaleString('es-CL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Renderizar Filas de la Tabla
+    function renderizarTabla(lista, nuevoId = null) {
       const tbody = document.getElementById('tablaCuerpo');
-      const totalAcumuladoEl = document.getElementById('totalAcumulado');
 
       if (!lista || lista.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" class="text-center py-8 text-slate-400 font-medium">
+            <td colspan="9" class="text-center py-8 text-slate-400 font-medium">
               No se encontraron Vales registrados.
             </td>
           </tr>`;
-        totalAcumuladoEl.innerText = '$0';
         return;
       }
 
-      let sumaTotal = 0;
       let html = '';
 
       lista.forEach(item => {
-        const total = item.valor_total || 0;
-        sumaTotal += total;
+        const esNuevo = item.id === nuevoId;
+        const claseResaltado = esNuevo ? 'nueva-fila bg-emerald-50' : 'hover:bg-slate-50/80';
+        const fechaTexto = formatearFecha(item.created_at || item.fecha);
 
         html += `
-          <tr class="hover:bg-slate-50/80 transition-colors">
+          <tr class="${claseResaltado} transition-colors" id="fila-${item.id}">
             <td class="py-3 px-4 font-bold text-blue-600">#${item.id}</td>
+            <td class="py-3 px-4 text-xs text-slate-500 font-medium">${fechaTexto}</td>
             <td class="py-3 px-4 font-medium text-slate-900">${item.nombre_empresa || '-'}</td>
             <td class="py-3 px-4">${item.marca || '-'}</td>
             <td class="py-3 px-4"><span class="font-mono bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-xs font-semibold text-slate-800">${item.patente || '-'}</span></td>
@@ -186,20 +231,54 @@
               </span>
             </td>
             <td class="py-3 px-4 text-right text-slate-500 font-mono text-xs">$${(item.valor_neto || 0).toLocaleString('es-CL')}</td>
-            <td class="py-3 px-4 text-right font-bold text-slate-900 font-mono">$${total.toLocaleString('es-CL')}</td>
+            <td class="py-3 px-4 text-right font-bold text-slate-900 font-mono">$${(item.valor_total || 0).toLocaleString('es-CL')}</td>
           </tr>
         `;
       });
 
       tbody.innerHTML = html;
-      totalAcumuladoEl.innerText = `$${sumaTotal.toLocaleString('es-CL')}`;
       lucide.createIcons();
     }
 
-    // Buscador
-    document.getElementById('inputBuscar')?.addEventListener('input', (e) => {
-      const termino = e.target.value.toLowerCase().trim();
-      const filtrados = ordenesLocales.filter(item => {
+    // =============================================================
+    // 3. ACTUALIZACIÓN EN TIEMPO REAL Y ALERTAS
+    // =============================================================
+    function escucharNuevosVales() {
+      client
+        .channel('realtime_ordenes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ordenes' }, payload => {
+          const nuevoVale = payload.new;
+          
+          // Insertar al inicio del arreglo
+          ordenesLocales.unshift(nuevoVale);
+          
+          // Re-aplicar búsqueda si existe
+          const termino = document.getElementById('inputBuscar').value.toLowerCase().trim();
+          filtrarTabla(termino, nuevoVale.id);
+
+          // Mostrar Alerta Flotante
+          mostrarAlerta(`Folio #${nuevoVale.id} - ${nuevoVale.patente || 'Sin Patente'}`);
+        })
+        .subscribe();
+    }
+
+    function mostrarAlerta(mensaje) {
+      const alerta = document.getElementById('alertaNuevoVale');
+      const texto = document.getElementById('alertaTexto');
+      
+      texto.innerText = mensaje;
+      alerta.classList.remove('hidden');
+
+      setTimeout(() => {
+        alerta.classList.add('hidden');
+      }, 5000);
+    }
+
+    // =============================================================
+    // 4. BUSCADOR Y EXPORTACIÓN A EXCEL
+    // =============================================================
+    function filtrarTabla(termino, nuevoId = null) {
+      ordenesFiltradas = ordenesLocales.filter(item => {
         return (
           (item.patente && item.patente.toLowerCase().includes(termino)) ||
           (item.nombre_empresa && item.nombre_empresa.toLowerCase().includes(termino)) ||
@@ -207,13 +286,46 @@
           (item.id && item.id.toString().includes(termino))
         );
       });
-      renderizarTabla(filtrados);
+      renderizarTabla(ordenesFiltradas, nuevoId);
+    }
+
+    document.getElementById('inputBuscar')?.addEventListener('input', (e) => {
+      filtrarTabla(e.target.value.toLowerCase().trim());
     });
 
-    // Refrescar manualmente
+    // Exportar a Excel utilizando SheetJS
+    document.getElementById('btnExportarExcel')?.addEventListener('click', () => {
+      if (ordenesFiltradas.length === 0) {
+        alert('No hay datos disponibles para exportar.');
+        return;
+      }
+
+      // Mapear datos para columnas limpias en el Excel
+      const datosExcel = ordenesFiltradas.map(item => ({
+        Folio: item.id,
+        'Fecha Creación': formatearFecha(item.created_at || item.fecha),
+        Empresa: item.nombre_empresa || '',
+        Vehículo: item.marca || '',
+        Patente: item.patente || '',
+        Detalle: item.detalle || '',
+        'Medio de Pago': item.medio_pago || '',
+        'Valor Neto ($)': item.valor_neto || 0,
+        'Valor Total ($)': item.valor_total || 0
+      }));
+
+      const hoja = XLSX.utils.json_to_sheet(datosExcel);
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, 'Vales_Servicio');
+
+      // Nombre del archivo con fecha de descarga
+      const fechaHoy = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(libro, `Vales_Alineaciones_Bustamante_${fechaHoy}.xlsx`);
+    });
+
+    // Botón refrescar manual
     document.getElementById('btnRefrescar')?.addEventListener('click', cargarOrdenes);
 
-    // Cargar al iniciar
+    // Cargar registros al inicio
     document.addEventListener('DOMContentLoaded', cargarOrdenes);
   </script>
 </body>
