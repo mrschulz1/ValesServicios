@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ingreso de Servicios | Taller Mecánico</title>
-  
+  <title>Ingreso de Vales de Servicio | Alineaciones Bustamante</title>
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logo.png">
 
@@ -14,119 +14,239 @@
 
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <style>
     body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
 
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between p-4 md:p-8">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between p-4 md:p-6">
 
-  <!-- Contenedor Principal -->
-  <div class="max-w-3xl mx-auto w-full bg-slate-800 border border-slate-700/60 rounded-2xl shadow-2xl p-6 md:p-10 my-auto">
+  <!-- Barra Superior de Navegación -->
+  <div class="max-w-xl mx-auto w-full flex justify-between items-center mb-6">
+    <button id="btnLogout" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all">
+      <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+      <span>Cerrar Sesión</span>
+    </button>
+
+    <a href="admin.html" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+      <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+      <span>Administración de Vales</span>
+    </a>
+  </div>
+
+  <!-- Contenedor Principal del Formulario -->
+  <div class="max-w-xl mx-auto w-full bg-white border border-slate-200/80 rounded-2xl shadow-xl p-6 md:p-8 my-auto">
     
-    <!-- Encabezado del Formulario -->
-    <div class="flex items-center space-x-4 border-b border-slate-700/60 pb-6 mb-8">
-      <div class="p-3 bg-blue-600/10 text-blue-500 rounded-xl border border-blue-500/20">
-        <i data-lucide="wrench" class="w-8 h-8"></i>
-      </div>
-      <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Nuevo Vale de Servicio</h1>
-        <p class="text-sm text-slate-400">Ingresa los datos del vehículo y el trabajo a realizar</p>
-      </div>
+    <!-- Encabezado con Logo -->
+    <div class="text-center mb-6 border-b border-slate-100 pb-5">
+      <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-2 object-contain" onerror="this.style.display='none'">
+      <h1 class="text-xl font-bold text-slate-900 tracking-tight">VALES ELECTRÓNICOS DE SERVICIO</h1>
+      <p class="text-xs font-medium text-slate-400 mt-0.5">Completa los datos para registrar el Vale</p>
     </div>
 
     <!-- Formulario -->
-    <form id="formularioServicio" class="space-y-6">
+    <form id="formVale" class="space-y-5">
 
       <!-- Sección 1: Selección de Empresa -->
       <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-          Empresa / Unidad
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          Nombre de Empresa <span class="text-slate-400 font-normal">(Selecciona 1 opción)</span>
         </label>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label class="flex items-center p-3.5 bg-slate-900/60 border border-slate-700 rounded-xl cursor-pointer hover:border-blue-500/50 transition-all">
-            <input type="radio" name="empresa_option" value="Empresa A" class="w-4 h-4 text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700">
-            <span class="ml-3 text-sm font-medium text-slate-200">Empresa A</span>
+        <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Particular" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Particular</span>
           </label>
-          <label class="flex items-center p-3.5 bg-slate-900/60 border border-slate-700 rounded-xl cursor-pointer hover:border-blue-500/50 transition-all">
-            <input type="radio" name="empresa_option" value="Empresa B" class="w-4 h-4 text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700">
-            <span class="ml-3 text-sm font-medium text-slate-200">Empresa B</span>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Senefa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Senefa</span>
+          </label>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="OD Automotriz" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">OD Automotriz</span>
+          </label>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Baudet" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Baudet</span>
+          </label>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Incubo" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Incubo</span>
+          </label>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Oporto Garces" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Oporto Garces</span>
+          </label>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Suarez" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Suarez</span>
+          </label>
+
+          <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
+            <input type="radio" name="empresa_option" value="Vimont" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Vimont</span>
           </label>
         </div>
       </div>
 
-      <!-- Sección 2: Datos del Vehículo -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Sección 2: Marca y Patente -->
+      <div class="grid grid-cols-2 gap-3">
         <div>
-          <label for="marca" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Marca / Modelo</label>
+          <label for="marca" class="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
           <div class="relative">
-            <i data-lucide="car" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-            <input type="text" id="marca" required placeholder="Ej: Audi A3" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+            <i data-lucide="car" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="marca" required placeholder="EJ: AUDI" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase">
           </div>
         </div>
 
         <div>
-          <label for="patente" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Patente</label>
+          <label for="patente" class="block text-xs font-bold text-slate-500 uppercase mb-1">Patente</label>
           <div class="relative">
-            <i data-lucide="credit-card" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-            <input type="text" id="patente" required placeholder="BBCL10" class="w-full uppercase font-mono tracking-wider bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+            <i data-lucide="credit-card" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="patente" required placeholder="ABCD12" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-mono tracking-wider focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all uppercase">
           </div>
         </div>
       </div>
 
       <!-- Sección 3: Detalle del Servicio -->
       <div>
-        <label for="detalle" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Detalle de Reparación / Trabajo</label>
-        <textarea id="detalle" rows="3" required placeholder="Descripción de los servicios realizandose (ej: Alineación, cuadratura, cambio de piezas)..." class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm resize-none"></textarea>
+        <label for="detalle" class="block text-xs font-bold text-slate-500 uppercase mb-1">Detalle del Servicio</label>
+        <textarea id="detalle" rows="3" required placeholder="Descripción del trabajo realizado..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all resize-none"></textarea>
       </div>
 
       <!-- Sección 4: Valores Monetarios -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-3">
         <div>
-          <label for="valor_neto" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Valor Neto ($)</label>
-          <input type="number" id="valor_neto" placeholder="0" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+          <label for="valor_neto" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Neto ($)</label>
+          <div class="relative">
+            <i data-lucide="dollar-sign" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="number" id="valor_neto" placeholder="Ej: 10000" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          </div>
         </div>
 
         <div>
-          <label for="valor_total" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Valor Total ($)</label>
-          <input type="number" id="valor_total" placeholder="0" class="w-full bg-slate-900/80 border border-slate-700 font-semibold text-blue-400 rounded-xl px-4 py-2.5 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+          <label for="valor_total" class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Total ($)</label>
+          <div class="relative">
+            <i data-lucide="calculator" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="number" id="valor_total" placeholder="Ej: 11900" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-blue-600 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          </div>
         </div>
       </div>
 
       <!-- Sección 5: Medio de Pago -->
       <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Medio de Pago</label>
-        <div class="flex flex-wrap gap-4">
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" name="medio_pago" value="Efectivo" checked class="text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700">
-            <span class="text-sm text-slate-300">Efectivo</span>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Medio de Pago</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
+            <input type="radio" name="medio_pago" value="Efectivo" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Efectivo</span>
           </label>
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" name="medio_pago" value="Transferencia" class="text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700">
-            <span class="text-sm text-slate-300">Transferencia</span>
+
+          <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
+            <input type="radio" name="medio_pago" value="Tarjeta" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Tarjeta</span>
           </label>
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" name="medio_pago" value="Tarjeta" class="text-blue-600 focus:ring-blue-500 bg-slate-800 border-slate-700">
-            <span class="text-sm text-slate-300">Tarjeta</span>
+
+          <label class="flex items-center justify-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-white hover:border-blue-500 transition-all text-center">
+            <input type="radio" name="medio_pago" value="Empresa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-xs font-medium text-slate-700">Empresa</span>
           </label>
         </div>
       </div>
 
       <!-- Botón de Envío -->
-      <div class="pt-4">
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center space-x-2">
-          <i data-lucide="check-circle" class="w-5 h-5"></i>
-          <span>Generar Vale de Servicio</span>
+      <div class="pt-2">
+        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2">
+          <i data-lucide="save" class="w-5 h-5"></i>
+          <span>Guardar Vale de Servicio</span>
         </button>
       </div>
 
     </form>
+
+    <!-- Pie de página corporativo -->
+    <p class="text-center text-xs text-slate-400 mt-6">Alineaciones Bustamante © 2026</p>
   </div>
 
-  <!-- Inicializar Lucide Icons -->
+  <!-- Lucide Icons y Lógica JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Inicializar Iconos
     lucide.createIcons();
+
+    // -------------------------------------------------------------
+    // CONEXIÓN CON SUPABASE Y LÓGICA DE ENVÍO
+    // (Asegúrate de tener tus variables de cliente configuradas)
+    // -------------------------------------------------------------
+    const form = document.getElementById('formVale');
+    const inputNeto = document.getElementById('valor_neto');
+    const inputTotal = document.getElementById('valor_total');
+
+    // Cálculo automático de Total según el Neto (opcional)
+    inputNeto?.addEventListener('input', () => {
+      const neto = parseFloat(inputNeto.value) || 0;
+      if (neto > 0) {
+        inputTotal.value = Math.round(neto * 1.19);
+      } else {
+        inputTotal.value = '';
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // 1. Validar selección de Empresa
+      const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
+      if (!empresaRadio) {
+        alert('Por favor selecciona una empresa.');
+        return;
+      }
+
+      // 2. Definir Folio Siguiente (tu lógica actual)
+      let siguienteFolio = 1;
+      if (typeof ultimasOrdenes !== 'undefined' && ultimasOrdenes && ultimasOrdenes.length > 0) {
+        const ultimoId = ultimasOrdenes[0].id;
+        if (ultimoId >= 12900) {
+          siguienteFolio = ultimoId + 1;
+        }
+      }
+
+      // 3. Estructurar Objeto
+      const datos = {
+        id: siguienteFolio,
+        nombre_empresa: empresaRadio.value,
+        marca: document.getElementById('marca').value,
+        patente: document.getElementById('patente').value.toUpperCase().trim(),
+        detalle: document.getElementById('detalle').value,
+        valor_neto: parseFloat(inputNeto.value) || 0,
+        valor_total: parseFloat(inputTotal.value) || 0,  
+        medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+      };
+
+      // 4. Inserción en Supabase (Sustituir 'client' por tu instancia de Supabase)
+      if (typeof client !== 'undefined') {
+        const { data, error } = await client
+          .from('ordenes')
+          .insert([datos])
+          .select();
+
+        if (error) {
+          alert('Error al guardar: ' + error.message);
+        } else {
+          alert(`¡Vale Guardado! Folio Vale: #${data[0].id}`);
+          form.reset();
+        }
+      } else {
+        console.log('Datos preparados para guardar:', datos);
+      }
+    });
   </script>
 </body>
 </html>
