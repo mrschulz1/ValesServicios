@@ -26,7 +26,7 @@
       border: 1px solid #e2e8f0;
       border-radius: 20px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-      max-width: 620px;
+      max-width: 650px;
       margin: 0 auto;
     }
     .radio-box-group {
@@ -60,7 +60,7 @@
       font-size: 0.8125rem;
       font-weight: 600;
       border-radius: 20px;
-      padding: 0.4rem 1rem;
+      padding: 0.4rem 0.9rem;
     }
     .payment-option-card {
       border: 1px solid #e2e8f0;
@@ -79,20 +79,34 @@
       font-weight: 700;
       color: #5352ed;
     }
+    .badge-numero-vale {
+      background-color: #e0e7ff;
+      color: #4338ca;
+      font-size: 0.875rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body class="py-4">
 
   <div class="container">
     
-    <!-- BOTONES SUPERIORES DE NAVEGACIÓN -->
-    <div class="d-flex justify-content-center align-items-center gap-2 mb-4">
-      <button id="btnCerrarSesion" class="btn btn-danger-subtle text-danger border border-danger-subtle btn-nav d-flex align-items-center gap-1.5">
-        <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
-      </button>
-      <a href="admin.html" class="btn btn-light text-secondary border btn-nav d-flex align-items-center gap-1.5">
-        <i class="bi bi-gear-fill"></i> Administración de Vales
+    <!-- BARRA SUPERIOR DE NAVEGACIÓN (VOLVER A INDEX Y OTROS MODULOS) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 max-w-650 mx-auto" style="max-width: 650px;">
+      <a href="index.html" class="btn btn-outline-secondary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+        <i class="bi bi-house-door-fill"></i> Volver al Inicio
       </a>
+      
+      <div class="d-flex gap-2">
+        <a href="geometria.html" class="btn btn-outline-primary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+          <i class="bi bi-file-earmark-text"></i> Informe Geometría
+        </a>
+        <a href="admin.html" class="btn btn-light text-secondary border btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+          <i class="bi bi-gear-fill"></i> Admin
+        </a>
+      </div>
     </div>
 
     <!-- TARJETA DEL FORMULARIO -->
@@ -100,10 +114,13 @@
       
       <!-- ENCABEZADO -->
       <div class="text-center mb-4">
-        <h2 class="fw-extrabold text-dark tracking-tight mb-1" style="font-weight: 800; font-size: 1.5rem;">
+        <div class="d-inline-block badge-numero-vale mb-2">
+          VALE N°: <span id="numValeText">Cargando...</span>
+        </div>
+        <h2 class="fw-extrabold text-dark tracking-tight mb-1" style="font-weight: 800; font-size: 1.4rem;">
           VALES ELECTRÓNICOS DE SERVICIO
         </h2>
-        <p class="text-muted fs-7 mb-0">Completa los datos para registrar el Vale</p>
+        <p class="text-muted fs-7 mb-0">Alineaciones Bustamante</p>
       </div>
 
       <form id="formVale" class="needs-validation" novalidate>
@@ -115,49 +132,49 @@
           
           <div class="radio-box-group">
             <div class="row g-2">
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empParticular" value="Particular" checked>
                   <label class="form-check-label text-dark fs-7" for="empParticular">Particular</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empSenefa" value="Senefa">
                   <label class="form-check-label text-dark fs-7" for="empSenefa">Senefa</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empOD" value="OD Automotriz">
                   <label class="form-check-label text-dark fs-7" for="empOD">OD Automotriz</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empBaudet" value="Baudet">
                   <label class="form-check-label text-dark fs-7" for="empBaudet">Baudet</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empIncubo" value="Incubo">
                   <label class="form-check-label text-dark fs-7" for="empIncubo">Incubo</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empOporto" value="Oporto Garces">
                   <label class="form-check-label text-dark fs-7" for="empOporto">Oporto Garces</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empSuarez" value="Suarez">
                   <label class="form-check-label text-dark fs-7" for="empSuarez">Suarez</label>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-6 col-sm-4">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="empresa" id="empVimont" value="Vimont">
                   <label class="form-check-label text-dark fs-7" for="empVimont">Vimont</label>
@@ -182,18 +199,18 @@
         <!-- DETALLE DEL SERVICIO -->
         <div class="mb-3">
           <label for="inputDetalle" class="form-label form-label-custom">Detalle del Servicio</label>
-          <textarea class="form-control fs-7" id="inputDetalle" rows="3" placeholder="Descripción del trabajo..." required></textarea>
+          <textarea class="form-control fs-7" id="inputDetalle" rows="3" placeholder="Descripción del servicio realizado..." required></textarea>
         </div>
 
-        <!-- VALOR NETO Y TOTAL -->
+        <!-- CÁLCULO DE VALORES BIDIRECCIONAL -->
         <div class="row g-3 mb-3">
           <div class="col-6">
             <label for="inputNeto" class="form-label form-label-custom">Valor Neto ($)</label>
-            <input type="number" class="form-control form-control-lg fs-7 fw-semibold" id="inputNeto" placeholder="Ej: 10000" required>
+            <input type="number" class="form-control form-control-lg fs-7 fw-semibold" id="inputNeto" placeholder="Ej: 10000" step="any">
           </div>
           <div class="col-6">
-            <label for="inputTotal" class="form-label form-label-custom">Valor Total ($)</label>
-            <input type="number" class="form-control form-control-lg fs-7 fw-bold text-success" id="inputTotal" placeholder="Ej: 11900" required>
+            <label for="inputTotal" class="form-label form-label-custom">Valor Total / Con IVA ($)</label>
+            <input type="number" class="form-control form-control-lg fs-7 fw-bold text-success" id="inputTotal" placeholder="Ej: 11900" step="any" required>
           </div>
         </div>
 
@@ -221,7 +238,7 @@
               <label class="payment-option-card w-100" for="pagoEmpresa">
                 <div class="form-check d-flex justify-content-center align-items-center gap-1 p-0 m-0">
                   <input class="form-check-input m-0" type="radio" name="medioPago" id="pagoEmpresa" value="Transferencia">
-                  <span class="form-check-label fs-7 ms-1">Empresa</span>
+                  <span class="form-check-label fs-7 ms-1">Transferencia</span>
                 </div>
               </label>
             </div>
@@ -233,7 +250,6 @@
           Guardar Vale de Servicio
         </button>
 
-        <!-- PIE DE FORMULARIO -->
         <div class="text-center text-muted fs-8">
           Alineaciones Bustamante © 2026
         </div>
@@ -242,8 +258,8 @@
     </div>
   </div>
 
-  <!-- LÓGICA SUPABASE Y FUNCIONALIDAD -->
   <script>
+    // Configuración de cliente Supabase
     const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
 
@@ -254,59 +270,111 @@
     const inputTotal = document.getElementById('inputTotal');
     const formVale = document.getElementById('formVale');
     const btnGuardar = document.getElementById('btnGuardar');
+    const numValeText = document.getElementById('numValeText');
 
-    // Calcular IVA en automático al escribir el valor neto
+    let numeroValeActual = 12676; // Correlativo inicial predeterminado
+
+    // 1. OBTENER EL ÚLTIMO NÚMERO DE VALE DESDE LA BD
+    async function obtenerProximoNumeroVale() {
+      try {
+        const { data, error } = await client
+          .from('ordenes')
+          .select('numero_vale, id')
+          .order('id', { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.warn("No se pudo obtener correlativo previo, usando inicial:", error.message);
+        } else if (data && data.length > 0) {
+          const ultimo = data[0].numero_vale || data[0].id;
+          if (ultimo && !isNaN(ultimo)) {
+            numeroValeActual = parseInt(ultimo) + 1;
+          }
+        }
+      } catch (err) {
+        console.error("Error obteniendo correlativo:", err);
+      }
+      numValeText.textContent = numeroValeActual;
+    }
+
+    // Call inicial
+    obtenerProximoNumeroVale();
+
+    // 2. CÁLCULO BIDIRECCIONAL AUTOMÁTICO (NETO <-> TOTAL)
     inputNeto.addEventListener('input', () => {
-      const neto = parseFloat(inputNeto.value) || 0;
-      inputTotal.value = Math.round(neto * 1.19);
+      const neto = parseFloat(inputNeto.value);
+      if (!isNaN(neto) && neto >= 0) {
+        inputTotal.value = Math.round(neto * 1.19);
+      } else {
+        inputTotal.value = '';
+      }
     });
 
-    // Guardar Vale en Supabase
+    inputTotal.addEventListener('input', () => {
+      const total = parseFloat(inputTotal.value);
+      if (!isNaN(total) && total >= 0) {
+        inputNeto.value = Math.round(total / 1.19);
+      } else {
+        inputNeto.value = '';
+      }
+    });
+
+    // 3. GUARDADO ROBUSTO EN SUPABASE
     formVale.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      btnGuardar.disabled = true;
-      btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando...`;
-
-      const empresaSeleccionada = document.querySelector('input[name="empresa"]:checked')?.value || 'Particular';
       const marca = document.getElementById('inputMarca').value.trim();
       const patente = document.getElementById('inputPatente').value.trim().toUpperCase();
       const detalle = document.getElementById('inputDetalle').value.trim();
-      const valorNeto = parseFloat(inputNeto.value) || 0;
       const valorTotal = parseFloat(inputTotal.value) || 0;
+      const valorNeto = parseFloat(inputNeto.value) || Math.round(valorTotal / 1.19);
+
+      if (!patente || !marca || !valorTotal) {
+        alert('Por favor completa los campos requeridos (Marca, Patente y Valor).');
+        return;
+      }
+
+      btnGuardar.disabled = true;
+      btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando Vale N° ${numeroValeActual}...`;
+
+      const empresaSeleccionada = document.querySelector('input[name="empresa"]:checked')?.value || 'Particular';
       const medioPago = document.querySelector('input[name="medioPago"]:checked')?.value || 'Efectivo';
+
+      // Objeto preparado para ser compatible con cualquier estructura de columnas en tu tabla
+      const registro = {
+        numero_vale: numeroValeActual,
+        fecha: new Date().toISOString().split('T')[0],
+        empresa: empresaSeleccionada,
+        nombre_empresa: empresaSeleccionada,
+        marca: marca,
+        patente: patente,
+        detalle: detalle,
+        valor: valorTotal,
+        valor_neto: valorNeto,
+        valor_total: valorTotal,
+        medio_pago: medioPago
+      };
 
       const { data, error } = await client
         .from('ordenes')
-        .insert([
-          {
-            nombre_empresa: empresaSeleccionada,
-            marca: marca,
-            patente: patente,
-            detalle: detalle,
-            valor_neto: valorNeto,
-            valor_total: valorTotal,
-            medio_pago: medioPago
-          }
-        ]);
+        .insert([registro]);
 
       btnGuardar.disabled = false;
       btnGuardar.innerHTML = 'Guardar Vale de Servicio';
 
       if (error) {
-        alert('Ocurrió un error al registrar el vale: ' + error.message);
+        console.error('Error Supabase:', error);
+        alert('Ocurrió un error al guardar en la base de datos:\n' + error.message + '\n\nVerifica las políticas RLS o columnas de tu tabla "ordenes".');
       } else {
-        alert('¡Vale registrado exitosamente!');
+        alert(`¡Vale N° ${numeroValeActual} registrado exitosamente!`);
         formVale.reset();
         document.getElementById('empParticular').checked = true;
         document.getElementById('pagoEfectivo').checked = true;
+        
+        // Actualizar el número correlativo para el siguiente vale
+        numeroValeActual++;
+        numValeText.textContent = numeroValeActual;
       }
-    });
-
-    // Botón Salir
-    document.getElementById('btnCerrarSesion').addEventListener('click', async () => {
-      await client.auth.signOut();
-      alert('Sesión cerrada correctamente.');
     });
   </script>
 </body>
