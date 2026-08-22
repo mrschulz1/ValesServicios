@@ -6,7 +6,7 @@
   <title>Panel de Administración | Alineaciones Bustamante</title>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="logooriginal.png">
+  <link rel="icon" type="image/png" href="logo.png">
 
   <!-- Tailwind CSS & Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +28,7 @@
     <!-- Encabezado y Navegación -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
       <div class="flex items-center space-x-4">
-        <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-12 object-contain" onerror="this.style.display='none'">
+        <img src="logo.png" alt="Alineaciones Bustamante" class="h-12 object-contain" onerror="this.style.display='none'">
         <div>
           <h1 class="text-xl font-bold text-slate-900 tracking-tight">Panel de Control de Vales</h1>
           <p class="text-xs text-slate-400 mt-0.5">Historial y gestión de registros de servicio</p>
@@ -55,7 +55,7 @@
       <div class="md:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex items-center space-x-3">
         <div class="relative w-full">
           <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-          <input type="text" id="inputBuscar" placeholder="Buscar por Patente, Empresa o Marca..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+          <input type="text" id="inputBuscar" placeholder="Buscar por Patente, Empresa, Marca o Folio..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
         </div>
         <button id="btnRefrescar" class="p-2.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-200 transition-all" title="Actualizar datos">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
@@ -92,7 +92,6 @@
             </tr>
           </thead>
           <tbody id="tablaCuerpo" class="divide-y divide-slate-100 text-sm text-slate-700">
-            <!-- Cargando datos... -->
             <tr>
               <td colspan="8" class="text-center py-8 text-slate-400">
                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
@@ -109,28 +108,27 @@
 
   </div>
 
-  <!-- Lucide Icons y Lógica JS -->
+  <!-- Cliente JS Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <script>
     lucide.createIcons();
 
-    // -------------------------------------------------------------
-    // CONFIGURACIÓN DE SUPABASE Y LÓGICA DE TABLA
-    // -------------------------------------------------------------
+    // =============================================================
+    // 1. CONFIGURA AQUÍ TUS CREDENCIALES DE SUPABASE
+    // =============================================================
+    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // =============================================================
+    // 2. CONSULTA Y RENDERIZADO DE VALES DESDE LA BASE DE DATOS
+    // =============================================================
     let ordenesLocales = [];
 
     async function cargarOrdenes() {
       const tbody = document.getElementById('tablaCuerpo');
-      
-      if (typeof client === 'undefined') {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="text-center py-8 text-amber-600 font-medium">
-              Cliente de Supabase no detectado. Revisa la configuración de tus credenciales.
-            </td>
-          </tr>`;
-        return;
-      }
 
       try {
         const { data, error } = await client
@@ -198,7 +196,7 @@
       lucide.createIcons();
     }
 
-    // Buscador interactivo
+    // Buscador
     document.getElementById('inputBuscar')?.addEventListener('input', (e) => {
       const termino = e.target.value.toLowerCase().trim();
       const filtrados = ordenesLocales.filter(item => {
@@ -212,10 +210,10 @@
       renderizarTabla(filtrados);
     });
 
-    // Botón refrescar
+    // Refrescar manualmente
     document.getElementById('btnRefrescar')?.addEventListener('click', cargarOrdenes);
 
-    // Carga inicial
+    // Cargar al iniciar
     document.addEventListener('DOMContentLoaded', cargarOrdenes);
   </script>
 </body>
