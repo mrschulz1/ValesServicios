@@ -183,13 +183,13 @@
     // =============================================================
     // 1. CREDENCIALES DE SUPABASE
     // =============================================================
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL
+    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL de Supabase
     const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              // Reemplaza por tu anonKey
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // =============================================================
-    // 2. LÓGICA DE CÁLCULO Y ENVÍO A LA BASE DE DATOS
+    // 2. LÓGICA DE ENVÍO A SUPABASE
     // =============================================================
     const form = document.getElementById('formVale');
     const inputNeto = document.getElementById('valor_neto');
@@ -197,7 +197,7 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const btnTexto = document.getElementById('btnTexto');
 
-    // Cálculo automático del Neto al Total (+19%)
+    // Cálculo automático de Neto a Total (+19%)
     inputNeto?.addEventListener('input', () => {
       const neto = parseFloat(inputNeto.value) || 0;
       inputTotal.value = neto > 0 ? Math.round(neto * 1.19) : '';
@@ -212,55 +212,42 @@
         return;
       }
 
-      // Deshabilitar botón durante el proceso
+      // Bloquear botón para evitar doble clic
       btnGuardar.disabled = true;
-      btnTexto.innerText = 'Guardando en base de datos...';
+      btnTexto.innerText = 'Guardando en Supabase...';
 
       try {
-        // Consultar el último ID registrado en Supabase para obtener el correlativo
-        const { data: ultimasOrdenes, error: errConsulta } = await client
-          .from('ordenes')
-          .select('id')
-          .order('id', { ascending: false })
-          .limit(1);
-
-        if (errConsulta) throw errConsulta;
-
-        let siguienteFolio = 12900; // Folio inicial por defecto
-        if (ultimasOrdenes && ultimasOrdenes.length > 0) {
-          const ultimoId = ultimasOrdenes[0].id;
-          siguienteFolio = ultimoId >= 12900 ? ultimoId + 1 : 12900;
-        }
-
-        // Estructura del registro
+        // Datos a insertar (NO enviamos 'id' para que la BD genere el autonumérico)
         const datos = {
-          id: siguienteFolio,
           nombre_empresa: empresaRadio.value,
           marca: document.getElementById('marca').value.toUpperCase().trim(),
           patente: document.getElementById('patente').value.toUpperCase().trim(),
-          detalle: document.getElementById('detalle').value,
+          detalle: document.getElementById('detalle').value.trim(),
           valor_neto: parseFloat(inputNeto.value) || 0,
           valor_total: parseFloat(inputTotal.value) || 0,  
           medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
         };
 
-        // Insertar en la tabla 'ordenes'
-        const { data, error: errInsert } = await client
+        // Insertar registro en la tabla 'ordenes'
+        const { data, error } = await client
           .from('ordenes')
           .insert([datos])
-          .select();
+          .select(); // Devolver el registro con el ID asignado por Supabase
 
-        if (errInsert) throw errInsert;
+        if (error) throw error;
 
-        const folioGuardado = data[0].id;
-
-        // Notificación de éxito clara
-        alert(`✅ ¡VALE GUARDADO CON ÉXITO!\n\nNúmero de Folio: #${folioGuardado}\nVehículo: ${datos.marca} (${datos.patente})`);
-
-        form.reset();
+        if (data && data.length > 0) {
+          const folioGenerado = data[0].id;
+          alert(`✅ ¡VALE GUARDADO CON ÉXITO!\n\nNúmero de Folio: #${folioGenerado}\nVehículo: ${datos.marca} (${datos.patente})`);
+          form.reset();
+        } else {
+          alert('✅ Vale guardado correctamente.');
+          form.reset();
+        }
 
       } catch (err) {
-        alert(`❌ Error al guardar el vale: ${err.message}`);
+        console.error("Error al insertar en Supabase:", err);
+        alert(`❌ Error al guardar en la base de datos:\n${err.message}`);
       } finally {
         btnGuardar.disabled = false;
         btnTexto.innerText = 'Guardar Vale de Servicio';
