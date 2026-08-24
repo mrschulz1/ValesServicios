@@ -323,52 +323,66 @@
     });
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  e.preventDefault();
 
-      const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
-      if (!empresaRadio) {
-        alert('Por favor selecciona una empresa.');
-        return;
-      }
+  const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
+  if (!empresaRadio) {
+    alert('Por favor selecciona una empresa.');
+    return;
+  }
 
-      btnGuardar.disabled = true;
-      btnTexto.innerText = 'Guardando en la BD...';
+  btnGuardar.disabled = true;
+  btnTexto.innerText = 'Guardando en la BD...';
 
-      const datos = {
-        nombre_empresa: empresaRadio.value,
-        marca: document.getElementById('marca').value.toUpperCase().trim(),
-        patente: document.getElementById('patente').value.toUpperCase().trim(),
-        detalle: document.getElementById('detalle').value.trim(),
-        valor_neto: parseFloat(inputNeto.value) || 0,
-        valor_total: parseFloat(inputTotal.value) || 0,  
-        medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
-      };
+  try {
+    // 1. CONSULTAR EL ID/FOLIO MÁS ALTO EN LA BASE DE DATOS
+    const { data: ultimoRegistro, error: errorUltimo } = await client
+      .from('ordenes')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
 
-      try {
-        const { data, error } = await client
-          .from('ordenes')
-          .insert([datos])
-          .select();
+    if (errorUltimo) throw errorUltimo;
 
-        if (error) throw error;
+    // 2. REASIGNAR EL SIGUIENTE CORRELATIVO SIN HUECOS
+    const siguienteFolio = (ultimoRegistro && ultimoRegistro.length > 0) 
+      ? (ultimoRegistro[0].id + 1) 
+      : 1;
 
-        if (data && data.length > 0) {
-          const folioCorrelativo = data[0].id;
-          alert(`✅ ¡VALE REGISTRADO CON ÉXITO!\n\n📋 Folio N°: #${folioCorrelativo}\n🚘 Vehículo: ${datos.marca} (${datos.patente})`);
-        } else {
-          alert('✅ Vale registrado en la base de datos.');
-        }
+    // 3. CONSTRUIR EL VALE INCLUYENDO EL FOLIO CALCULADO
+    const datos = {
+      id: siguienteFolio, // Se envía el folio explícito
+      nombre_empresa: empresaRadio.value,
+      marca: document.getElementById('marca').value.toUpperCase().trim(),
+      patente: document.getElementById('patente').value.toUpperCase().trim(),
+      detalle: document.getElementById('detalle').value.trim(),
+      valor_neto: parseFloat(inputNeto.value) || 0,
+      valor_total: parseFloat(inputTotal.value) || 0,  
+      medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+    };
 
-        form.reset();
-        await cargarUltimoFolio(); // Actualiza el folio correlativo para el siguiente registro
+    // 4. INSERTAR REGISTRO EN SUPABASE
+    const { data, error } = await client
+      .from('ordenes')
+      .insert([datos])
+      .select();
 
-      } catch (err) {
-        alert(`❌ Error al guardar en la base de datos:\n${err.message}`);
-      } finally {
-        btnGuardar.disabled = false;
-        btnTexto.innerText = 'Guardar Vale de Servicio';
-      }
-    });
+    if (error) throw error;
+
+    alert(`✅ ¡VALE REGISTRADO CON ÉXITO!\n\n📋 Folio N°: #${siguienteFolio}\n🚘 Vehículo: ${datos.marca} (${datos.patente})`);
+
+    form.reset();
+    if (typeof cargarUltimoFolio === 'function') {
+      await cargarUltimoFolio(); // Actualiza la vista previa del número
+    }
+
+  } catch (err) {
+    alert(`❌ Error al guardar en la base de datos:\n${err.message}`);
+  } finally {
+    btnGuardar.disabled = false;
+    btnTexto.innerText = 'Guardar Vale de Servicio';
+  }
+});
   </script>
 </body>
 </html>
