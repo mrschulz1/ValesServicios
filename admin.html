@@ -466,43 +466,59 @@
 
     // Eliminar Vale
     async function eliminarVale(id) {
-      const confirmacion = await Swal.fire({
-        title: `¿Eliminar Vale #${id}?`,
-        text: "Esta acción no se puede deshacer.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      });
+    const confirmacion = await Swal.fire({
+      title: `¿Eliminar Vale #${id}?`,
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
 
-      if (!confirmacion.isConfirmed) return;
+    if (!confirmacion.isConfirmed) return;
 
-      try {
-        const { error } = await client
-          .from('ordenes')
-          .delete()
-          .eq('id', id);
+    try {
+      // Verificar si hay usuario autenticado
+      const { data: { user } } = await client.auth.getUser();
 
-        if (error) throw error;
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Eliminado',
-          text: `El vale #${id} ha sido borrado.`,
-          timer: 1800,
-          showConfirmButton: false
-        });
-
-      } catch (err) {
+      if (!user) {
         Swal.fire({
           icon: 'error',
-          title: 'Error',
-          text: 'No se pudo eliminar el vale: ' + err.message
+          title: 'Acceso Denegado',
+          text: 'Debes iniciar sesión con una cuenta de administrador autorizada para eliminar vales.'
         });
+        return;
       }
+
+      // Petición DELETE enviando token autenticado
+      const { error } = await client
+        .from('ordenes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Resincronizar la secuencia de la BD para que el próximo vale tome el MAX(id) real
+      await client.rpc('reset_secuencia_ordenes');
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Eliminado',
+        text: `El vale #${id} ha sido borrado correctamente.`,
+        timer: 1800,
+        showConfirmButton: false
+      });
+
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar',
+        text: err.message
+      });
     }
+  }
 
     // =============================================================
     // 5. BUSCADOR Y EXPORTACIÓN A EXCEL
