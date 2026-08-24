@@ -14,13 +14,11 @@
 
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between p-4 md:p-6">
 
-  <!-- ============================================================= -->
-  <!-- 1. MODAL / PANTALLA DE LOGIN (SE MUESTRA SI NO HAY SESIÓN)     -->
-  <!-- ============================================================= -->
+  <!-- 1. MODAL / PANTALLA DE LOGIN -->
   <div id="modalLogin" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 md:p-8">
       <div class="text-center mb-6">
-        <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-3 object-contain" onerror="this.style.display='none'">
+        <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-3 object-contain" onerror="this.style.display='none'">
         <h1 class="text-xl font-bold text-slate-900">Acceso al Sistema</h1>
         <p class="text-xs text-slate-400 mt-1">Inicia sesión para registrar vales de servicio</p>
       </div>
@@ -52,13 +50,11 @@
     </div>
   </div>
 
-  <!-- ============================================================= -->
-  <!-- 2. CONTENIDO PRINCIPAL DEL FORMULARIO DE VALES                -->
-  <!-- ============================================================= -->
+  <!-- 2. CONTENIDO PRINCIPAL -->
   <div id="contenidoPrivado" class="hidden max-w-xl mx-auto w-full flex-col justify-between flex-1">
     
     <!-- Barra Superior -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-4">
       <button id="btnLogout" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all">
         <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
         <span>Cerrar Sesión</span>
@@ -77,6 +73,12 @@
         <img src="logo.png" alt="Alineaciones Bustamante" class="h-14 mx-auto mb-2 object-contain" onerror="this.style.display='none'">
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">VALES ELECTRÓNICOS DE SERVICIO</h1>
         <p class="text-xs font-medium text-slate-400 mt-0.5">Completa los datos para registrar el Vale</p>
+        
+        <!-- VISUALIZADOR DE FOLIO CORRELATIVO -->
+        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3 flex justify-between items-center">
+          <span class="text-xs font-bold text-blue-800 uppercase">Próximo Folio a Emitir:</span>
+          <span id="folioCorrelativoText" class="text-lg font-extrabold text-blue-600 tracking-wider">Cargando...</span>
+        </div>
       </div>
 
       <form id="formVale" class="space-y-5">
@@ -91,37 +93,30 @@
               <input type="radio" name="empresa_option" value="Particular" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Particular</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="Senefa" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Senefa</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="OD Automotriz" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">OD Automotriz</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="Baudet" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Baudet</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="Incubo" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Incubo</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="Oporto Garces" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Oporto Garces</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="Suarez" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Suarez</span>
             </label>
-
             <label class="flex items-center p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-500 transition-all">
               <input type="radio" name="empresa_option" value="Vimont" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
               <span class="ml-2 text-xs font-medium text-slate-700">Vimont</span>
@@ -215,9 +210,10 @@
 
     // =============================================================
     // CREDENCIALES DE SUPABASE
+    // (Asegúrate de colocar tu anonKey válida que empieza con eyJ...)
     // =============================================================
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL
-    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              // Reemplaza por tu anonKey
+    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA'; // Reemplazar con clave JWT (eyJhbGci...)
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -227,6 +223,32 @@
     const errorLogin = document.getElementById('errorLogin');
     const btnLogin = document.getElementById('btnLogin');
     const btnTextoLogin = document.getElementById('btnTextoLogin');
+    const folioText = document.getElementById('folioCorrelativoText');
+
+    // =============================================================
+    // RECUPERAR EL ÚLTIMO FOLIO DE LA BASE DE DATOS
+    // =============================================================
+    async function cargarUltimoFolio() {
+      try {
+        const { data, error } = await client
+          .from('ordenes')
+          .select('id')
+          .order('id', { ascending: false })
+          .limit(1);
+
+        if (error) throw error;
+
+        let proximoFolio = 1;
+        if (data && data.length > 0) {
+          proximoFolio = data[0].id + 1;
+        }
+
+        folioText.innerText = `#${proximoFolio}`;
+      } catch (err) {
+        console.error('Error al obtener el folio:', err);
+        folioText.innerText = '#--';
+      }
+    }
 
     // =============================================================
     // COMPROBAR ESTADO DE SESIÓN AL CARGAR
@@ -238,6 +260,7 @@
         modalLogin.classList.add('hidden');
         contenidoPrivado.classList.remove('hidden');
         contenidoPrivado.classList.add('flex');
+        cargarUltimoFolio();
       } else {
         modalLogin.classList.remove('hidden');
         contenidoPrivado.classList.add('hidden');
@@ -251,6 +274,7 @@
         modalLogin.classList.add('hidden');
         contenidoPrivado.classList.remove('hidden');
         contenidoPrivado.classList.add('flex');
+        cargarUltimoFolio();
       } else {
         modalLogin.classList.remove('hidden');
         contenidoPrivado.classList.add('hidden');
@@ -310,7 +334,6 @@
       btnGuardar.disabled = true;
       btnTexto.innerText = 'Guardando en la BD...';
 
-      // Datos sin incluir 'id' para que la BD asigne el correlativo autonumérico
       const datos = {
         nombre_empresa: empresaRadio.value,
         marca: document.getElementById('marca').value.toUpperCase().trim(),
@@ -330,13 +353,14 @@
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const folioCorrelativo = data[0].id; // id correlativo generado por Supabase
+          const folioCorrelativo = data[0].id;
           alert(`✅ ¡VALE REGISTRADO CON ÉXITO!\n\n📋 Folio N°: #${folioCorrelativo}\n🚘 Vehículo: ${datos.marca} (${datos.patente})`);
         } else {
           alert('✅ Vale registrado en la base de datos.');
         }
 
         form.reset();
+        await cargarUltimoFolio(); // Actualiza el folio correlativo para el siguiente registro
 
       } catch (err) {
         alert(`❌ Error al guardar en la base de datos:\n${err.message}`);
