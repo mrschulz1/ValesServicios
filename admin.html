@@ -8,9 +8,13 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logooriginal.png">
 
-  <!-- Tailwind CSS & Lucide Icons -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- SweetAlert2 (Para alertas y confirmaciones de borrado elegantes) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- Exportar a Excel (SheetJS) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -19,106 +23,133 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #334155;
+    }
+
     /* Animación para resaltar registros nuevos */
     @keyframes highlightRow {
-      0% { background-color: #dcfce7; } /* Verde claro */
-      50% { background-color: #f0fdf4; }
+      0% { background-color: #d1fae5; }
+      50% { background-color: #ecfdf5; }
       100% { background-color: transparent; }
     }
     .nueva-fila {
-      animation: highlightRow 5s ease-out;
+      animation: highlightRow 6s ease-out;
+    }
+
+    .card-header-custom {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .badge-patente {
+      font-family: monospace;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
     }
   </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between p-4 md:p-6">
+<body class="d-flex flex-column justify-between min-vh-100 p-3 p-md-4">
 
-  <!-- Alerta Flotante para Nuevos Vales -->
-  <div id="alertaNuevoVale" class="fixed top-5 right-5 z-50 hidden transition-all transform duration-300">
-    <div class="bg-slate-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3">
-      <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl">
-        <i data-lucide="bell-ring" class="w-5 h-5 animate-bounce"></i>
-      </div>
-      <div>
-        <h4 class="text-sm font-bold">¡Nuevo Vale Registrado!</h4>
-        <p id="alertaTexto" class="text-xs text-slate-300">Se ha ingresado una nueva orden en el sistema.</p>
+  <!-- Toast Flotante para Notificaciones en Tiempo Real -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    <div id="toastNuevoVale" class="toast align-items-center text-bg-dark border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body d-flex items-center gap-2">
+          <i class="bi bi-bell-fill text-success fs-5"></i>
+          <div>
+            <strong>¡Nuevo Vale Registrado!</strong>
+            <div id="toastTexto" class="small text-light">Se ha ingresado una nueva orden.</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>
   </div>
 
   <!-- Contenedor Principal -->
-  <div class="max-w-7xl mx-auto w-full space-y-6">
+  <div class="container-fluid max-w-7xl mx-auto space-y-4">
 
     <!-- Encabezado y Navegación -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
-      <div class="flex items-center space-x-4">
-        <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-12 object-contain" onerror="this.style.display='none'">
-        <div>
-          <h1 class="text-xl font-bold text-slate-900 tracking-tight">Panel de Control de Vales</h1>
-          <p class="text-xs text-slate-400 mt-0.5">Historial y gestión de registros de servicio</p>
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-body p-4 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <img src="logooriginal.png" alt="Alineaciones Bustamante" class="img-fluid" style="height: 48px;" onerror="this.style.display='none'">
+          <div>
+            <h1 class="h4 fw-bold mb-0 text-dark">Panel de Control de Vales</h1>
+            <p class="text-muted small mb-0">Historial y gestión de registros de servicio</p>
+          </div>
         </div>
-      </div>
 
-      <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
-        <a href="index.html" class="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200 transition-all">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-blue-600"></i>
-          <span>Nuevo Vale</span>
-        </a>
+        <div class="d-flex align-items-center gap-2 w-100 w-sm-auto justify-content-end">
+          <a href="index.html" class="btn btn-outline-primary btn-sm rounded-3 d-flex align-items-center gap-1">
+            <i class="bi bi-plus-circle"></i>
+            <span>Nuevo Vale</span>
+          </a>
 
-        <button id="btnLogout" class="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-all">
-          <i data-lucide="log-out" class="w-4 h-4"></i>
-          <span>Salir</span>
-        </button>
+          <button id="btnLogout" class="btn btn-outline-danger btn-sm rounded-3 d-flex align-items-center gap-1">
+            <i class="bi bi-box-arrow-right"></i>
+            <span>Salir</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Barra de Filtros y Acciones -->
-    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-      
-      <!-- Buscador -->
-      <div class="relative w-full md:w-96">
-        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="inputBuscar" placeholder="Buscar por Patente, Empresa, Marca o Folio..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all">
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-body p-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+        
+        <!-- Buscador -->
+        <div class="input-group w-100 w-md-50">
+          <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" id="inputBuscar" class="form-control bg-light border-start-0 rounded-end-3" placeholder="Buscar por Patente, Empresa, Marca o Folio...">
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="d-flex align-items-center gap-2 w-100 w-md-auto justify-content-end">
+          <button id="btnExportarExcel" class="btn btn-success btn-sm rounded-3 d-flex align-items-center gap-1">
+            <i class="bi bi-file-earmark-excel"></i>
+            <span>Exportar a Excel</span>
+          </button>
+
+          <button id="btnRefrescar" class="btn btn-light btn-sm rounded-3 border" title="Actualizar datos">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+
       </div>
-
-      <!-- Botones de Acción -->
-      <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
-        <button id="btnExportarExcel" class="flex items-center space-x-2 px-4 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all">
-          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
-          <span>Exportar a Excel</span>
-        </button>
-
-        <button id="btnRefrescar" class="p-2.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-200 transition-all" title="Actualizar datos">
-          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-        </button>
-      </div>
-
     </div>
 
     <!-- Tabla de Vales -->
-    <div class="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <th class="py-3.5 px-4">Folio</th>
-              <th class="py-3.5 px-4">Fecha Creación</th>
-              <th class="py-3.5 px-4">Empresa</th>
-              <th class="py-3.5 px-4">Vehículo</th>
-              <th class="py-3.5 px-4">Patente</th>
-              <th class="py-3.5 px-4">Detalle</th>
-              <th class="py-3.5 px-4">Medio Pago</th>
-              <th class="py-3.5 px-4 text-right">Neto</th>
-              <th class="py-3.5 px-4 text-right">Total</th>
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr class="text-uppercase text-secondary small fw-bold" style="font-size: 0.75rem;">
+              <th class="ps-4">Folio</th>
+              <th>Fecha Creación</th>
+              <th>Empresa</th>
+              <th>Vehículo</th>
+              <th>Patente</th>
+              <th>Detalle</th>
+              <th>Medio Pago</th>
+              <th class="text-end">Neto</th>
+              <th class="text-end">Total</th>
+              <th class="text-center pe-4">Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaCuerpo" class="divide-y divide-slate-100 text-sm text-slate-700">
+          <tbody id="tablaCuerpo" class="small">
             <tr>
-              <td colspan="9" class="text-center py-8 text-slate-400">
-                <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
-                <span>Cargando Vales de Servicio...</span>
+              <td colspan="10" class="text-center py-5 text-muted">
+                <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                <div>Cargando Vales de Servicio...</div>
               </td>
             </tr>
           </tbody>
@@ -127,27 +158,98 @@
     </div>
 
     <!-- Pie de página -->
-    <p class="text-center text-xs text-slate-400">Alineaciones Bustamante © 2026</p>
+    <p class="text-center text-muted small mt-4">Alineaciones Bustamante © 2026</p>
 
   </div>
+
+  <!-- MODAL DE EDICIÓN (BOOTSTRAP) -->
+  <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold" id="modalEditarLabel">Editar Vale #</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="formEditar">
+          <div class="modal-body space-y-3">
+            <input type="hidden" id="editId">
+
+            <div class="row g-3 mb-2">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Empresa</label>
+                <input type="text" id="editEmpresa" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Medio de Pago</label>
+                <select id="editMedioPago" class="form-select form-select-sm">
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                  <option value="Credito empresa">Credito empresa</option>
+                  <option value="Efectivo/">Efectivo/</option>
+                  <option value="Transferencia">Transferencia</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-2">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Vehículo / Marca</label>
+                <input type="text" id="editMarca" class="form-control form-control-sm" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Patente</label>
+                <input type="text" id="editPatente" class="form-control form-control-sm text-uppercase font-monospace" required>
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Detalle del Servicio</label>
+              <textarea id="editDetalle" class="form-control form-control-sm" rows="2"></textarea>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Valor Total ($)</label>
+                <input type="number" id="editValorTotal" class="form-control form-control-sm font-monospace" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Valor Neto ($) <span class="text-muted" style="font-size:0.65rem;">(Calculado)</span></label>
+                <input type="number" id="editValorNeto" class="form-control form-control-sm font-monospace bg-light" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer border-top">
+            <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" id="btnGuardarEdit" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+              <i class="bi bi-floppy"></i>
+              <span>Guardar Cambios</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Cliente JS Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>
-    lucide.createIcons();
-
     // =============================================================
-    // 1. CONFIGURA TUS CREDENCIALES DE SUPABASE
+    // 1. CREDENCIALES DE SUPABASE
     // =============================================================
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; // Reemplaza por tu URL
-    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              // Reemplaza por tu anonKey
+    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              
 
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let ordenesLocales = [];
     let ordenesFiltradas = [];
     let primerCarga = true;
+    let modalEditarBs = null;
 
     // =============================================================
     // 2. CARGA Y CONSULTA DE VALES
@@ -167,7 +269,7 @@
         ordenesFiltradas = [...ordenesLocales];
         renderizarTabla(ordenesFiltradas);
 
-        // Suscribirse a cambios en tiempo real una sola vez
+        // Suscribirse en tiempo real solo la primera vez
         if (primerCarga) {
           escucharNuevosVales();
           primerCarga = false;
@@ -176,7 +278,7 @@
       } catch (err) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="text-center py-8 text-rose-500 font-medium">
+            <td colspan="10" class="text-center py-4 text-danger fw-semibold">
               Error al consultar los registros: ${err.message}
             </td>
           </tr>`;
@@ -203,7 +305,7 @@
       if (!lista || lista.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="text-center py-8 text-slate-400 font-medium">
+            <td colspan="10" class="text-center py-4 text-muted">
               No se encontraron Vales registrados.
             </td>
           </tr>`;
@@ -214,68 +316,196 @@
 
       lista.forEach(item => {
         const esNuevo = item.id === nuevoId;
-        const claseResaltado = esNuevo ? 'nueva-fila bg-emerald-50' : 'hover:bg-slate-50/80';
+        const claseResaltado = esNuevo ? 'nueva-fila' : '';
         const fechaTexto = formatearFecha(item.created_at || item.fecha);
 
         html += `
-          <tr class="${claseResaltado} transition-colors" id="fila-${item.id}">
-            <td class="py-3 px-4 font-bold text-blue-600">#${item.id}</td>
-            <td class="py-3 px-4 text-xs text-slate-500 font-medium">${fechaTexto}</td>
-            <td class="py-3 px-4 font-medium text-slate-900">${item.nombre_empresa || '-'}</td>
-            <td class="py-3 px-4">${item.marca || '-'}</td>
-            <td class="py-3 px-4"><span class="font-mono bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-xs font-semibold text-slate-800">${item.patente || '-'}</span></td>
-            <td class="py-3 px-4 text-xs text-slate-500 max-w-xs truncate">${item.detalle || '-'}</td>
-            <td class="py-3 px-4">
-              <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+          <tr class="${claseResaltado}" id="fila-${item.id}">
+            <td class="ps-4 fw-bold text-primary">#${item.id}</td>
+            <td class="text-muted" style="font-size: 0.8rem;">${fechaTexto}</td>
+            <td class="fw-semibold text-dark">${item.nombre_empresa || '-'}</td>
+            <td>${item.marca || '-'}</td>
+            <td><span class="badge-patente">${item.patente || '-'}</span></td>
+            <td class="text-muted text-truncate" style="max-width: 180px;">${item.detalle || '-'}</td>
+            <td>
+              <span class="badge text-bg-light border text-secondary fw-normal">
                 ${item.medio_pago || 'N/A'}
               </span>
             </td>
-            <td class="py-3 px-4 text-right text-slate-500 font-mono text-xs">$${(item.valor_neto || 0).toLocaleString('es-CL')}</td>
-            <td class="py-3 px-4 text-right font-bold text-slate-900 font-mono">$${(item.valor_total || 0).toLocaleString('es-CL')}</td>
+            <td class="text-end text-muted font-monospace">$${(item.valor_neto || 0).toLocaleString('es-CL')}</td>
+            <td class="text-end fw-bold text-dark font-monospace">$${(item.valor_total || 0).toLocaleString('es-CL')}</td>
+            <td class="text-center pe-4">
+              <div class="btn-group btn-group-sm" role="group">
+                <button onclick="abrirModalEditar(${item.id})" class="btn btn-outline-secondary border-0" title="Editar Vale">
+                  <i class="bi bi-pencil text-primary"></i>
+                </button>
+                <button onclick="eliminarVale(${item.id})" class="btn btn-outline-secondary border-0" title="Eliminar Vale">
+                  <i class="bi bi-trash text-danger"></i>
+                </button>
+              </div>
+            </td>
           </tr>
         `;
       });
 
       tbody.innerHTML = html;
-      lucide.createIcons();
     }
 
     // =============================================================
-    // 3. ACTUALIZACIÓN EN TIEMPO REAL Y ALERTAS
+    // 3. TIEMPO REAL Y ALERTAS (INSERT, UPDATE, DELETE)
     // =============================================================
     function escucharNuevosVales() {
       client
         .channel('realtime_ordenes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ordenes' }, payload => {
-          const nuevoVale = payload.new;
-          
-          // Insertar al inicio del arreglo
-          ordenesLocales.unshift(nuevoVale);
-          
-          // Re-aplicar búsqueda si existe
-          const termino = document.getElementById('inputBuscar').value.toLowerCase().trim();
-          filtrarTabla(termino, nuevoVale.id);
-
-          // Mostrar Alerta Flotante
-          mostrarAlerta(`Folio #${nuevoVale.id} - ${nuevoVale.patente || 'Sin Patente'}`);
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, payload => {
+          if (payload.eventType === 'INSERT') {
+            const nuevoVale = payload.new;
+            ordenesLocales.unshift(nuevoVale);
+            filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim(), nuevoVale.id);
+            mostrarToast(`Folio #${nuevoVale.id} - ${nuevoVale.patente || 'Sin Patente'}`);
+          } 
+          else if (payload.eventType === 'UPDATE') {
+            const index = ordenesLocales.findIndex(item => item.id === payload.new.id);
+            if (index !== -1) {
+              ordenesLocales[index] = payload.new;
+              filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
+            }
+          }
+          else if (payload.eventType === 'DELETE') {
+            ordenesLocales = ordenesLocales.filter(item => item.id !== payload.old.id);
+            filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
+          }
         })
         .subscribe();
     }
 
-    function mostrarAlerta(mensaje) {
-      const alerta = document.getElementById('alertaNuevoVale');
-      const texto = document.getElementById('alertaTexto');
-      
-      texto.innerText = mensaje;
-      alerta.classList.remove('hidden');
-
-      setTimeout(() => {
-        alerta.classList.add('hidden');
-      }, 5000);
+    function mostrarToast(mensaje) {
+      document.getElementById('toastTexto').innerText = mensaje;
+      const toastEl = document.getElementById('toastNuevoVale');
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
     }
 
     // =============================================================
-    // 4. BUSCADOR Y EXPORTACIÓN A EXCEL
+    // 4. OPERACIONES CRUD (EDITAR Y ELIMINAR)
+    // =============================================================
+    const formEditar = document.getElementById('formEditar');
+    const inputTotal = document.getElementById('editValorTotal');
+    const inputNeto = document.getElementById('editValorNeto');
+
+    // Autocalcular el Neto al modificar el Total
+    inputTotal.addEventListener('input', () => {
+      const total = parseFloat(inputTotal.value) || 0;
+      inputNeto.value = Math.round(total / 1.19);
+    });
+
+    function abrirModalEditar(id) {
+      const vale = ordenesLocales.find(item => item.id === id);
+      if (!vale) return;
+
+      document.getElementById('modalEditarLabel').innerText = `Editar Vale #${vale.id}`;
+      document.getElementById('editId').value = vale.id;
+      document.getElementById('editEmpresa').value = vale.nombre_empresa || '';
+      document.getElementById('editMedioPago').value = vale.medio_pago || 'Efectivo';
+      document.getElementById('editMarca').value = vale.marca || '';
+      document.getElementById('editPatente').value = vale.patente || '';
+      document.getElementById('editDetalle').value = vale.detalle || '';
+      document.getElementById('editValorTotal').value = vale.valor_total || 0;
+      document.getElementById('editValorNeto').value = vale.valor_neto || 0;
+
+      if (!modalEditarBs) {
+        modalEditarBs = new bootstrap.Modal(document.getElementById('modalEditar'));
+      }
+      modalEditarBs.show();
+    }
+
+    // Guardar Edición
+    formEditar.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = parseInt(document.getElementById('editId').value);
+      const total = parseFloat(inputTotal.value) || 0;
+      const neto = parseFloat(inputNeto.value) || 0;
+
+      const datosActualizados = {
+        nombre_empresa: document.getElementById('editEmpresa').value,
+        medio_pago: document.getElementById('editMedioPago').value,
+        marca: document.getElementById('editMarca').value.toUpperCase().trim(),
+        patente: document.getElementById('editPatente').value.toUpperCase().trim(),
+        detalle: document.getElementById('editDetalle').value.trim(),
+        valor_total: total,
+        valor_neto: neto
+      };
+
+      try {
+        const { error } = await client
+          .from('ordenes')
+          .update(datosActualizados)
+          .eq('id', id);
+
+        if (error) throw error;
+
+        modalEditarBs.hide();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Vale Actualizado!',
+          text: `El folio #${id} ha sido actualizado correctamente.`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo actualizar el vale: ' + err.message
+        });
+      }
+    });
+
+    // Eliminar Vale
+    async function eliminarVale(id) {
+      const confirmacion = await Swal.fire({
+        title: `¿Eliminar Vale #${id}?`,
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!confirmacion.isConfirmed) return;
+
+      try {
+        const { error } = await client
+          .from('ordenes')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: `El vale #${id} ha sido borrado.`,
+          timer: 1800,
+          showConfirmButton: false
+        });
+
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar el vale: ' + err.message
+        });
+      }
+    }
+
+    // =============================================================
+    // 5. BUSCADOR Y EXPORTACIÓN A EXCEL
     // =============================================================
     function filtrarTabla(termino, nuevoId = null) {
       ordenesFiltradas = ordenesLocales.filter(item => {
@@ -293,14 +523,13 @@
       filtrarTabla(e.target.value.toLowerCase().trim());
     });
 
-    // Exportar a Excel utilizando SheetJS
+    // Exportar a Excel
     document.getElementById('btnExportarExcel')?.addEventListener('click', () => {
       if (ordenesFiltradas.length === 0) {
-        alert('No hay datos disponibles para exportar.');
+        Swal.fire('Atención', 'No hay datos disponibles para exportar.', 'info');
         return;
       }
 
-      // Mapear datos para columnas limpias en el Excel
       const datosExcel = ordenesFiltradas.map(item => ({
         Folio: item.id,
         'Fecha Creación': formatearFecha(item.created_at || item.fecha),
@@ -317,7 +546,6 @@
       const libro = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(libro, hoja, 'Vales_Servicio');
 
-      // Nombre del archivo con fecha de descarga
       const fechaHoy = new Date().toISOString().split('T')[0];
       XLSX.writeFile(libro, `Vales_Alineaciones_Bustamante_${fechaHoy}.xlsx`);
     });
