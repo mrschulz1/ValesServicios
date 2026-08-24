@@ -238,338 +238,342 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script>
-    // =============================================================
-    // 1. CREDENCIALES DE SUPABASE
-    // =============================================================
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              
+// =============================================================
+// 1. CREDENCIALES DE SUPABASE
+// =============================================================
+const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
+const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              
 
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let ordenesLocales = [];
-    let ordenesFiltradas = [];
-    let primerCarga = true;
-    let modalEditarBs = null;
+let ordenesLocales = [];
+let ordenesFiltradas = [];
+let primerCarga = true;
+let modalEditarBs = null;
 
-    // =============================================================
-    // 2. CARGA Y CONSULTA DE VALES
-    // =============================================================
-    async function cargarOrdenes() {
-      const tbody = document.getElementById('tablaCuerpo');
-
-      try {
-        const { data, error } = await client
-          .from('ordenes')
-          .select('*')
-          .order('id', { ascending: false });
-
-        if (error) throw error;
-
-        ordenesLocales = data || [];
-        ordenesFiltradas = [...ordenesLocales];
-        renderizarTabla(ordenesFiltradas);
-
-        // Suscribirse en tiempo real solo la primera vez
-        if (primerCarga) {
-          escucharNuevosVales();
-          primerCarga = false;
-        }
-
-      } catch (err) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="10" class="text-center py-4 text-danger fw-semibold">
-              Error al consultar los registros: ${err.message}
-            </td>
-          </tr>`;
-      }
-    }
-
-    // Formatear Fecha
-    function formatearFechaSencilla(fechaISO) {
-      if (!fechaISO) return '-';
-      
-      // Extrae únicamente la parte YYYY-MM-DD ignorando la hora y huso horario
-      const fechaSolo = fechaISO.split('T')[0]; 
-      const [year, month, day] = fechaSolo.split('-');
-      
-      return `${day}/${month}/${year}`;
-    }
+// =============================================================
+// 2. FUNCIÓN DE FECHA SIN DESFASE (SOLO DÍA/MES/AÑO)
+// =============================================================
+function formatearFecha(fechaISO) {
+  if (!fechaISO) return '-';
   
+  // Extrae la parte YYYY-MM-DD directamente evitando conversión de zona horaria
+  const fechaSolo = String(fechaISO).split('T')[0]; 
+  const partes = fechaSolo.split('-');
+  
+  if (partes.length !== 3) return '-';
+  
+  const [year, month, day] = partes;
+  return `${day}/${month}/${year}`;
+}
 
-    // Renderizar Filas de la Tabla
-    function renderizarTabla(lista, nuevoId = null) {
-      const tbody = document.getElementById('tablaCuerpo');
+// =============================================================
+// 3. CARGA Y CONSULTA DE VALES
+// =============================================================
+async function cargarOrdenes() {
+  const tbody = document.getElementById('tablaCuerpo');
 
-      if (!lista || lista.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="10" class="text-center py-4 text-muted">
-              No se encontraron Vales registrados.
-            </td>
-          </tr>`;
-        return;
-      }
+  try {
+    const { data, error } = await client
+      .from('ordenes')
+      .select('*')
+      .order('id', { ascending: false });
 
-      let html = '';
+    if (error) throw error;
 
-      lista.forEach(item => {
-        const esNuevo = item.id === nuevoId;
-        const claseResaltado = esNuevo ? 'nueva-fila' : '';
-        const fechaTexto = formatearFecha(item.created_at || item.fecha);
+    ordenesLocales = data || [];
+    ordenesFiltradas = [...ordenesLocales];
+    renderizarTabla(ordenesFiltradas);
 
-        html += `
-          <tr class="${claseResaltado}" id="fila-${item.id}">
-            <td class="ps-4 fw-bold text-primary">#${item.id}</td>
-            <td class="text-muted" style="font-size: 0.8rem;">${fechaTexto}</td>
-            <td class="fw-semibold text-dark">${item.nombre_empresa || '-'}</td>
-            <td>${item.marca || '-'}</td>
-            <td><span class="badge-patente">${item.patente || '-'}</span></td>
-            <td class="text-muted text-truncate" style="max-width: 180px;">${item.detalle || '-'}</td>
-            <td>
-              <span class="badge text-bg-light border text-secondary fw-normal">
-                ${item.medio_pago || 'N/A'}
-              </span>
-            </td>
-            <td class="text-end text-muted font-monospace">$${(item.valor_neto || 0).toLocaleString('es-CL')}</td>
-            <td class="text-end fw-bold text-dark font-monospace">$${(item.valor_total || 0).toLocaleString('es-CL')}</td>
-            <td class="text-center pe-4">
-              <div class="btn-group btn-group-sm" role="group">
-                <button onclick="abrirModalEditar(${item.id})" class="btn btn-outline-secondary border-0" title="Editar Vale">
-                  <i class="bi bi-pencil text-primary"></i>
-                </button>
-                <button onclick="eliminarVale(${item.id})" class="btn btn-outline-secondary border-0" title="Eliminar Vale">
-                  <i class="bi bi-trash text-danger"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-
-      tbody.innerHTML = html;
+    // Suscribirse en tiempo real solo la primera vez
+    if (primerCarga) {
+      escucharNuevosVales();
+      primerCarga = false;
     }
 
-    // =============================================================
-    // 3. TIEMPO REAL Y ALERTAS (INSERT, UPDATE, DELETE)
-    // =============================================================
-    function escucharNuevosVales() {
-      client
-        .channel('realtime_ordenes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, payload => {
-          if (payload.eventType === 'INSERT') {
-            const nuevoVale = payload.new;
-            ordenesLocales.unshift(nuevoVale);
-            filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim(), nuevoVale.id);
-            mostrarToast(`Folio #${nuevoVale.id} - ${nuevoVale.patente || 'Sin Patente'}`);
-          } 
-          else if (payload.eventType === 'UPDATE') {
-            const index = ordenesLocales.findIndex(item => item.id === payload.new.id);
-            if (index !== -1) {
-              ordenesLocales[index] = payload.new;
-              filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
-            }
-          }
-          else if (payload.eventType === 'DELETE') {
-            ordenesLocales = ordenesLocales.filter(item => item.id !== payload.old.id);
-            filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
-          }
-        })
-        .subscribe();
-    }
+  } catch (err) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" class="text-center py-4 text-danger fw-semibold">
+          Error al consultar los registros: ${err.message}
+        </td>
+      </tr>`;
+  }
+}
 
-    function mostrarToast(mensaje) {
-      document.getElementById('toastTexto').innerText = mensaje;
-      const toastEl = document.getElementById('toastNuevoVale');
-      const toast = new bootstrap.Toast(toastEl);
-      toast.show();
-    }
+// Renderizar Filas de la Tabla
+function renderizarTabla(lista, nuevoId = null) {
+  const tbody = document.getElementById('tablaCuerpo');
 
-    // =============================================================
-    // 4. OPERACIONES CRUD (EDITAR Y ELIMINAR)
-    // =============================================================
-    const formEditar = document.getElementById('formEditar');
-    const inputTotal = document.getElementById('editValorTotal');
-    const inputNeto = document.getElementById('editValorNeto');
-
-    // Autocalcular el Neto al modificar el Total
-    inputTotal.addEventListener('input', () => {
-      const total = parseFloat(inputTotal.value) || 0;
-      inputNeto.value = Math.round(total / 1.19);
-    });
-
-    function abrirModalEditar(id) {
-      const vale = ordenesLocales.find(item => item.id === id);
-      if (!vale) return;
-
-      document.getElementById('modalEditarLabel').innerText = `Editar Vale #${vale.id}`;
-      document.getElementById('editId').value = vale.id;
-      document.getElementById('editEmpresa').value = vale.nombre_empresa || '';
-      document.getElementById('editMedioPago').value = vale.medio_pago || 'Efectivo';
-      document.getElementById('editMarca').value = vale.marca || '';
-      document.getElementById('editPatente').value = vale.patente || '';
-      document.getElementById('editDetalle').value = vale.detalle || '';
-      document.getElementById('editValorTotal').value = vale.valor_total || 0;
-      document.getElementById('editValorNeto').value = vale.valor_neto || 0;
-
-      if (!modalEditarBs) {
-        modalEditarBs = new bootstrap.Modal(document.getElementById('modalEditar'));
-      }
-      modalEditarBs.show();
-    }
-
-    // Guardar Edición
-    formEditar.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const id = parseInt(document.getElementById('editId').value);
-      const total = parseFloat(inputTotal.value) || 0;
-      const neto = parseFloat(inputNeto.value) || 0;
-
-      const datosActualizados = {
-        nombre_empresa: document.getElementById('editEmpresa').value,
-        medio_pago: document.getElementById('editMedioPago').value,
-        marca: document.getElementById('editMarca').value.toUpperCase().trim(),
-        patente: document.getElementById('editPatente').value.toUpperCase().trim(),
-        detalle: document.getElementById('editDetalle').value.trim(),
-        valor_total: total,
-        valor_neto: neto
-      };
-
-      try {
-        const { error } = await client
-          .from('ordenes')
-          .update(datosActualizados)
-          .eq('id', id);
-
-        if (error) throw error;
-
-        modalEditarBs.hide();
-        
-        Swal.fire({
-          icon: 'success',
-          title: '¡Vale Actualizado!',
-          text: `El folio #${id} ha sido actualizado correctamente.`,
-          timer: 2000,
-          showConfirmButton: false
-        });
-
-      } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo actualizar el vale: ' + err.message
-        });
-      }
-    });
-
-    // Eliminar Vale
-    async function eliminarVale(id) {
-    const confirmacion = await Swal.fire({
-      title: `¿Eliminar Vale #${id}?`,
-      text: "Esta acción no se puede deshacer.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    });
-
-    if (!confirmacion.isConfirmed) return;
-
-    try {
-      // Verificar si hay usuario autenticado
-      const { data: { user } } = await client.auth.getUser();
-
-      if (!user) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Acceso Denegado',
-          text: 'Debes iniciar sesión con una cuenta de administrador autorizada para eliminar vales.'
-        });
-        return;
-      }
-
-      // Petición DELETE enviando token autenticado
-      const { error } = await client
-        .from('ordenes')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      // Resincronizar la secuencia de la BD para que el próximo vale tome el MAX(id) real
-      await client.rpc('reset_secuencia_ordenes');
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Eliminado',
-        text: `El vale #${id} ha sido borrado correctamente.`,
-        timer: 1800,
-        showConfirmButton: false
-      });
-
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al eliminar',
-        text: err.message
-      });
-    }
+  if (!lista || lista.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" class="text-center py-4 text-muted fs-6">
+          No se encontraron Vales registrados.
+        </td>
+      </tr>`;
+    return;
   }
 
-    // =============================================================
-    // 5. BUSCADOR Y EXPORTACIÓN A EXCEL
-    // =============================================================
-    function filtrarTabla(termino, nuevoId = null) {
-      ordenesFiltradas = ordenesLocales.filter(item => {
-        return (
-          (item.patente && item.patente.toLowerCase().includes(termino)) ||
-          (item.nombre_empresa && item.nombre_empresa.toLowerCase().includes(termino)) ||
-          (item.marca && item.marca.toLowerCase().includes(termino)) ||
-          (item.id && item.id.toString().includes(termino))
-        );
+  let html = '';
+
+  lista.forEach(item => {
+    const esNuevo = item.id === nuevoId;
+    const claseResaltado = esNuevo ? 'nueva-fila' : '';
+    const fechaTexto = formatearFecha(item.created_at || item.fecha);
+
+    html += `
+      <tr class="${claseResaltado}" id="fila-${item.id}">
+        <td class="ps-4 fw-bold text-primary">#${item.id}</td>
+        
+        <!-- FECHA SIN DESFASE Y LEGIBLE -->
+        <td class="fw-bold text-dark text-nowrap" style="font-size: 0.9rem;">${fechaTexto}</td>
+        
+        <td class="fw-semibold text-dark">${item.nombre_empresa || '-'}</td>
+        <td>${item.marca || '-'}</td>
+        <td><span class="badge-patente">${item.patente || '-'}</span></td>
+        <td class="text-muted text-truncate" style="max-width: 180px;">${item.detalle || '-'}</td>
+        <td>
+          <span class="badge text-bg-light border text-secondary fw-normal">
+            ${item.medio_pago || 'N/A'}
+          </span>
+        </td>
+        <td class="text-end text-muted font-monospace">$${(item.valor_neto || 0).toLocaleString('es-CL')}</td>
+        <td class="text-end fw-bold text-dark font-monospace">$${(item.valor_total || 0).toLocaleString('es-CL')}</td>
+        <td class="text-center pe-4">
+          <div class="btn-group btn-group-sm" role="group">
+            <button onclick="abrirModalEditar(${item.id})" class="btn btn-outline-secondary border-0" title="Editar Vale">
+              <i class="bi bi-pencil text-primary"></i>
+            </button>
+            <button onclick="eliminarVale(${item.id})" class="btn btn-outline-secondary border-0" title="Eliminar Vale">
+              <i class="bi bi-trash text-danger"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// =============================================================
+// 4. TIEMPO REAL Y ALERTAS (INSERT, UPDATE, DELETE)
+// =============================================================
+function escucharNuevosVales() {
+  client
+    .channel('realtime_ordenes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, payload => {
+      if (payload.eventType === 'INSERT') {
+        const nuevoVale = payload.new;
+        ordenesLocales.unshift(nuevoVale);
+        filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim(), nuevoVale.id);
+        mostrarToast(`Folio #${nuevoVale.id} - ${nuevoVale.patente || 'Sin Patente'}`);
+      } 
+      else if (payload.eventType === 'UPDATE') {
+        const index = ordenesLocales.findIndex(item => item.id === payload.new.id);
+        if (index !== -1) {
+          ordenesLocales[index] = payload.new;
+          filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
+        }
+      }
+      else if (payload.eventType === 'DELETE') {
+        ordenesLocales = ordenesLocales.filter(item => item.id !== payload.old.id);
+        filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
+      }
+    })
+    .subscribe();
+}
+
+function mostrarToast(mensaje) {
+  document.getElementById('toastTexto').innerText = mensaje;
+  const toastEl = document.getElementById('toastNuevoVale');
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+// =============================================================
+// 5. OPERACIONES CRUD (EDITAR Y ELIMINAR)
+// =============================================================
+const formEditar = document.getElementById('formEditar');
+const inputTotal = document.getElementById('editValorTotal');
+const inputNeto = document.getElementById('editValorNeto');
+
+// Autocalcular el Neto al modificar el Total
+inputTotal.addEventListener('input', () => {
+  const total = parseFloat(inputTotal.value) || 0;
+  inputNeto.value = Math.round(total / 1.19);
+});
+
+function abrirModalEditar(id) {
+  const vale = ordenesLocales.find(item => item.id === id);
+  if (!vale) return;
+
+  document.getElementById('modalEditarLabel').innerText = `Editar Vale #${vale.id}`;
+  document.getElementById('editId').value = vale.id;
+  document.getElementById('editEmpresa').value = vale.nombre_empresa || '';
+  document.getElementById('editMedioPago').value = vale.medio_pago || 'Efectivo';
+  document.getElementById('editMarca').value = vale.marca || '';
+  document.getElementById('editPatente').value = vale.patente || '';
+  document.getElementById('editDetalle').value = vale.detalle || '';
+  document.getElementById('editValorTotal').value = vale.valor_total || 0;
+  document.getElementById('editValorNeto').value = vale.valor_neto || 0;
+
+  if (!modalEditarBs) {
+    modalEditarBs = new bootstrap.Modal(document.getElementById('modalEditar'));
+  }
+  modalEditarBs.show();
+}
+
+// Guardar Edición
+formEditar.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const id = parseInt(document.getElementById('editId').value);
+  const total = parseFloat(inputTotal.value) || 0;
+  const neto = parseFloat(inputNeto.value) || 0;
+
+  const datosActualizados = {
+    nombre_empresa: document.getElementById('editEmpresa').value,
+    medio_pago: document.getElementById('editMedioPago').value,
+    marca: document.getElementById('editMarca').value.toUpperCase().trim(),
+    patente: document.getElementById('editPatente').value.toUpperCase().trim(),
+    detalle: document.getElementById('editDetalle').value.trim(),
+    valor_total: total,
+    valor_neto: neto
+  };
+
+  try {
+    const { error } = await client
+      .from('ordenes')
+      .update(datosActualizados)
+      .eq('id', id);
+
+    if (error) throw error;
+
+    modalEditarBs.hide();
+    
+    Swal.fire({
+      icon: 'success',
+      title: '¡Vale Actualizado!',
+      text: `El folio #${id} ha sido actualizado correctamente.`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo actualizar el vale: ' + err.message
+    });
+  }
+});
+
+// Eliminar Vale
+async function eliminarVale(id) {
+  const confirmacion = await Swal.fire({
+    title: `¿Eliminar Vale #${id}?`,
+    text: "Esta acción no se puede deshacer.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (!confirmacion.isConfirmed) return;
+
+  try {
+    const { data: { user } } = await client.auth.getUser();
+
+    if (!user) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Acceso Denegado',
+        text: 'Debes iniciar sesión con una cuenta de administrador autorizada para eliminar vales.'
       });
-      renderizarTabla(ordenesFiltradas, nuevoId);
+      return;
     }
 
-    document.getElementById('inputBuscar')?.addEventListener('input', (e) => {
-      filtrarTabla(e.target.value.toLowerCase().trim());
+    const { error } = await client
+      .from('ordenes')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await client.rpc('reset_secuencia_ordenes');
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Eliminado',
+      text: `El vale #${id} ha sido borrado correctamente.`,
+      timer: 1800,
+      showConfirmButton: false
     });
 
-    // Exportar a Excel
-    document.getElementById('btnExportarExcel')?.addEventListener('click', () => {
-      if (ordenesFiltradas.length === 0) {
-        Swal.fire('Atención', 'No hay datos disponibles para exportar.', 'info');
-        return;
-      }
-
-      const datosExcel = ordenesFiltradas.map(item => ({
-        Folio: item.id,
-        'Fecha Creación': formatearFecha(item.created_at || item.fecha),
-        Empresa: item.nombre_empresa || '',
-        Vehículo: item.marca || '',
-        Patente: item.patente || '',
-        Detalle: item.detalle || '',
-        'Medio de Pago': item.medio_pago || '',
-        'Valor Neto ($)': item.valor_neto || 0,
-        'Valor Total ($)': item.valor_total || 0
-      }));
-
-      const hoja = XLSX.utils.json_to_sheet(datosExcel);
-      const libro = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(libro, hoja, 'Vales_Servicio');
-
-      const fechaHoy = new Date().toISOString().split('T')[0];
-      XLSX.writeFile(libro, `Vales_Alineaciones_Bustamante_${fechaHoy}.xlsx`);
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al eliminar',
+      text: err.message
     });
+  }
+}
 
-    // Botón refrescar manual
-    document.getElementById('btnRefrescar')?.addEventListener('click', cargarOrdenes);
+// =============================================================
+// 6. BUSCADOR Y EXPORTACIÓN A EXCEL
+// =============================================================
+function filtrarTabla(termino, nuevoId = null) {
+  ordenesFiltradas = ordenesLocales.filter(item => {
+    return (
+      (item.patente && item.patente.toLowerCase().includes(termino)) ||
+      (item.nombre_empresa && item.nombre_empresa.toLowerCase().includes(termino)) ||
+      (item.marca && item.marca.toLowerCase().includes(termino)) ||
+      (item.id && item.id.toString().includes(termino))
+    );
+  });
+  renderizarTabla(ordenesFiltradas, nuevoId);
+}
 
-    // Cargar registros al inicio
-    document.addEventListener('DOMContentLoaded', cargarOrdenes);
+document.getElementById('inputBuscar')?.addEventListener('input', (e) => {
+  filtrarTabla(e.target.value.toLowerCase().trim());
+});
+
+// Exportar a Excel
+document.getElementById('btnExportarExcel')?.addEventListener('click', () => {
+  if (ordenesFiltradas.length === 0) {
+    Swal.fire('Atención', 'No hay datos disponibles para exportar.', 'info');
+    return;
+  }
+
+  const datosExcel = ordenesFiltradas.map(item => ({
+    Folio: item.id,
+    'Fecha Creación': formatearFecha(item.created_at || item.fecha),
+    Empresa: item.nombre_empresa || '',
+    Vehículo: item.marca || '',
+    Patente: item.patente || '',
+    Detalle: item.detalle || '',
+    'Medio de Pago': item.medio_pago || '',
+    'Valor Neto ($)': item.valor_neto || 0,
+    'Valor Total ($)': item.valor_total || 0
+  }));
+
+  const hoja = XLSX.utils.json_to_sheet(datosExcel);
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, 'Vales_Servicio');
+
+  const fechaHoy = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(libro, `Vales_Alineaciones_Bustamante_${fechaHoy}.xlsx`);
+});
+
+// Botón refrescar manual
+document.getElementById('btnRefrescar')?.addEventListener('click', cargarOrdenes);
+
+// Cargar registros al inicio
+document.addEventListener('DOMContentLoaded', cargarOrdenes);
   </script>
 </body>
 </html>
