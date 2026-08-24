@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Generador de Vales de Servicio | Alineaciones Bustamante</title>
 
   <!-- Favicon -->
@@ -11,7 +11,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- SweetAlert2 (Notificaciones emergentes automáticas) -->
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- Google Fonts: Inter -->
@@ -21,28 +21,42 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    /* Estilos responsivos personalizados para SweetAlert2 */
+    .swal2-popup-responsive {
+      border-radius: 1rem !important;
+      padding: 1.25rem !important;
+      width: 90% !important;
+      max-width: 420px !important;
+    }
+    @media (min-width: 640px) {
+      .swal2-popup-responsive {
+        padding: 1.75rem !important;
+      }
+    }
   </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen flex flex-col justify-between p-4 md:p-8">
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between p-3 sm:p-6 md:p-8 antialiased">
 
-  <!-- Contenedor Principal -->
-  <div class="max-w-2xl mx-auto w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-auto">
+  <!-- Contenedor Principal Adaptable -->
+  <div class="max-w-2xl mx-auto w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden my-auto transition-all">
     
     <!-- Encabezado / Branding -->
-    <div class="bg-slate-900 text-white p-6 sm:p-8 border-b border-slate-800">
+    <div class="bg-slate-900 text-white p-4 sm:p-6 md:p-8 border-b border-slate-800">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center space-x-4">
-          <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-12 w-auto object-contain" onerror="this.style.display='none'">
-          <div>
-            <h1 class="text-xl font-bold tracking-tight text-white">Alineaciones Bustamante</h1>
+        
+        <!-- Logo y Nombre -->
+        <div class="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto justify-center sm:justify-start">
+          <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-10 sm:h-12 w-auto object-contain" onerror="this.style.display='none'">
+          <div class="text-center sm:text-left">
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">Alineaciones Bustamante</h1>
             <p class="text-xs text-slate-400 mt-0.5">Generador de Vales de Servicio</p>
           </div>
         </div>
 
-        <!-- Botón para ir al Admin -->
-        <a href="admin.html" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700 hover:text-white transition-all">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Botón Admin (Ocupa todo el ancho en móviles pequeños) -->
+        <a href="admin.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-300 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 hover:text-white transition-all active:scale-95">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
@@ -52,119 +66,119 @@
     </div>
 
     <!-- Formulario -->
-    <form id="formVale" class="p-6 sm:p-8 space-y-6">
+    <form id="formVale" class="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
 
       <!-- Selección de Empresa -->
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Empresa / Cliente</label>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Empresa / Cliente</label>
+        <div class="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 gap-2">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm font-medium text-slate-700 select-none">
             <input type="radio" name="empresa_option" value="Baudet" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Baudet</span>
+            <span class="ml-2 truncate">Baudet</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm font-medium text-slate-700 select-none">
             <input type="radio" name="empresa_option" value="Arvi" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Arvi</span>
+            <span class="ml-2 truncate">Arvi</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm font-medium text-slate-700 select-none">
             <input type="radio" name="empresa_option" value="Incubo" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Incubo</span>
+            <span class="ml-2 truncate">Incubo</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm font-medium text-slate-700 select-none">
             <input type="radio" name="empresa_option" value="Suarez" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Suarez</span>
+            <span class="ml-2 truncate">Suarez</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm font-medium text-slate-700 select-none">
             <input type="radio" name="empresa_option" value="OD Automotriz" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">OD Automotriz</span>
+            <span class="ml-2 truncate">OD Automotriz</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm font-medium text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm font-medium text-slate-700 select-none">
             <input type="radio" name="empresa_option" value="Particular" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500" checked>
-            <span class="ml-2.5">Particular</span>
+            <span class="ml-2 truncate">Particular</span>
           </label>
         </div>
       </div>
 
       <!-- Vehículo y Patente -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
-          <label for="marca" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Vehículo / Marca</label>
-          <input type="text" id="marca" required placeholder="Ej: Audi A3, Toyota Yaris" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+          <label for="marca" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Vehículo / Marca</label>
+          <input type="text" id="marca" required placeholder="Ej: Audi A3, Toyota Yaris" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
         </div>
         <div>
-          <label for="patente" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Patente</label>
-          <input type="text" id="patente" required placeholder="Ej: BBBB11" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm uppercase font-mono tracking-wider transition-all">
+          <label for="patente" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Patente</label>
+          <input type="text" id="patente" required placeholder="Ej: BBBB11" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm uppercase font-mono tracking-wider transition-all">
         </div>
       </div>
 
       <!-- Detalle del Servicio -->
       <div>
-        <label for="detalle" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Detalle del Servicio</label>
-        <textarea id="detalle" rows="2" placeholder="Ej: Alineación y balanceo de 4 ruedas..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"></textarea>
+        <label for="detalle" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Detalle del Servicio</label>
+        <textarea id="detalle" rows="2" placeholder="Ej: Alineación y balanceo de 4 ruedas..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"></textarea>
       </div>
 
       <!-- Valores NETO y TOTAL (CÁLCULO BIDIRECCIONAL) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-100">
         <div>
-          <label for="valor_neto" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <label for="valor_neto" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
             Valor Neto ($)
           </label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-mono text-sm">$</span>
-            <input type="number" id="valor_neto" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono transition-all">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-mono text-sm">$</span>
+            <input type="number" id="valor_neto" step="1" min="0" placeholder="0" class="w-full pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono transition-all">
           </div>
         </div>
 
         <div>
-          <label for="valor_total" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <label for="valor_total" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
             Valor Total ($)
           </label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-mono text-sm">$</span>
-            <input type="number" id="valor_total" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono font-semibold text-slate-800 transition-all">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-mono text-sm">$</span>
+            <input type="number" id="valor_total" step="1" min="0" placeholder="0" class="w-full pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono font-semibold text-slate-800 transition-all">
           </div>
         </div>
       </div>
 
       <!-- Medio de Pago -->
       <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Medio de Pago</label>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm text-slate-700">
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Medio de Pago</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm text-slate-700 select-none">
             <input type="radio" name="medio_pago" value="Efectivo" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500" checked>
-            <span class="ml-2.5">Efectivo</span>
+            <span class="ml-2 truncate">Efectivo</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm text-slate-700 select-none">
             <input type="radio" name="medio_pago" value="Tarjeta" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Tarjeta</span>
+            <span class="ml-2 truncate">Tarjeta</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm text-slate-700 select-none">
             <input type="radio" name="medio_pago" value="Transferencia" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Transferencia</span>
+            <span class="ml-2 truncate">Transferencia</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm text-slate-700 select-none">
             <input type="radio" name="medio_pago" value="Credito empresa" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Crédito Empresa</span>
+            <span class="ml-2 truncate">Crédito Empresa</span>
           </label>
-          <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-sm text-slate-700">
+          <label class="flex items-center p-2.5 sm:p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all text-xs sm:text-sm text-slate-700 select-none">
             <input type="radio" name="medio_pago" value="Efectivo/" class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
-            <span class="ml-2.5">Efectivo / Mixto</span>
+            <span class="ml-2 truncate">Efectivo / Mixto</span>
           </label>
         </div>
       </div>
 
       <!-- Botón de Envío -->
-      <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center space-x-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center space-x-2 touch-manipulation">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 002-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
         </svg>
-        <span id="btnTexto">Guardar Vale de Servicio</span>
+        <span id="btnTexto" class="text-sm sm:text-base">Guardar Vale de Servicio</span>
       </button>
 
     </form>
   </div>
 
-  <p class="text-center text-xs text-slate-400 mt-6">Alineaciones Bustamante © 2026</p>
+  <p class="text-center text-xs text-slate-400 mt-4 sm:mt-6">Alineaciones Bustamante © 2026</p>
 
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -188,8 +202,6 @@
     // =============================================================
     // 2. CÁLCULO BIDIRECCIONAL (NETO <-> TOTAL)
     // =============================================================
-    
-    // Si el usuario escribe en NETO -> Calcula el TOTAL
     inputNeto.addEventListener('input', () => {
       const netoVal = parseFloat(inputNeto.value);
       if (!isNaN(netoVal) && netoVal > 0) {
@@ -199,7 +211,6 @@
       }
     });
 
-    // Si el usuario escribe en TOTAL -> Calcula el NETO
     inputTotal.addEventListener('input', () => {
       const totalVal = parseFloat(inputTotal.value);
       if (!isNaN(totalVal) && totalVal > 0) {
@@ -223,7 +234,8 @@
           text: 'Por favor selecciona una empresa.',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
+          customClass: { popup: 'swal2-popup-responsive' }
         });
         return;
       }
@@ -232,7 +244,6 @@
       btnTexto.innerText = 'Guardando en la BD...';
 
       try {
-        // Obtenemos los datos del formulario
         const datosVale = {
           nombre_empresa: empresaRadio.value,
           marca: document.getElementById('marca').value.toUpperCase().trim(),
@@ -243,7 +254,6 @@
           medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
         };
 
-        // Inserción directa en la BD (Supabase genera el ID autoincrementable)
         const { data, error } = await client
           .from('ordenes')
           .insert([datosVale])
@@ -251,25 +261,25 @@
 
         if (error) throw error;
 
-        // Extraer el folio asignado por la BD
         const idGenerado = (data && data.length > 0) ? data[0].id : 'N/A';
 
         // Resetear el formulario
         form.reset();
 
-        // NOTIFICACIÓN AUTOMÁTICA QUE SE CIERRA EN 2 SEGUNDOS
+        // NOTIFICACIÓN AUTOMÁTICA ADAPTABLE A PANTALLA (2 SEGUNDOS)
         Swal.fire({
           icon: 'success',
           title: '¡Vale Registrado!',
           html: `
-            <div class="text-slate-600 text-sm mt-1">
+            <div class="text-slate-600 text-xs sm:text-sm mt-1 leading-relaxed">
               <b>Folio N°:</b> #${idGenerado}<br>
               <b>Vehículo:</b> ${datosVale.marca} (${datosVale.patente})
             </div>
           `,
-          timer: 5000,
+          timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
+          customClass: { popup: 'swal2-popup-responsive' }
         });
 
       } catch (err) {
@@ -277,7 +287,8 @@
         Swal.fire({
           icon: 'error',
           title: 'Error al guardar',
-          text: err.message
+          text: err.message,
+          customClass: { popup: 'swal2-popup-responsive' }
         });
       } finally {
         btnGuardar.disabled = false;
