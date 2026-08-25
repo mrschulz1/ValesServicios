@@ -3,17 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Informe Técnico de Geometría - Alineaciones Bustamante</title>
+  <title>Informe Técnico de Alineacion - Alineaciones Bustamante</title>
   <link rel="icon" type="image/png" href="logooriginal.png">
-  
-  <!-- Dependencias externas -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Google Fonts (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  
-  <!-- Módulo Centralizado de Autenticación -->
-  <script src="auth.js"></script>
-
   <style>
     @media print {
       .no-print { display: none !important; }
@@ -25,28 +24,48 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between p-4">
 
-  <!-- Botones de Navegación y Cerrar Sesión -->
-  <div class="flex justify-between items-center w-full max-w-5xl mx-auto mb-4 no-print">
-    <button type="button" onclick="cerrarSesion()" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1">
-      🚪 Cerrar Sesión
-    </button>
-    <div class="flex gap-2">
-      <a href="index.html" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
-        🎟️ Vales de Servicio
-      </a>
-      <a href="admin.html" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm">
-        ⚙️ Administración
-      </a>
+  <!-- Modal de Autenticación Genérico -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-xl">🔑</div>
+        <h2 class="text-lg font-bold text-slate-900">Informe de Geometría</h2>
+        <h3 class="text-md font-semibold text-slate-700">Alineaciones Bustamante</h3>
+        <p class="text-xs text-slate-500 mt-1">Ingresa con credenciales del taller</p>
+      </div>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Correo Electrónico</label>
+          <input type="email" id="loginEmail" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="usuario@taller.cl">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase">Contraseña</label>
+          <input type="password" id="loginPassword" required class="mt-1 w-full rounded-lg border-slate-300 p-2.5 border text-sm focus:ring-indigo-500" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">
+          Iniciar Sesión
+        </button>
+      </form>
     </div>
   </div>
 
+  <!-- Botones de Navegación y Cerrar Sesión -->
+  <div class="flex justify-between items-center w-full max-w-5xl mx-auto mb-4 no-print">
+    <button id="btnCerrarSesion" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg font-medium transition shadow-sm flex items-center gap-1">
+      🚪 Cerrar Sesión
+    </button>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 mx-auto" style="max-width: 650px;">
+      <a href="../index.html" class="btn btn-outline-secondary btn-nav d-flex align-items-center gap-1.5 shadow-sm">
+        <i class="bi bi-house-door-fill"></i> Inicio
+      </a>
   <!-- Contenedor Principal del Informe -->
   <div class="w-full max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-sm border border-slate-200 print-shadow-none my-auto">
     
     <!-- Encabezado con Logo y Folio -->
     <div class="border-b pb-4 border-slate-200 mb-6 flex justify-between items-start">
       <div class="flex items-center space-x-4">
-        <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-16 object-contain" onerror="this.style.display='none'">
+        <img src="logooriginal.png" alt="Alineaciones Bustamante" class="h-16 object-contain">
         <div>
           <h1 class="text-xl font-bold text-slate-800 tracking-tight uppercase">Informe Técnico de Geometría y Alineación</h1>
           <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Alineaciones Bustamante</p>
@@ -67,6 +86,7 @@
       <!-- Datos del Vehículo y Propietario -->
       <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         
+        <!-- Patente -->
         <div class="col-span-1">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Patente</label>
           <div class="relative">
@@ -76,40 +96,48 @@
           <span id="loadingPatente" class="hidden text-[10px] text-indigo-600 font-semibold mt-1 block">🔎 Consultando...</span>
         </div>
 
+        <!-- Marca -->
         <div class="col-span-1">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
           <input type="text" id="marca" placeholder="EJ: AUDI" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:border-indigo-600 uppercase">
         </div>
 
+        <!-- Modelo -->
         <div class="col-span-1">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Modelo</label>
           <input type="text" id="modelo" placeholder="EJ: A3" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:border-indigo-600 uppercase">
         </div>
 
+        <!-- Año -->
         <div class="col-span-1">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Año</label>
           <input type="text" id="anio" placeholder="EJ: 2018" class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:border-indigo-600 font-mono text-center">
         </div>
 
+        <!-- VIN / Chasis -->
         <div class="col-span-2">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">N° VIN / Chasis</label>
           <input type="text" id="vin" placeholder="WAUZZZ8P16A..." class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:border-indigo-600 font-mono uppercase">
         </div>
 
+        <!-- Propietario / Cliente (Manual) -->
         <div class="col-span-4">
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Propietario / Cliente</label>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Propietario / Cliente (Ingreso Manual)</label>
           <input type="text" id="cliente" placeholder="Nombre completo o Empresa" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:border-indigo-600">
         </div>
 
+        <!-- Técnico Operador -->
         <div class="col-span-2">
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Técnico Operador</label>
           <input type="text" id="tecnico" placeholder="Nombre Técnico" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:bg-white focus:border-indigo-600">
         </div>
+
       </div>
 
       <!-- DIAGRAMA INTERACTIVO Y MEDICIONES -->
       <div class="relative w-full h-[580px] bg-slate-50 border border-slate-200 rounded-xl mb-6 flex items-center justify-center overflow-hidden">
         
+        <!-- SVG Vista Superior Vehículo -->
         <svg class="h-[480px] opacity-80" viewBox="0 0 200 400" fill="none">
           <rect x="35" y="30" width="130" height="340" rx="40" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/>
           <path d="M 50 110 Q 100 95 150 110 L 142 140 Q 100 135 58 140 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
@@ -284,7 +312,7 @@
         </p>
       </div>
 
-      <!-- BOTÓN GUARDAR E IMPRIMIR -->
+      <!-- UNICO BOTON: GUARDAR E IMPRIMIR AUTOMATICO -->
       <div class="mt-6 flex justify-end no-print">
         <button type="submit" id="btnImprimirGuardar" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition flex items-center gap-2">
           <i data-lucide="printer" class="w-5 h-5"></i>
@@ -298,29 +326,82 @@
     Alineaciones Bustamante © 2026
   </div>
 
-  <!-- LÓGICA DE APLICACIÓN DE LA PÁGINA -->
   <script>
-    // Inicializar íconos Lucide
+    // Inicializar Lucide Icons
     lucide.createIcons();
 
-    // Referencias DOM
-    const BOOST_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnQiOiJWSUNUT1IgTSBTIE1JUk MirandaMirandaMiranda";
+    // Configuración de Supabase
+    // Configuración de Supabase forzando el esquema public
+    const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA";
+    const { createClient } = supabase;
+
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      db: {
+        schema: 'public'
+      }
+    });
+
+    // Token Boostr API
+    const BOOST_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnQiOiJWSUNUT1IgTSBTIE1JUkFOREEiLCJwbGFuIjoiZnJlZSIsImFkZG9ucyI6IiIsImV4Y2x1ZGVzIjoiIiwicmF0ZSI6IjV4MTAiLCJjdXN0b20iOnsiZG9jdW1lbnRfbnVtYmVyX2RhaWx5X2xpbWl0IjowLCJwbGF0ZXNfZGFpbHlfbGltaXQiOjV9LCJpYXQiOjE3ODY5OTkyMzMsImV4cCI6MTc4OTU5MTIzM30.glMjAi_WhmMWBOdgylX1SI7m5AVbAQ6HI7QMRYatvQ4";
+
+    // Elementos DOM
+    const loginModal = document.getElementById('loginModal');
+    const loginForm = document.getElementById('loginForm');
+    const btnCerrarSesion = document.getElementById('btnCerrarSesion');
     const form = document.getElementById('informeForm');
     const inputPatente = document.getElementById('patente');
     const loadingPatente = document.getElementById('loadingPatente');
 
     document.getElementById('fecha').valueAsDate = new Date();
 
-    // 1. BÚSQUEDA EN BOOSTR API
+    // 1. AUTENTICACIÓN
+    async function verificarSesion() {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        loginModal.classList.add('hidden');
+      } else {
+        loginModal.classList.remove('hidden');
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) {
+        alert('Credenciales incorrectas: ' + error.message);
+      } else {
+        loginModal.classList.add('hidden');
+      }
+    });
+
+    btnCerrarSesion.addEventListener('click', async () => {
+      await client.auth.signOut();
+      window.location.reload();
+    });
+
+    verificarSesion();
+
+    // 2. BUSQUEDA EXCLUSIVA EN BOOSTR API (MARCA, MODELO, AÑO, VIN)
+    // BUSQUEDA EXCLUSIVA EN BOOSTR API
     async function buscarDatosVehiculo() {
-      if (!inputPatente) return;
-      const patenteVal = inputPatente.value.toUpperCase().replace(/[^A-Z0-9]/g, '').trim();
+      // Asegurar captura limpia de la patente
+      const inputEl = document.getElementById('patente');
+      if (!inputEl) return;
+
+      const patenteVal = inputEl.value.toUpperCase().replace(/[^A-Z0-9]/g, '').trim();
       
+      // Validar largo mínimo de patente chilena (4 a 6 caracteres)
       if (patenteVal.length < 4) return;
 
       loadingPatente.innerText = '🌐 Consultando API...';
       loadingPatente.classList.remove('hidden', 'text-amber-600', 'text-emerald-600');
       loadingPatente.classList.add('text-indigo-600');
+
+      console.log("Iniciando consulta para la patente:", patenteVal);
 
       try {
         const response = await fetch(`https://api.boostr.cl/vehicle/${patenteVal}.json`, {
@@ -331,46 +412,70 @@
           }
         });
 
+        console.log("Estado de la respuesta HTTP:", response.status);
+
         if (response.status === 429) throw new Error('LIMIT_EXCEEDED');
         if (!response.ok) throw new Error(`HTTP_${response.status}`);
 
         const resData = await response.json();
+        console.log("Respuesta obtenida de la API:", resData);
+
         const vehicle = resData.data || resData;
 
         if (vehicle) {
-          document.getElementById('marca').value = String(vehicle.brand || vehicle.marca || '').toUpperCase();
-          document.getElementById('modelo').value = String(vehicle.model || vehicle.modelo || '').toUpperCase();
-          document.getElementById('anio').value = String(vehicle.year || vehicle.anio || '');
-          document.getElementById('vin').value = String(vehicle.vin || vehicle.chasis || '').toUpperCase();
+          // Extraer datos con fallback para distintos nombres de llaves
+          const marca = vehicle.brand || vehicle.marca || vehicle.make || '';
+          const modelo = vehicle.model || vehicle.modelo || '';
+          const anio = vehicle.year || vehicle.anio || vehicle.year_model || '';
+          const vin = vehicle.vin || vehicle.chasis || vehicle.chassis || vehicle.chassis_number || vehicle.nro_chasis || vehicle.serial_number || '';
 
-          loadingPatente.innerText = '✓ Datos cargados';
+          document.getElementById('marca').value = String(marca).toUpperCase();
+          document.getElementById('modelo').value = String(modelo).toUpperCase();
+          document.getElementById('anio').value = String(anio);
+          document.getElementById('vin').value = String(vin).toUpperCase();
+
+          loadingPatente.innerText = '✓ Datos de vehículo cargados';
           loadingPatente.classList.remove('text-indigo-600');
           loadingPatente.classList.add('text-emerald-600');
+
           document.getElementById('cliente').focus();
         } else {
           throw new Error('NOT_FOUND');
         }
+
       } catch (error) {
-        loadingPatente.innerText = error.message === 'LIMIT_EXCEEDED' 
-          ? '⚠️ Límite de API alcanzado.' 
-          : 'ℹ️ No encontrado. Ingresa datos a mano.';
+        console.warn('Detalle del error en API:', error.message);
+
+        if (error.message === 'LIMIT_EXCEEDED') {
+          loadingPatente.innerText = '⚠️ Límite de API alcanzado. Ingresa datos a mano.';
+        } else {
+          loadingPatente.innerText = 'ℹ️ No encontrado. Ingresa datos manualmente.';
+        }
+
         loadingPatente.classList.remove('text-indigo-600', 'text-emerald-600');
         loadingPatente.classList.add('text-amber-600');
+
         document.getElementById('cliente').focus();
       } finally {
         setTimeout(() => loadingPatente.classList.add('hidden'), 4000);
       }
     }
 
-    inputPatente.addEventListener('blur', buscarDatosVehiculo);
-    inputPatente.addEventListener('keydown', function(e) {
+    // Asignación de múltiples eventos para asegurar la ejecución
+    const elPatente = document.getElementById('patente');
+
+    // Se activa al salir del campo
+    elPatente.addEventListener('blur', buscarDatosVehiculo);
+
+    // Se activa al presionar Enter dentro del cuadro de texto
+    elPatente.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
-        e.preventDefault();
+        e.preventDefault(); // Evita que se envie el formulario antes de tiempo
         buscarDatosVehiculo();
       }
     });
 
-    // 2. SEMÁFORO INTERACTIVO
+    // 3. SEMÁFORO INTERACTIVO
     function setStatus(btn) {
       const parent = btn.parentElement;
       const buttons = parent.querySelectorAll('.status-btn');
@@ -385,7 +490,7 @@
       }
     }
 
-    // 3. FORMATEO AUTOMÁTICO DE ÁNGULOS (° ' ")
+    // 4. FORMATEO AUTOMÁTICO DE ÁNGULOS (° ' ")
     document.querySelectorAll('.auto-format').forEach(input => {
       input.addEventListener('blur', function() {
         let val = this.value.trim();
@@ -409,54 +514,62 @@
       if (/^[+-]?\d+$/.test(val) && !val.includes('°') && !val.includes('"')) {
         return `${val}°`;
       }
+      if (val.endsWith('in') || val.endsWith('pulg')) {
+        return val.replace(/(in|pulg)/g, '').trim() + '"';
+      }
       return val;
     }
 
-    // 4. GUARDAR EN LA BASE DE DATOS E IMPRIMIR (Usa la variable client expuesta por auth.js)
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // 5. GUARDAR EN LA BASE DE DATOS E IMPRIMIR DE FORMA AUTOMÁTICA
+    // 5. GUARDAR EN LA BASE DE DATOS E IMPRIMIR
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-      const btn = document.getElementById('btnImprimirGuardar');
-      btn.disabled = true;
-      btn.classList.add('opacity-50');
+  const btn = document.getElementById('btnImprimirGuardar');
+  btn.disabled = true;
+  btn.classList.add('opacity-50');
 
-      const patente = document.getElementById('patente').value.toUpperCase().trim();
-      
-      const payload = {
-        patente: patente,
-        marca: document.getElementById('marca').value,
-        modelo: document.getElementById('modelo').value,
-        anio: document.getElementById('anio').value,
-        vin: document.getElementById('vin').value,
-        cliente: document.getElementById('cliente').value,
-        tecnico: document.getElementById('tecnico').value,
-        fecha: document.getElementById('fecha').value,
-        estado_general: document.getElementById('estado_general').value,
-        observaciones: document.getElementById('observaciones').value
-      };
+  const patente = document.getElementById('patente').value.toUpperCase().trim();
+  
+  const payload = {
+    patente: patente,
+    marca: document.getElementById('marca').value,
+    modelo: document.getElementById('modelo').value,
+    anio: document.getElementById('anio').value,
+    vin: document.getElementById('vin').value,
+    cliente: document.getElementById('cliente').value,
+    tecnico: document.getElementById('tecnico').value,
+    fecha: document.getElementById('fecha').value,
+    estado_general: document.getElementById('estado_general').value,
+    observaciones: document.getElementById('observaciones').value
+  };
 
-      try {
-        // Usa la instancia cliente inicializada globalmente en auth.js
-        const { data, error } = await client
-          .from('informes_geometria')
-          .insert([payload])
-          .select('id');
+  try {
+    // Guardar especifícando el esquema público de forma explícita
+    const { data, error } = await client
+      .from('informes_geometria')
+      .insert([payload])
+      .select('id'); // Pedir explícitamente solo el ID para no saturar la caché
 
-        if (error) throw error;
+    if (error) throw error;
 
-        if (data && data[0]?.id) {
-          document.getElementById('folio').innerText = `FOL-${data[0].id}`;
-        }
-        
-        window.print();
-      } catch (error) {
-        console.error('Error al guardar:', error);
-        alert('Error al guardar en BD: ' + (error.message || 'Error de conexión'));
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-50');
-      }
-    });
+    if (data && data[0]?.id) {
+      document.getElementById('folio').innerText = `FOL-${data[0].id}`;
+    }
+    
+    // Imprimir tras confirmar guardado
+    window.print();
+
+  } catch (error) {
+    console.error('Error al guardar:', error);
+    alert('Error al guardar en BD: ' + (error.message || 'Error de caché en el esquema'));
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('opacity-50');
+  }
+});
+
+
   </script>
 </body>
 </html>

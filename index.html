@@ -29,6 +29,11 @@
       font-weight: 700 !important;
       box-shadow: 0 0 0 2px #2563eb !important;
     }
+    /* Accesibilidad al navegar con teclado */
+    .radio-card input:focus-visible + .radio-content {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
     /* SweetAlert2 Adaptado */
     .swal2-popup-accessible {
       border-radius: 1.5rem !important;
@@ -55,13 +60,20 @@
           </div>
         </div>
 
-        <a href="informe.html" class="w-full sm:w-auto text-center px-4 py-2.5 text-xs font-bold text-slate-200 bg-slate-800 border-2 border-slate-700 rounded-xl hover:bg-slate-700 hover:text-white transition-all">
-          <button type="button">📋 Informe de Alineación</button>
-        </a>
+        <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-center">
+          <a href="informe.html" class="px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-all">
+            📋 Informe
+          </a>
 
-        <a href="admin.html" class="w-full sm:w-auto text-center px-4 py-2.5 text-xs font-bold text-slate-200 bg-slate-800 border-2 border-slate-700 rounded-xl hover:bg-slate-700 hover:text-white transition-all">
-          ⚙️ Panel Administrador
-        </a>
+          <a href="admin.html" class="px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-all">
+            ⚙️ Panel
+          </a>
+
+          <!-- Botón de Cierre de Sesión -->
+          <button type="button" onclick="cerrarSesion()" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all">
+            🚪 Salir
+          </button>
+        </div>
       </div>
     </div>
 
@@ -149,14 +161,14 @@
           <label for="marca" class="block text-base font-extrabold text-slate-900 mb-1.5">
             2. Vehículo / Marca <span class="text-red-500">*</span>
           </label>
-          <input type="text" id="marca" required placeholder="Ej: AUDI A3" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 placeholder-slate-400 bg-slate-50 transition-all uppercase">
+          <input type="text" id="marca" required placeholder="Ej: AUDI A3" autocomplete="off" autocapitalize="characters" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 placeholder-slate-400 bg-slate-50 transition-all uppercase">
         </div>
 
         <div>
           <label for="patente" class="block text-base font-extrabold text-slate-900 mb-1.5">
             Patente <span class="text-red-500">*</span>
           </label>
-          <input type="text" id="patente" required placeholder="Ej: BBBB11" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-lg font-black text-blue-900 tracking-wider placeholder-slate-400 bg-slate-50 transition-all uppercase">
+          <input type="text" id="patente" required placeholder="Ej: BBBB11" autocomplete="off" autocapitalize="characters" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-lg font-black text-blue-900 tracking-wider placeholder-slate-400 bg-slate-50 transition-all uppercase">
         </div>
       </div>
 
@@ -181,7 +193,7 @@
             </label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-lg">$</span>
-              <input type="number" id="valor_neto" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-lg font-bold text-slate-900 bg-white">
+              <input type="number" id="valor_neto" inputmode="numeric" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-lg font-bold text-slate-900 bg-white">
             </div>
           </div>
 
@@ -191,7 +203,7 @@
             </label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-blue-600 font-black text-lg">$</span>
-              <input type="number" id="valor_total" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-blue-400 focus:border-blue-600 text-xl font-black text-blue-900 bg-white">
+              <input type="number" id="valor_total" inputmode="numeric" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-blue-400 focus:border-blue-600 text-xl font-black text-blue-900 bg-white">
             </div>
           </div>
         </div>
@@ -249,6 +261,7 @@
 
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
 
   <script>
     const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
@@ -261,9 +274,9 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const btnTexto = document.getElementById('btnTexto');
 
-    // Cálculo automático bidireccional
+    // Cálculo automático bidireccional saneado
     inputNeto.addEventListener('input', () => {
-      const netoVal = parseFloat(inputNeto.value);
+      const netoVal = Math.floor(parseFloat(inputNeto.value));
       if (!isNaN(netoVal) && netoVal > 0) {
         inputTotal.value = Math.round(netoVal * 1.19);
       } else {
@@ -272,7 +285,7 @@
     });
 
     inputTotal.addEventListener('input', () => {
-      const totalVal = parseFloat(inputTotal.value);
+      const totalVal = Math.floor(parseFloat(inputTotal.value));
       if (!isNaN(totalVal) && totalVal > 0) {
         inputNeto.value = Math.round(totalVal / 1.19);
       } else {
@@ -285,6 +298,8 @@
       e.preventDefault();
 
       const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
+      const medioPagoRadio = document.querySelector('input[name="medio_pago"]:checked');
+
       if (!empresaRadio) {
         Swal.fire({
           icon: 'warning',
@@ -308,7 +323,7 @@
           detalle: document.getElementById('detalle').value.trim(),
           valor_neto: parseFloat(inputNeto.value) || 0,
           valor_total: parseFloat(inputTotal.value) || 0,
-          medio_pago: document.querySelector('input[name="medio_pago"]:checked').value
+          medio_pago: medioPagoRadio ? medioPagoRadio.value : 'Efectivo'
         };
 
         const { data, error } = await client
@@ -320,7 +335,12 @@
 
         const idGenerado = (data && data.length > 0) ? data[0].id : 'N/A';
 
+        // Reset completo restaurando selecciones por defecto
         form.reset();
+        const particularRadio = document.querySelector('input[name="empresa_option"][value="Particular"]');
+        const efectivoRadio = document.querySelector('input[name="medio_pago"][value="Efectivo"]');
+        if (particularRadio) particularRadio.checked = true;
+        if (efectivoRadio) efectivoRadio.checked = true;
 
         // Alerta Clara con Letra Grande
         Swal.fire({

@@ -13,7 +13,7 @@
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- SweetAlert2 -->
+  <!-- SweetAlert2 (Para alertas y confirmaciones de borrado elegantes) -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- Exportar a Excel (SheetJS) -->
@@ -39,6 +39,11 @@
       animation: highlightRow 6s ease-out;
     }
 
+    .card-header-custom {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
     .badge-patente {
       font-family: monospace;
       background-color: #f1f5f9;
@@ -51,13 +56,13 @@
   </style>
 </head>
 
-<body class="d-flex flex-column justify-content-between min-vh-100 p-3 p-md-4">
+<body class="d-flex flex-column justify-between min-vh-100 p-3 p-md-4">
 
   <!-- Toast Flotante para Notificaciones en Tiempo Real -->
   <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
     <div id="toastNuevoVale" class="toast align-items-center text-bg-dark border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
-        <div class="toast-body d-flex align-items-center gap-2">
+        <div class="toast-body d-flex items-center gap-2">
           <i class="bi bi-bell-fill text-success fs-5"></i>
           <div>
             <strong>¡Nuevo Vale Registrado!</strong>
@@ -70,7 +75,7 @@
   </div>
 
   <!-- Contenedor Principal -->
-  <div class="container-fluid max-w-7xl mx-auto">
+  <div class="container-fluid max-w-7xl mx-auto space-y-4">
 
     <!-- Encabezado y Navegación -->
     <div class="card shadow-sm border-0 rounded-4 mb-4">
@@ -166,10 +171,10 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="formEditar">
-          <div class="modal-body">
+          <div class="modal-body space-y-3">
             <input type="hidden" id="editId">
 
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-2">
               <div class="col-6">
                 <label class="form-label small fw-semibold">Empresa</label>
                 <input type="text" id="editEmpresa" class="form-control form-control-sm" required>
@@ -179,13 +184,14 @@
                 <select id="editMedioPago" class="form-select form-select-sm">
                   <option value="Efectivo">Efectivo</option>
                   <option value="Tarjeta">Tarjeta</option>
-                  <option value="Credito empresa">Crédito Empresa</option>
+                  <option value="Credito empresa">Credito empresa</option>
+                  <option value="Efectivo/">Efectivo/</option>
                   <option value="Transferencia">Transferencia</option>
                 </select>
               </div>
             </div>
 
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-2">
               <div class="col-6">
                 <label class="form-label small fw-semibold">Vehículo / Marca</label>
                 <input type="text" id="editMarca" class="form-control form-control-sm" required>
@@ -196,7 +202,7 @@
               </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-2">
               <label class="form-label small fw-semibold">Detalle del Servicio</label>
               <textarea id="editDetalle" class="form-control form-control-sm" rows="2"></textarea>
             </div>
@@ -252,6 +258,7 @@ let modalEditarBs = null;
 function formatearFecha(fechaISO) {
   if (!fechaISO) return '-';
   
+  // Extrae la parte YYYY-MM-DD directamente evitando conversión de zona horaria
   const fechaSolo = String(fechaISO).split('T')[0]; 
   const partes = fechaSolo.split('-');
   
@@ -279,6 +286,7 @@ async function cargarOrdenes() {
     ordenesFiltradas = [...ordenesLocales];
     renderizarTabla(ordenesFiltradas);
 
+    // Suscribirse en tiempo real solo la primera vez
     if (primerCarga) {
       escucharNuevosVales();
       primerCarga = false;
@@ -318,11 +326,14 @@ function renderizarTabla(lista, nuevoId = null) {
     html += `
       <tr class="${claseResaltado}" id="fila-${item.id}">
         <td class="ps-4 fw-bold text-primary">#${item.id}</td>
+        
+        <!-- FECHA SIN DESFASE Y LEGIBLE -->
         <td class="fw-bold text-dark text-nowrap" style="font-size: 0.9rem;">${fechaTexto}</td>
+        
         <td class="fw-semibold text-dark">${item.nombre_empresa || '-'}</td>
         <td>${item.marca || '-'}</td>
         <td><span class="badge-patente">${item.patente || '-'}</span></td>
-        <td class="text-muted text-truncate" style="max-width: 180px;" title="${item.detalle || ''}">${item.detalle || '-'}</td>
+        <td class="text-muted text-truncate" style="max-width: 180px;">${item.detalle || '-'}</td>
         <td>
           <span class="badge text-bg-light border text-secondary fw-normal">
             ${item.medio_pago || 'N/A'}
@@ -354,24 +365,22 @@ function escucharNuevosVales() {
   client
     .channel('realtime_ordenes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ordenes' }, payload => {
-      const busquedaActual = document.getElementById('inputBuscar').value.toLowerCase().trim();
-
       if (payload.eventType === 'INSERT') {
         const nuevoVale = payload.new;
         ordenesLocales.unshift(nuevoVale);
-        filtrarTabla(busquedaActual, nuevoVale.id);
+        filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim(), nuevoVale.id);
         mostrarToast(`Folio #${nuevoVale.id} - ${nuevoVale.patente || 'Sin Patente'}`);
       } 
       else if (payload.eventType === 'UPDATE') {
         const index = ordenesLocales.findIndex(item => item.id === payload.new.id);
         if (index !== -1) {
           ordenesLocales[index] = payload.new;
-          filtrarTabla(busquedaActual);
+          filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
         }
       }
       else if (payload.eventType === 'DELETE') {
         ordenesLocales = ordenesLocales.filter(item => item.id !== payload.old.id);
-        filtrarTabla(busquedaActual);
+        filtrarTabla(document.getElementById('inputBuscar').value.toLowerCase().trim());
       }
     })
     .subscribe();
@@ -495,6 +504,8 @@ async function eliminarVale(id) {
       .eq('id', id);
 
     if (error) throw error;
+
+    await client.rpc('reset_secuencia_ordenes');
 
     Swal.fire({
       icon: 'success',
