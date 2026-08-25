@@ -27,13 +27,20 @@
       width: 92% !important;
       max-width: 480px !important;
     }
+    @keyframes highlightRow {
+      0% { background-color: #fef08a; }
+      100% { background-color: #f0fdf4; }
+    }
+    .fila-nueva {
+      animation: highlightRow 3s ease-out forwards;
+    }
   </style>
 </head>
 
 <body class="bg-slate-100 min-h-screen flex flex-col justify-between p-3 sm:p-6 antialiased text-slate-900">
 
   <!-- ========================================== -->
-  <!-- SECCIÓN 1: FORMULARIO DE LOGIN (INICIAL) -->
+  <!-- SECCIÓN 1: FORMULARIO DE LOGIN -->
   <!-- ========================================== -->
   <div id="loginSection" class="max-w-md mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto p-6 sm:p-8">
     <div class="text-center mb-6">
@@ -63,7 +70,7 @@
 
 
   <!-- ========================================== -->
-  <!-- SECCIÓN 2: PANEL DE CONTROL (OCULTO POR DEFECTO) -->
+  <!-- SECCIÓN 2: PANEL DE CONTROL -->
   <!-- ========================================== -->
   <div id="adminSection" class="hidden max-w-7xl mx-auto w-full space-y-6 my-auto">
     
@@ -72,8 +79,14 @@
       <div class="flex items-center space-x-4 text-center sm:text-left">
         <img src="logooriginal.png" alt="Logo" class="h-12 w-auto object-contain bg-white p-1 rounded-lg border border-slate-200" onerror="this.style.display='none'">
         <div>
-          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Panel de Control de Vales</h1>
-          <p class="text-sm font-medium text-slate-500 mt-0.5">Historial y gestión de registros de servicio</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Panel de Control de Vales</h1>
+            <span class="flex h-3 w-3 relative" title="Escuchando cambios en tiempo real">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+          </div>
+          <p class="text-sm font-medium text-slate-500 mt-0.5">Historial y gestión en tiempo real</p>
         </div>
       </div>
 
@@ -92,18 +105,16 @@
       </div>
     </div>
 
-    <!-- Barra de Búsqueda y Filtros -->
+    <!-- Barra de Búsqueda -->
     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
       <div class="relative w-full sm:w-96">
-        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-          🔍
-        </span>
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">🔍</span>
         <input type="text" id="inputBuscar" onkeyup="filtrarTabla()" placeholder="Buscar por Patente, Empresa, Marca o Folio..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-0 text-sm font-semibold text-slate-800 bg-slate-50">
       </div>
 
       <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-        <button onclick="cargarVales()" class="p-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all border border-slate-300" title="Recargar tabla">
-          🔄
+        <button onclick="cargarVales()" class="p-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all border border-slate-300 flex items-center gap-1.5 font-bold text-xs" title="Recargar tabla">
+          🔄 Actualizar
         </button>
       </div>
     </div>
@@ -114,21 +125,21 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-900 text-white text-xs uppercase font-extrabold tracking-wider border-b-4 border-blue-600">
-              <th class="py-4 px-4 text-center">FOLIO</th>
-              <th class="py-4 px-4">FECHA CREACIÓN</th>
-              <th class="py-4 px-4">EMPRESA</th>
-              <th class="py-4 px-4">VEHÍCULO</th>
-              <th class="py-4 px-4">PATENTE</th>
-              <th class="py-4 px-4">DETALLE</th>
-              <th class="py-4 px-4">MEDIO PAGO</th>
-              <th class="py-4 px-4 text-right">NETO</th>
-              <th class="py-4 px-4 text-right">TOTAL</th>
+              <th class="py-4 px-3 text-center">FOLIO</th>
+              <th class="py-4 px-3">FECHA</th>
+              <th class="py-4 px-3">EMPRESA</th>
+              <th class="py-4 px-3">VEHÍCULO</th>
+              <th class="py-4 px-3">PATENTE</th>
+              <th class="py-4 px-3">DETALLE</th>
+              <th class="py-4 px-3">PAGO</th>
+              <th class="py-4 px-3 text-right">NETO</th>
+              <th class="py-4 px-3 text-right">TOTAL</th>
+              <th class="py-4 px-3 text-center">ACCIONES</th>
             </tr>
           </thead>
           <tbody id="tablaValesBody" class="divide-y divide-slate-200 text-sm font-medium text-slate-700">
-            <!-- Estado Inicial: Cargando -->
             <tr id="filaCargando">
-              <td colspan="9" class="py-12 text-center text-slate-500 font-bold">
+              <td colspan="10" class="py-12 text-center text-slate-500 font-bold">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-3"></div>
                 <p>Cargando Vales de Servicio...</p>
               </td>
@@ -138,6 +149,69 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE EDICIÓN DE VALE -->
+  <!-- ========================================== -->
+  <div id="modalEdit" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full border-2 border-slate-200 overflow-hidden p-6 sm:p-8 space-y-5 animate-fade-in">
+      <div class="flex justify-between items-center border-b pb-4 border-slate-200">
+        <h3 class="text-xl font-black text-slate-900">Editar Vale <span id="modalFolioId" class="text-blue-600">#</span></h3>
+        <button onclick="cerrarModalEdit()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+      </div>
+
+      <form id="formEditVale" class="space-y-4">
+        <input type="hidden" id="editId">
+
+        <div>
+          <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Empresa</label>
+          <input type="text" id="editEmpresa" required class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-800">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Vehículo / Marca</label>
+            <input type="text" id="editMarca" required class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold uppercase text-slate-800">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Patente</label>
+            <input type="text" id="editPatente" required class="w-full px-3 py-2 rounded-xl border border-slate-300 font-black uppercase text-blue-900">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Detalle del Servicio</label>
+          <textarea id="editDetalle" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-medium text-slate-800 text-sm"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 bg-blue-50 p-3 rounded-2xl border border-blue-200">
+          <div>
+            <label class="block text-xs font-extrabold text-slate-800 mb-1">Valor Neto ($)</label>
+            <input type="number" id="editNeto" required class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-900 bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-blue-950 mb-1">Valor Total ($)</label>
+            <input type="number" id="editTotal" required class="w-full px-3 py-2 rounded-xl border border-blue-400 font-black text-blue-900 bg-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Medio de Pago</label>
+          <select id="editMedioPago" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold text-slate-800">
+            <option value="Efectivo">💵 Efectivo</option>
+            <option value="Tarjeta">💳 Tarjeta</option>
+            <option value="Transferencia">📲 Transferencia</option>
+            <option value="Credito empresa">🏢 Crédito Empresa</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
+          <button type="button" onclick="cerrarModalEdit()" class="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">Cancelar</button>
+          <button type="submit" id="btnGuardarEdit" class="px-5 py-2.5 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 shadow-md">GUARDAR CAMBIOS</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <p class="text-center text-xs font-bold text-slate-400 mt-6 mb-2">Alineaciones Bustamante © 2026</p>
@@ -151,11 +225,12 @@
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let valesLocales = [];
+    let ultimoIdIngresado = null;
+    let realtimeChannel = null;
 
-    // 1. Control de Autenticación al Cargar
+    // 1. Control de Autenticación
     document.addEventListener('DOMContentLoaded', async () => {
       const { data: { session } } = await client.auth.getSession();
-
       if (session) {
         mostrarAdmin();
       } else {
@@ -163,7 +238,6 @@
       }
     });
 
-    // Escuchar cambios de estado en la autenticación
     client.auth.onAuthStateChange((event, session) => {
       if (session) {
         mostrarAdmin();
@@ -176,14 +250,16 @@
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('adminSection').classList.remove('hidden');
       cargarVales();
+      suscribirRealtime();
     }
 
     function mostrarLogin() {
       document.getElementById('adminSection').classList.add('hidden');
       document.getElementById('loginSection').classList.remove('hidden');
+      if (realtimeChannel) client.removeChannel(realtimeChannel);
     }
 
-    // 2. Evento del Login Form
+    // Login Form
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
@@ -194,9 +270,8 @@
       btnLogin.innerText = 'VALIDANDO...';
 
       try {
-        const { data, error } = await client.auth.signInWithPassword({ email, password });
+        const { error } = await client.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        
         mostrarAdmin();
       } catch (err) {
         Swal.fire({
@@ -211,18 +286,8 @@
       }
     });
 
-    // 3. Cargar Vales desde Supabase
+    // 2. Cargar Vales desde Supabase
     async function cargarVales() {
-      const tbody = document.getElementById('tablaValesBody');
-      tbody.innerHTML = `
-        <tr id="filaCargando">
-          <td colspan="9" class="py-12 text-center text-slate-500 font-bold">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-3"></div>
-            <p>Cargando Vales de Servicio...</p>
-          </td>
-        </tr>
-      `;
-
       try {
         const { data: vales, error } = await client
           .from('ordenes')
@@ -236,9 +301,9 @@
 
       } catch (err) {
         console.error('Error:', err);
-        tbody.innerHTML = `
+        document.getElementById('tablaValesBody').innerHTML = `
           <tr>
-            <td colspan="9" class="py-8 text-center text-red-600 font-bold">
+            <td colspan="10" class="py-8 text-center text-red-600 font-bold">
               ❌ Error al obtener los vales: ${err.message}
             </td>
           </tr>
@@ -246,14 +311,43 @@
       }
     }
 
-    // 4. Renderizar Filas de la Tabla
+    // 3. Suscripción a Cambios en Tiempo Real (Realtime)
+    function suscribirRealtime() {
+      if (realtimeChannel) client.removeChannel(realtimeChannel);
+
+      realtimeChannel = client
+        .channel('public:ordenes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ordenes' }, payload => {
+          const nuevoVale = payload.new;
+          ultimoIdIngresado = nuevoVale.id;
+
+          // Notificación Flotante
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: `¡Nuevo Vale registrado! Folio #${nuevoVale.id}`,
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true
+          });
+
+          cargarVales();
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ordenes' }, () => {
+          cargarVales();
+        })
+        .subscribe();
+    }
+
+    // 4. Renderizar Filas de la Tabla (Solo Fecha, sin hora)
     function renderizarTabla(lista) {
       const tbody = document.getElementById('tablaValesBody');
 
       if (!lista || lista.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" class="py-8 text-center text-slate-400 font-bold">
+            <td colspan="10" class="py-8 text-center text-slate-400 font-bold">
               No se encontraron vales de servicio registrados.
             </td>
           </tr>
@@ -262,30 +356,42 @@
       }
 
       tbody.innerHTML = lista.map(vale => {
+        // Formatear SOLO FECHA
         const fecha = vale.created_at ? new Date(vale.created_at).toLocaleDateString('es-CL', {
-          day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          day: '2-digit', month: '2-digit', year: 'numeric'
         }) : 'N/A';
 
         const netoFormatted = (vale.valor_neto || 0).toLocaleString('es-CL');
         const totalFormatted = (vale.valor_total || 0).toLocaleString('es-CL');
 
+        const esNuevo = vale.id === ultimoIdIngresado;
+        const claseFila = esNuevo ? 'fila-nueva font-bold' : 'hover:bg-slate-50';
+
         return `
-          <tr class="hover:bg-slate-50 transition-all border-b border-slate-200">
-            <td class="py-3.5 px-4 text-center font-black text-blue-600">#${vale.id}</td>
-            <td class="py-3.5 px-4 text-xs font-semibold text-slate-500">${fecha}</td>
-            <td class="py-3.5 px-4 font-bold text-slate-900">${vale.nombre_empresa || '-'}</td>
-            <td class="py-3.5 px-4 uppercase font-bold text-slate-800">${vale.marca || '-'}</td>
-            <td class="py-3.5 px-4 font-black tracking-wider text-blue-900 uppercase">${vale.patente || '-'}</td>
-            <td class="py-3.5 px-4 text-xs text-slate-600 max-w-xs truncate">${vale.detalle || '-'}</td>
-            <td class="py-3.5 px-4 text-xs font-bold text-slate-700">${vale.medio_pago || '-'}</td>
-            <td class="py-3.5 px-4 text-right font-bold text-slate-700">$${netoFormatted}</td>
-            <td class="py-3.5 px-4 text-right font-black text-slate-900">$${totalFormatted}</td>
+          <tr class="${claseFila} transition-all border-b border-slate-200">
+            <td class="py-3.5 px-3 text-center font-black text-blue-600">
+              #${vale.id}
+              ${esNuevo ? '<span class="ml-1 inline-block px-1.5 py-0.5 text-[10px] bg-green-500 text-white rounded-md uppercase font-extrabold animate-pulse">Nuevo</span>' : ''}
+            </td>
+            <td class="py-3.5 px-3 text-xs font-semibold text-slate-600">${fecha}</td>
+            <td class="py-3.5 px-3 font-bold text-slate-900">${vale.nombre_empresa || '-'}</td>
+            <td class="py-3.5 px-3 uppercase font-bold text-slate-800">${vale.marca || '-'}</td>
+            <td class="py-3.5 px-3 font-black tracking-wider text-blue-900 uppercase">${vale.patente || '-'}</td>
+            <td class="py-3.5 px-3 text-xs text-slate-600 max-w-xs truncate">${vale.detalle || '-'}</td>
+            <td class="py-3.5 px-3 text-xs font-bold text-slate-700">${vale.medio_pago || '-'}</td>
+            <td class="py-3.5 px-3 text-right font-bold text-slate-700">$${netoFormatted}</td>
+            <td class="py-3.5 px-3 text-right font-black text-slate-900">$${totalFormatted}</td>
+            <td class="py-3.5 px-3 text-center">
+              <button onclick="abrirModalEdit(${vale.id})" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-xl font-bold text-xs transition-all cursor-pointer" title="Editar Vale">
+                ✏️ Editar
+              </button>
+            </td>
           </tr>
         `;
       }).join('');
     }
 
-    // 5. Filtro de Búsqueda Rápida
+    // 5. Filtro de Búsqueda
     function filtrarTabla() {
       const query = document.getElementById('inputBuscar').value.toLowerCase().trim();
       const filtrados = valesLocales.filter(vale => {
@@ -297,8 +403,105 @@
       renderizarTabla(filtrados);
     }
 
-    // 6. Cerrar Sesión
+    // ==========================================
+    // 6. LÓGICA DE EDICIÓN Y MODAL (CRUD)
+    // ==========================================
+    let editCalculando = false;
+    const editNetoInput = document.getElementById('editNeto');
+    const editTotalInput = document.getElementById('editTotal');
+
+    editNetoInput.addEventListener('input', () => {
+      if (editCalculando) return;
+      editCalculando = true;
+      const v = parseFloat(editNetoInput.value);
+      editTotalInput.value = (!isNaN(v) && v > 0) ? Math.round(v * 1.19) : '';
+      editCalculando = false;
+    });
+
+    editTotalInput.addEventListener('input', () => {
+      if (editCalculando) return;
+      editCalculando = true;
+      const v = parseFloat(editTotalInput.value);
+      editNetoInput.value = (!isNaN(v) && v > 0) ? Math.round(v / 1.19) : '';
+      editCalculando = false;
+    });
+
+    function abrirModalEdit(id) {
+      const vale = valesLocales.find(v => v.id === id);
+      if (!vale) return;
+
+      document.getElementById('editId').value = vale.id;
+      document.getElementById('modalFolioId').innerText = `#${vale.id}`;
+      document.getElementById('editEmpresa').value = vale.nombre_empresa || '';
+      document.getElementById('editMarca').value = vale.marca || '';
+      document.getElementById('editPatente').value = vale.patente || '';
+      document.getElementById('editDetalle').value = vale.detalle || '';
+      document.getElementById('editNeto').value = vale.valor_neto || '';
+      document.getElementById('editTotal').value = vale.valor_total || '';
+      document.getElementById('editMedioPago').value = vale.medio_pago || 'Efectivo';
+
+      document.getElementById('modalEdit').classList.remove('hidden');
+    }
+
+    function cerrarModalEdit() {
+      document.getElementById('modalEdit').classList.add('hidden');
+    }
+
+    document.getElementById('formEditVale').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('editId').value;
+      const btn = document.getElementById('btnGuardarEdit');
+
+      btn.disabled = true;
+      btn.innerText = 'GUARDANDO...';
+
+      try {
+        const actualizados = {
+          nombre_empresa: document.getElementById('editEmpresa').value.trim(),
+          marca: document.getElementById('editMarca').value.toUpperCase().trim(),
+          patente: document.getElementById('editPatente').value.toUpperCase().trim(),
+          detalle: document.getElementById('editDetalle').value.trim(),
+          valor_neto: parseInt(editNetoInput.value, 10) || 0,
+          valor_total: parseInt(editTotalInput.value, 10) || 0,
+          medio_pago: document.getElementById('editMedioPago').value
+        };
+
+        const { error } = await client
+          .from('ordenes')
+          .update(actualizados)
+          .eq('id', id);
+
+        if (error) throw error;
+
+        cerrarModalEdit();
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Vale Actualizado!',
+          text: `El vale #${id} se modificó correctamente en la base de datos.`,
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+
+        cargarVales();
+
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al actualizar',
+          text: err.message,
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'GUARDAR CAMBIOS';
+      }
+    });
+
     async function cerrarSesionAdmin() {
+      if (realtimeChannel) client.removeChannel(realtimeChannel);
       await client.auth.signOut();
       mostrarLogin();
     }
