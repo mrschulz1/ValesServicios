@@ -81,7 +81,7 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Panel de Control de Vales</h1>
-            <span class="flex h-3 w-3 relative" title="Escuchando cambios en tiempo real">
+            <span class="flex h-3 w-3 relative" title="Suscrito en tiempo real">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
             </span>
@@ -113,7 +113,7 @@
       </div>
 
       <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-        <button onclick="cargarVales()" class="p-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all border border-slate-300 flex items-center gap-1.5 font-bold text-xs" title="Recargar tabla">
+        <button onclick="cargarVales()" class="p-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all border border-slate-300 flex items-center gap-1.5 font-bold text-xs" title="Recargar manual">
           🔄 Actualizar
         </button>
       </div>
@@ -152,7 +152,7 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- MODAL DE EDICIÓN DE VALE -->
+  <!-- MODAL DE EDICIÓN -->
   <!-- ========================================== -->
   <div id="modalEdit" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full border-2 border-slate-200 overflow-hidden p-6 sm:p-8 space-y-5 animate-fade-in">
@@ -228,7 +228,7 @@
     let ultimoIdIngresado = null;
     let realtimeChannel = null;
 
-    // 1. Control de Autenticación
+    // Control de Autenticación
     document.addEventListener('DOMContentLoaded', async () => {
       const { data: { session } } = await client.auth.getSession();
       if (session) {
@@ -286,7 +286,7 @@
       }
     });
 
-    // 2. Cargar Vales desde Supabase
+    // Cargar Vales desde Supabase
     async function cargarVales() {
       try {
         const { data: vales, error } = await client
@@ -311,7 +311,7 @@
       }
     }
 
-    // 3. Suscripción a Cambios en Tiempo Real (Realtime)
+    // Escuchador en Tiempo Real (Realtime)
     function suscribirRealtime() {
       if (realtimeChannel) client.removeChannel(realtimeChannel);
 
@@ -321,12 +321,11 @@
           const nuevoVale = payload.new;
           ultimoIdIngresado = nuevoVale.id;
 
-          // Notificación Flotante
           Swal.fire({
             toast: true,
             position: 'top-end',
-            icon: 'info',
-            title: `¡Nuevo Vale registrado! Folio #${nuevoVale.id}`,
+            icon: 'success',
+            title: `¡Nuevo Vale ingresado! Folio #${nuevoVale.id}`,
             showConfirmButton: false,
             timer: 4000,
             timerProgressBar: true
@@ -337,10 +336,13 @@
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ordenes' }, () => {
           cargarVales();
         })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'ordenes' }, () => {
+          cargarVales();
+        })
         .subscribe();
     }
 
-    // 4. Renderizar Filas de la Tabla (Solo Fecha, sin hora)
+    // Renderizar Filas
     function renderizarTabla(lista) {
       const tbody = document.getElementById('tablaValesBody');
 
@@ -356,7 +358,6 @@
       }
 
       tbody.innerHTML = lista.map(vale => {
-        // Formatear SOLO FECHA
         const fecha = vale.created_at ? new Date(vale.created_at).toLocaleDateString('es-CL', {
           day: '2-digit', month: '2-digit', year: 'numeric'
         }) : 'N/A';
@@ -382,16 +383,21 @@
             <td class="py-3.5 px-3 text-right font-bold text-slate-700">$${netoFormatted}</td>
             <td class="py-3.5 px-3 text-right font-black text-slate-900">$${totalFormatted}</td>
             <td class="py-3.5 px-3 text-center">
-              <button onclick="abrirModalEdit(${vale.id})" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-xl font-bold text-xs transition-all cursor-pointer" title="Editar Vale">
-                ✏️ Editar
-              </button>
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="abrirModalEdit(${vale.id})" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-xl font-bold text-xs transition-all cursor-pointer" title="Editar Vale">
+                  ✏️
+                </button>
+                <button onclick="eliminarVale(${vale.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl font-bold text-xs transition-all cursor-pointer" title="Eliminar Vale">
+                  🗑️
+                </button>
+              </div>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    // 5. Filtro de Búsqueda
+    // Filtro de Búsqueda
     function filtrarTabla() {
       const query = document.getElementById('inputBuscar').value.toLowerCase().trim();
       const filtrados = valesLocales.filter(vale => {
@@ -403,9 +409,7 @@
       renderizarTabla(filtrados);
     }
 
-    // ==========================================
-    // 6. LÓGICA DE EDICIÓN Y MODAL (CRUD)
-    // ==========================================
+    // Calculador de IVA en Modal
     let editCalculando = false;
     const editNetoInput = document.getElementById('editNeto');
     const editTotalInput = document.getElementById('editTotal');
@@ -479,13 +483,11 @@
         Swal.fire({
           icon: 'success',
           title: '¡Vale Actualizado!',
-          text: `El vale #${id} se modificó correctamente en la base de datos.`,
+          text: `El vale #${id} se modificó correctamente.`,
           timer: 2000,
           showConfirmButton: false,
           customClass: { popup: 'swal2-popup-accessible' }
         });
-
-        cargarVales();
 
       } catch (err) {
         Swal.fire({
@@ -499,6 +501,48 @@
         btn.innerText = 'GUARDAR CAMBIOS';
       }
     });
+
+    async function eliminarVale(id) {
+      const confirmacion = await Swal.fire({
+        title: `¿Eliminar Vale #${id}?`,
+        text: 'Esta acción borrará permanentemente el registro de la base de datos.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        customClass: { popup: 'swal2-popup-accessible' }
+      });
+
+      if (confirmacion.isConfirmed) {
+        try {
+          const { error } = await client
+            .from('ordenes')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Vale Eliminado',
+            text: `El vale #${id} fue removido con éxito.`,
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: { popup: 'swal2-popup-accessible' }
+          });
+
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al eliminar',
+            text: err.message,
+            customClass: { popup: 'swal2-popup-accessible' }
+          });
+        }
+      }
+    }
 
     async function cerrarSesionAdmin() {
       if (realtimeChannel) client.removeChannel(realtimeChannel);
