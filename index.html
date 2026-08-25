@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Generador de Vales | Alineaciones Bustamante</title>
+  <title>Generador de Vales de Servicio | Alineaciones Bustamante</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="logooriginal.png">
@@ -21,6 +21,20 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    /* Estilos de botones de radio gigantes */
+    .radio-card input:checked + .radio-content {
+      border-color: #2563eb !important;
+      background-color: #eff6ff !important;
+      color: #1e3a8a !important;
+      font-weight: 700 !important;
+      box-shadow: 0 0 0 2px #2563eb !important;
+    }
+    /* Accesibilidad al navegar con teclado */
+    .radio-card input:focus-visible + .radio-content {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    /* SweetAlert2 Adaptado */
     .swal2-popup-accessible {
       border-radius: 1.5rem !important;
       padding: 2rem !important;
@@ -32,159 +46,330 @@
 
 <body class="bg-slate-100 min-h-screen flex flex-col justify-between p-3 sm:p-6 antialiased text-slate-900">
 
-  <div class="max-w-2xl mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto p-5 sm:p-8 space-y-6">
+  <!-- Contenedor Principal con alto contraste -->
+  <div class="max-w-2xl mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto">
     
-    <!-- Encabezado -->
-    <div class="flex items-center justify-between border-b pb-5 border-slate-200">
-      <div class="flex items-center space-x-3">
-        <img src="logooriginal.png" alt="Logo" class="h-12 w-auto object-contain bg-white p-1 rounded-lg border border-slate-200" onerror="this.style.display='none'">
-        <div>
-          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Ingreso de Vale</h1>
-          <p class="text-xs sm:text-sm font-medium text-slate-500">Alineaciones Bustamante</p>
+    <!-- Encabezado Claro -->
+    <div class="bg-slate-900 text-white p-5 sm:p-7 border-b-4 border-blue-600">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-4 text-center sm:text-left">
+          <img src="logooriginal.png" alt="Logo" class="h-12 w-auto object-contain bg-white p-1 rounded-lg" onerror="this.style.display='none'">
+          <div>
+            <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">Alineaciones Bustamante</h1>
+            <p class="text-sm font-medium text-slate-300 mt-0.5">Ingreso de Nuevo Vale</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-center">
+          <a href="informe.html" class="px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-all">
+            📋 Informe
+          </a>
+
+          <a href="admin.html" class="px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-all">
+            ⚙️ Panel
+          </a>
+
+          <!-- Botón de Cierre de Sesión -->
+          <button type="button" onclick="cerrarSesion()" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all">
+            🚪 Salir
+          </button>
         </div>
       </div>
-      
-      <a href="admin.html" class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-xl hover:bg-slate-200 transition-all flex items-center gap-1.5">
-        ⚙️ Admin
-      </a>
     </div>
 
-    <!-- Formulario -->
-    <form id="formVale" class="space-y-4">
+    <!-- Formulario Simplificado -->
+    <form id="formVale" class="p-5 sm:p-8 space-y-7">
 
+      <!-- PASO 1: Empresa -->
       <div>
-        <label for="empresa" class="block text-xs font-extrabold uppercase text-slate-700 mb-1.5">Nombre Empresa / Cliente</label>
-        <input type="text" id="empresa" required placeholder="Ej: Transportes Bustamante SpA" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 bg-slate-50 transition-all">
+        <label class="block text-base font-extrabold text-slate-900 mb-2">
+          1. Selecciona la Empresa o Cliente <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Baudet" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Baudet
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Larrain y Valdes" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Larrain y Valdes
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Salazar Israel" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Salazar Israel
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Rodrigo Fernandez" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Rodrigo Fernandez
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Arvi" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Arvi
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Incubo" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Incubo
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Suarez" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Suarez
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="OD Automotriz" class="sr-only">
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              OD Automotriz
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="empresa_option" value="Particular" class="sr-only" checked>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Particular
+            </div>
+          </label>
+
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <hr class="border-slate-200">
+
+      <!-- PASO 2: Vehículo y Patente -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-          <label for="marca" class="block text-xs font-extrabold uppercase text-slate-700 mb-1.5">Vehículo / Marca / Modelo</label>
-          <input type="text" id="marca" required placeholder="Ej: Audi A3 / Volvo FH" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold uppercase text-slate-800 bg-slate-50 transition-all">
+          <label for="marca" class="block text-base font-extrabold text-slate-900 mb-1.5">
+            2. Vehículo / Marca <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="marca" required placeholder="Ej: AUDI A3" autocomplete="off" autocapitalize="characters" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 placeholder-slate-400 bg-slate-50 transition-all uppercase">
         </div>
 
         <div>
-          <label for="patente" class="block text-xs font-extrabold uppercase text-slate-700 mb-1.5">Patente</label>
-          <input type="text" id="patente" required placeholder="Ej: BB-CL-88" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-black uppercase text-blue-900 bg-slate-50 transition-all tracking-wider">
+          <label for="patente" class="block text-base font-extrabold text-slate-900 mb-1.5">
+            Patente <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="patente" required placeholder="Ej: BBBB11" autocomplete="off" autocapitalize="characters" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-lg font-black text-blue-900 tracking-wider placeholder-slate-400 bg-slate-50 transition-all uppercase">
         </div>
       </div>
 
+      <!-- PASO 3: Detalle del Servicio -->
       <div>
-        <label for="detalle" class="block text-xs font-extrabold uppercase text-slate-700 mb-1.5">Detalle del Servicio</label>
-        <textarea id="detalle" rows="2" placeholder="Ej: Alineación de tren delantero y balanceo..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-sm font-medium text-slate-800 bg-slate-50 transition-all"></textarea>
+        <label for="detalle" class="block text-base font-extrabold text-slate-900 mb-1.5">
+          3. ¿Qué trabajo se realizó?
+        </label>
+        <textarea id="detalle" rows="2" placeholder="Ej: Alineación de tren delantero..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-medium text-slate-800 placeholder-slate-400 bg-slate-50 transition-all"></textarea>
       </div>
 
-      <!-- Sección de Cálculo Valores -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/70 p-4 rounded-2xl border-2 border-blue-100">
-        <div>
-          <label for="neto" class="block text-xs font-extrabold uppercase text-slate-800 mb-1.5">Valor Neto ($)</label>
-          <input type="number" id="neto" required placeholder="0" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-lg font-bold text-slate-900 bg-white transition-all">
-        </div>
+      <hr class="border-slate-200">
 
-        <div>
-          <label for="total" class="block text-xs font-extrabold uppercase text-blue-950 mb-1.5">Valor Total (Con IVA $)</label>
-          <input type="number" id="total" required placeholder="0" class="w-full px-4 py-3 rounded-xl border-2 border-blue-400 focus:border-blue-600 focus:ring-0 text-lg font-black text-blue-900 bg-white transition-all">
+      <!-- PASO 4: Valores Monetarios Destacados -->
+      <div class="bg-blue-50/70 p-4 sm:p-5 rounded-2xl border-2 border-blue-200 space-y-4">
+        <p class="text-xs font-black uppercase text-blue-900 tracking-wide">4. Monto a Cobrar (Se calcula solo)</p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="valor_neto" class="block text-sm font-extrabold text-slate-800 mb-1">
+              Valor Neto ($)
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 font-bold text-lg">$</span>
+              <input type="number" id="valor_neto" inputmode="numeric" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-lg font-bold text-slate-900 bg-white">
+            </div>
+          </div>
+
+          <div>
+            <label for="valor_total" class="block text-sm font-extrabold text-blue-950 mb-1">
+              Valor Total ($)
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-blue-600 font-black text-lg">$</span>
+              <input type="number" id="valor_total" inputmode="numeric" step="1" min="0" placeholder="0" class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-blue-400 focus:border-blue-600 text-xl font-black text-blue-900 bg-white">
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- PASO 5: Medio de Pago -->
       <div>
-        <label for="medioPago" class="block text-xs font-extrabold uppercase text-slate-700 mb-1.5">Medio de Pago</label>
-        <select id="medioPago" class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 bg-slate-50 transition-all">
-          <option value="Efectivo">💵 Efectivo</option>
-          <option value="Tarjeta">💳 Tarjeta (Débito/Crédito)</option>
-          <option value="Transferencia">📲 Transferencia Bancaria</option>
-          <option value="Credito empresa">🏢 Crédito Empresa</option>
-        </select>
+        <label class="block text-base font-extrabold text-slate-900 mb-2">
+          5. Medio de Pago <span class="text-red-500">*</span>
+        </label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="medio_pago" value="Efectivo" class="sr-only" checked>
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              💵 Efectivo
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="medio_pago" value="Tarjeta" class="sr-only">
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              💳 Tarjeta
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="medio_pago" value="Transferencia" class="sr-only">
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              📲 Transferencia
+            </div>
+          </label>
+
+          <label class="radio-card cursor-pointer">
+            <input type="radio" name="medio_pago" value="Credito empresa" class="sr-only">
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              🏢 Crédito Empresa
+            </div>
+          </label>
+        </div>
       </div>
 
-      <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-base py-4 px-6 rounded-2xl shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center space-x-2 border-b-4 border-blue-800 cursor-pointer mt-2">
-        <span>REGISTRAR VALE DE SERVICIO</span>
+      <!-- Botón Principal Gigante -->
+      <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-lg py-4 px-6 rounded-2xl shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center space-x-3 touch-manipulation cursor-pointer border-b-4 border-blue-800">
+        <svg class="w-7 h-7 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 002-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+        </svg>
+        <span id="btnTexto">GUARDAR Y REGISTRAR VALE</span>
       </button>
 
     </form>
   </div>
 
-  <p class="text-center text-xs font-bold text-slate-400 mt-6 mb-2">Alineaciones Bustamante © 2026</p>
+  <p class="text-center text-xs font-bold text-slate-400 mt-6">Alineaciones Bustamante © 2026</p>
 
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
 
   <script>
     const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Cálculo automático Neto / IVA
-    let calculando = false;
-    const netoInput = document.getElementById('neto');
-    const totalInput = document.getElementById('total');
+    const form = document.getElementById('formVale');
+    const inputNeto = document.getElementById('valor_neto');
+    const inputTotal = document.getElementById('valor_total');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const btnTexto = document.getElementById('btnTexto');
 
-    netoInput.addEventListener('input', () => {
-      if (calculando) return;
-      calculando = true;
-      const v = parseFloat(netoInput.value);
-      totalInput.value = (!isNaN(v) && v > 0) ? Math.round(v * 1.19) : '';
-      calculando = false;
+    // Cálculo automático bidireccional saneado
+    inputNeto.addEventListener('input', () => {
+      const netoVal = Math.floor(parseFloat(inputNeto.value));
+      if (!isNaN(netoVal) && netoVal > 0) {
+        inputTotal.value = Math.round(netoVal * 1.19);
+      } else {
+        inputTotal.value = '';
+      }
     });
 
-    totalInput.addEventListener('input', () => {
-      if (calculando) return;
-      calculando = true;
-      const v = parseFloat(totalInput.value);
-      netoInput.value = (!isNaN(v) && v > 0) ? Math.round(v / 1.19) : '';
-      calculando = false;
+    inputTotal.addEventListener('input', () => {
+      const totalVal = Math.floor(parseFloat(inputTotal.value));
+      if (!isNaN(totalVal) && totalVal > 0) {
+        inputNeto.value = Math.round(totalVal / 1.19);
+      } else {
+        inputNeto.value = '';
+      }
     });
 
-    // Envío del Formulario
-    document.getElementById('formVale').addEventListener('submit', async (e) => {
+    // Guardar Vale
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const btnGuardar = document.getElementById('btnGuardar');
+      const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
+      const medioPagoRadio = document.querySelector('input[name="medio_pago"]:checked');
+
+      if (!empresaRadio) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Falta un dato',
+          text: 'Por favor selecciona la Empresa.',
+          timer: 2500,
+          showConfirmButton: false,
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+        return;
+      }
+
       btnGuardar.disabled = true;
-      btnGuardar.innerText = 'GUARDANDO VALE...';
+      btnTexto.innerText = 'GUARDANDO EN LA BASE DE DATOS...';
 
       try {
-        const nuevoVale = {
-          nombre_empresa: document.getElementById('empresa').value.trim(),
+        const datosVale = {
+          nombre_empresa: empresaRadio.value,
           marca: document.getElementById('marca').value.toUpperCase().trim(),
           patente: document.getElementById('patente').value.toUpperCase().trim(),
           detalle: document.getElementById('detalle').value.trim(),
-          valor_neto: parseInt(netoInput.value, 10) || 0,
-          valor_total: parseInt(totalInput.value, 10) || 0,
-          medio_pago: document.getElementById('medioPago').value
+          valor_neto: parseFloat(inputNeto.value) || 0,
+          valor_total: parseFloat(inputTotal.value) || 0,
+          medio_pago: medioPagoRadio ? medioPagoRadio.value : 'Efectivo'
         };
 
         const { data, error } = await client
           .from('ordenes')
-          .insert([nuevoVale])
+          .insert([datosVale])
           .select();
 
         if (error) throw error;
 
-        // Limpiar formulario
-        document.getElementById('formVale').reset();
+        const idGenerado = (data && data.length > 0) ? data[0].id : 'N/A';
 
-        // Alerta con CIERRE AUTOMÁTICO (2 segundos)
+        // Reset completo restaurando selecciones por defecto
+        form.reset();
+        const particularRadio = document.querySelector('input[name="empresa_option"][value="Particular"]');
+        const efectivoRadio = document.querySelector('input[name="medio_pago"][value="Efectivo"]');
+        if (particularRadio) particularRadio.checked = true;
+        if (efectivoRadio) efectivoRadio.checked = true;
+
+        // Alerta Clara con Letra Grande
         Swal.fire({
           icon: 'success',
-          title: '¡Vale Registrado!',
-          text: `Se ha creado correctamente el vale #${data[0].id}`,
-          timer: 2000,
-          timerProgressBar: true,
+          title: '¡VALE GUARDADO!',
+          html: `
+            <div class="text-slate-800 text-lg mt-2 font-medium">
+              <p class="text-3xl font-black text-blue-600 mb-2">Folio: #${idGenerado}</p>
+              <p><b>Vehículo:</b> ${datosVale.marca}</p>
+              <p><b>Patente:</b> ${datosVale.patente}</p>
+            </div>
+          `,
+          timer: 2500,
           showConfirmButton: false,
+          timerProgressBar: true,
           customClass: { popup: 'swal2-popup-accessible' }
         });
 
       } catch (err) {
+        console.error('Error:', err);
         Swal.fire({
           icon: 'error',
-          title: 'Error al Registrar',
+          title: 'Error al guardar',
           text: err.message,
           customClass: { popup: 'swal2-popup-accessible' }
         });
       } finally {
         btnGuardar.disabled = false;
-        btnGuardar.innerText = 'REGISTRAR VALE DE SERVICIO';
+        btnTexto.innerText = 'GUARDAR Y REGISTRAR VALE';
       }
     });
   </script>
