@@ -21,6 +21,7 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    /* Estilos de botones de radio gigantes */
     .radio-card input:checked + .radio-content {
       border-color: #2563eb !important;
       background-color: #eff6ff !important;
@@ -28,10 +29,12 @@
       font-weight: 700 !important;
       box-shadow: 0 0 0 2px #2563eb !important;
     }
+    /* Accesibilidad al navegar con teclado */
     .radio-card input:focus-visible + .radio-content {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
+    /* SweetAlert2 Adaptado */
     .swal2-popup-accessible {
       border-radius: 1.5rem !important;
       padding: 2rem !important;
@@ -43,8 +46,10 @@
 
 <body class="bg-slate-100 min-h-screen flex flex-col justify-between p-3 sm:p-6 antialiased text-slate-900">
 
+  <!-- Contenedor Principal con alto contraste -->
   <div class="max-w-2xl mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto">
     
+    <!-- Encabezado Claro -->
     <div class="bg-slate-900 text-white p-5 sm:p-7 border-b-4 border-blue-600">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center space-x-4 text-center sm:text-left">
@@ -64,13 +69,15 @@
             ⚙️ Panel
           </a>
 
-          <button type="button" onclick="cerrarSesion()" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all cursor-pointer">
+          <!-- Botón de Cierre de Sesión -->
+          <button type="button" onclick="cerrarSesion()" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all">
             🚪 Salir
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Formulario Simplificado -->
     <form id="formVale" class="p-5 sm:p-8 space-y-7">
 
       <!-- PASO 1: Empresa -->
@@ -79,42 +86,70 @@
           1. Selecciona la Empresa o Cliente <span class="text-red-500">*</span>
         </label>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Baudet" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Baudet</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Baudet
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Larrain y Valdes" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Larrain y Valdes</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Larrain y Valdes
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Salazar Israel" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Salazar Israel</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Salazar Israel
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Rodrigo Fernandez" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Rodrigo Fernandez</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Rodrigo Fernandez
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Arvi" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Arvi</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Arvi
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Incubo" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Incubo</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Incubo
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Suarez" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Suarez</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Suarez
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="OD Automotriz" class="sr-only">
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">OD Automotriz</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              OD Automotriz
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="empresa_option" value="Particular" class="sr-only" checked>
-            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">Particular</div>
+            <div class="radio-content p-3.5 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              Particular
+            </div>
           </label>
+
         </div>
       </div>
 
@@ -126,14 +161,14 @@
           <label for="marca" class="block text-base font-extrabold text-slate-900 mb-1.5">
             2. Vehículo / Marca <span class="text-red-500">*</span>
           </label>
-          <input type="text" id="marca" required placeholder="Ej: AUDI A3" autocomplete="off" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 placeholder-slate-400 bg-slate-50 transition-all uppercase">
+          <input type="text" id="marca" required placeholder="Ej: AUDI A3" autocomplete="off" autocapitalize="characters" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-base font-bold text-slate-800 placeholder-slate-400 bg-slate-50 transition-all uppercase">
         </div>
 
         <div>
           <label for="patente" class="block text-base font-extrabold text-slate-900 mb-1.5">
             Patente <span class="text-red-500">*</span>
           </label>
-          <input type="text" id="patente" required placeholder="Ej: BBBB11" autocomplete="off" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-lg font-black text-blue-900 tracking-wider placeholder-slate-400 bg-slate-50 transition-all uppercase">
+          <input type="text" id="patente" required placeholder="Ej: BBBB11" autocomplete="off" autocapitalize="characters" class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-0 text-lg font-black text-blue-900 tracking-wider placeholder-slate-400 bg-slate-50 transition-all uppercase">
         </div>
       </div>
 
@@ -147,9 +182,9 @@
 
       <hr class="border-slate-200">
 
-      <!-- PASO 4: Valores Monetarios con Cálculo IVA Bi-direccional Corregido -->
+      <!-- PASO 4: Valores Monetarios Destacados -->
       <div class="bg-blue-50/70 p-4 sm:p-5 rounded-2xl border-2 border-blue-200 space-y-4">
-        <p class="text-xs font-black uppercase text-blue-900 tracking-wide">4. Monto a Cobrar (Se calcula solo con IVA 19%)</p>
+        <p class="text-xs font-black uppercase text-blue-900 tracking-wide">4. Monto a Cobrar (Se calcula solo)</p>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -180,27 +215,39 @@
           5. Medio de Pago <span class="text-red-500">*</span>
         </label>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          
           <label class="radio-card cursor-pointer">
             <input type="radio" name="medio_pago" value="Efectivo" class="sr-only" checked>
-            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">💵 Efectivo</div>
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              💵 Efectivo
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="medio_pago" value="Tarjeta" class="sr-only">
-            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">💳 Tarjeta</div>
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              💳 Tarjeta
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="medio_pago" value="Transferencia" class="sr-only">
-            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">📲 Transferencia</div>
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              📲 Transferencia
+            </div>
           </label>
+
           <label class="radio-card cursor-pointer">
             <input type="radio" name="medio_pago" value="Credito empresa" class="sr-only">
-            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">🏢 Crédito Empresa</div>
+            <div class="radio-content p-3 rounded-xl border-2 border-slate-300 text-center text-sm font-semibold text-slate-700 transition-all">
+              🏢 Crédito Empresa
+            </div>
           </label>
         </div>
       </div>
 
-      <!-- Botón Principal -->
-      <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-lg py-4 px-6 rounded-2xl shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center space-x-3 cursor-pointer border-b-4 border-blue-800">
+      <!-- Botón Principal Gigante -->
+      <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-lg py-4 px-6 rounded-2xl shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center space-x-3 touch-manipulation cursor-pointer border-b-4 border-blue-800">
         <svg class="w-7 h-7 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 002-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
         </svg>
@@ -214,6 +261,7 @@
 
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
 
   <script>
     const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
@@ -226,42 +274,26 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const btnTexto = document.getElementById('btnTexto');
 
-    // ==========================================
-    // CÁLCULO BIDIRECCIONAL ROBUSTO DE IVA (19%)
-    // ==========================================
-    let calculando = false;
-
-    // Al escribir en el Neto -> calcula Total
+    // Cálculo automático bidireccional saneado
     inputNeto.addEventListener('input', () => {
-      if (calculando) return;
-      calculando = true;
-
-      const valor = parseFloat(inputNeto.value);
-      if (!isNaN(valor) && valor > 0) {
-        inputTotal.value = Math.round(valor * 1.19);
+      const netoVal = Math.floor(parseFloat(inputNeto.value));
+      if (!isNaN(netoVal) && netoVal > 0) {
+        inputTotal.value = Math.round(netoVal * 1.19);
       } else {
         inputTotal.value = '';
       }
-
-      calculando = false;
     });
 
-    // Al escribir en el Total -> calcula Neto
     inputTotal.addEventListener('input', () => {
-      if (calculando) return;
-      calculando = true;
-
-      const valor = parseFloat(inputTotal.value);
-      if (!isNaN(valor) && valor > 0) {
-        inputNeto.value = Math.round(valor / 1.19);
+      const totalVal = Math.floor(parseFloat(inputTotal.value));
+      if (!isNaN(totalVal) && totalVal > 0) {
+        inputNeto.value = Math.round(totalVal / 1.19);
       } else {
         inputNeto.value = '';
       }
-
-      calculando = false;
     });
 
-    // Evento Guardar en Supabase
+    // Guardar Vale
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -273,6 +305,8 @@
           icon: 'warning',
           title: 'Falta un dato',
           text: 'Por favor selecciona la Empresa.',
+          timer: 2500,
+          showConfirmButton: false,
           customClass: { popup: 'swal2-popup-accessible' }
         });
         return;
@@ -287,8 +321,8 @@
           marca: document.getElementById('marca').value.toUpperCase().trim(),
           patente: document.getElementById('patente').value.toUpperCase().trim(),
           detalle: document.getElementById('detalle').value.trim(),
-          valor_neto: parseInt(inputNeto.value, 10) || 0,
-          valor_total: parseInt(inputTotal.value, 10) || 0,
+          valor_neto: parseFloat(inputNeto.value) || 0,
+          valor_total: parseFloat(inputTotal.value) || 0,
           medio_pago: medioPagoRadio ? medioPagoRadio.value : 'Efectivo'
         };
 
@@ -297,17 +331,19 @@
           .insert([datosVale])
           .select();
 
-        if (error) throw new Error(error.message);
+        if (error) throw error;
 
-        const idGenerado = (data && data.length > 0 && data[0].id) ? data[0].id : 'OK';
+        const idGenerado = (data && data.length > 0) ? data[0].id : 'N/A';
 
+        // Reset completo restaurando selecciones por defecto
         form.reset();
         const particularRadio = document.querySelector('input[name="empresa_option"][value="Particular"]');
         const efectivoRadio = document.querySelector('input[name="medio_pago"][value="Efectivo"]');
         if (particularRadio) particularRadio.checked = true;
         if (efectivoRadio) efectivoRadio.checked = true;
 
-        await Swal.fire({
+        // Alerta Clara con Letra Grande
+        Swal.fire({
           icon: 'success',
           title: '¡VALE GUARDADO!',
           html: `
@@ -317,17 +353,18 @@
               <p><b>Patente:</b> ${datosVale.patente}</p>
             </div>
           `,
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#2563eb',
+          timer: 2500,
+          showConfirmButton: false,
+          timerProgressBar: true,
           customClass: { popup: 'swal2-popup-accessible' }
         });
 
       } catch (err) {
-        console.error('Error al guardar:', err);
+        console.error('Error:', err);
         Swal.fire({
           icon: 'error',
-          title: 'Error al Guardar',
-          text: err.message || 'No se pudo guardar la orden.',
+          title: 'Error al guardar',
+          text: err.message,
           customClass: { popup: 'swal2-popup-accessible' }
         });
       } finally {
@@ -335,11 +372,6 @@
         btnTexto.innerText = 'GUARDAR Y REGISTRAR VALE';
       }
     });
-
-    async function cerrarSesion() {
-      await client.auth.signOut();
-      window.location.href = 'admin.html';
-    }
   </script>
 </body>
 </html>
