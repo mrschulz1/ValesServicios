@@ -21,7 +21,6 @@
     body {
       font-family: 'Inter', sans-serif;
     }
-    /* Estilos de botones de radio gigantes */
     .radio-card input:checked + .radio-content {
       border-color: #2563eb !important;
       background-color: #eff6ff !important;
@@ -29,12 +28,10 @@
       font-weight: 700 !important;
       box-shadow: 0 0 0 2px #2563eb !important;
     }
-    /* Accesibilidad al navegar con teclado */
     .radio-card input:focus-visible + .radio-content {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
-    /* SweetAlert2 Adaptado */
     .swal2-popup-accessible {
       border-radius: 1.5rem !important;
       padding: 2rem !important;
@@ -46,7 +43,6 @@
 
 <body class="bg-slate-100 min-h-screen flex flex-col justify-between p-3 sm:p-6 antialiased text-slate-900">
 
-  <!-- Contenedor Principal con alto contraste -->
   <div class="max-w-2xl mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto">
     
     <!-- Encabezado Claro -->
@@ -69,7 +65,6 @@
             ⚙️ Panel
           </a>
 
-          <!-- Botón de Cierre de Sesión -->
           <button type="button" onclick="cerrarSesion()" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all">
             🚪 Salir
           </button>
@@ -246,7 +241,7 @@
         </div>
       </div>
 
-      <!-- Botón Principal Gigante -->
+      <!-- Botón Principal -->
       <button type="submit" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black text-lg py-4 px-6 rounded-2xl shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center space-x-3 touch-manipulation cursor-pointer border-b-4 border-blue-800">
         <svg class="w-7 h-7 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 002-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
@@ -265,8 +260,15 @@
 
   <script>
     const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_XY2XRiAQw4tQdygSAwd4XA_pRETQ_EA';              
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Reemplaza por tu anon/public Key válida obtenida de Supabase (Settings -> API)
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ra3lkcndkZXhhY3h2ZmJ0b3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjU0MzgsImV4cCI6MjA5OTcwMTQzOH0.ekbFeG6r176fbanPDUin0O_jwDcnmRRUVrJL3ohgXeE';              
+    
+    let client;
+    try {
+      client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (err) {
+      console.error('Error al inicializar Supabase:', err);
+    }
 
     const form = document.getElementById('formVale');
     const inputNeto = document.getElementById('valor_neto');
@@ -274,23 +276,31 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const btnTexto = document.getElementById('btnTexto');
 
-    // Cálculo automático bidireccional saneado
+    // Cálculo automático bidireccional fluido
+    let calculando = false;
+
     inputNeto.addEventListener('input', () => {
-      const netoVal = Math.floor(parseFloat(inputNeto.value));
-      if (!isNaN(netoVal) && netoVal > 0) {
-        inputTotal.value = Math.round(netoVal * 1.19);
+      if (calculando) return;
+      calculando = true;
+      const val = parseFloat(inputNeto.value);
+      if (!isNaN(val) && val > 0) {
+        inputTotal.value = Math.round(val * 1.19);
       } else {
         inputTotal.value = '';
       }
+      calculando = false;
     });
 
     inputTotal.addEventListener('input', () => {
-      const totalVal = Math.floor(parseFloat(inputTotal.value));
-      if (!isNaN(totalVal) && totalVal > 0) {
-        inputNeto.value = Math.round(totalVal / 1.19);
+      if (calculando) return;
+      calculando = true;
+      const val = parseFloat(inputTotal.value);
+      if (!isNaN(val) && val > 0) {
+        inputNeto.value = Math.round(val / 1.19);
       } else {
         inputNeto.value = '';
       }
+      calculando = false;
     });
 
     // Guardar Vale
@@ -321,8 +331,8 @@
           marca: document.getElementById('marca').value.toUpperCase().trim(),
           patente: document.getElementById('patente').value.toUpperCase().trim(),
           detalle: document.getElementById('detalle').value.trim(),
-          valor_neto: parseFloat(inputNeto.value) || 0,
-          valor_total: parseFloat(inputTotal.value) || 0,
+          valor_neto: parseInt(inputNeto.value, 10) || 0,
+          valor_total: parseInt(inputTotal.value, 10) || 0,
           medio_pago: medioPagoRadio ? medioPagoRadio.value : 'Efectivo'
         };
 
@@ -331,18 +341,21 @@
           .insert([datosVale])
           .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Detalle error Supabase:', error);
+          throw error;
+        }
 
         const idGenerado = (data && data.length > 0) ? data[0].id : 'N/A';
 
-        // Reset completo restaurando selecciones por defecto
+        // Reset del formulario conservando los radio por defecto
         form.reset();
         const particularRadio = document.querySelector('input[name="empresa_option"][value="Particular"]');
         const efectivoRadio = document.querySelector('input[name="medio_pago"][value="Efectivo"]');
         if (particularRadio) particularRadio.checked = true;
         if (efectivoRadio) efectivoRadio.checked = true;
 
-        // Alerta Clara con Letra Grande
+        // Alerta exitosa con cierre automático (2.5s)
         Swal.fire({
           icon: 'success',
           title: '¡VALE GUARDADO!',
@@ -360,11 +373,11 @@
         });
 
       } catch (err) {
-        console.error('Error:', err);
+        console.error('Error al intentar guardar:', err);
         Swal.fire({
           icon: 'error',
-          title: 'Error al guardar',
-          text: err.message,
+          title: 'Error al registrar',
+          text: err.message || 'Verifica la consola para más detalles (F12).',
           customClass: { popup: 'swal2-popup-accessible' }
         });
       } finally {
