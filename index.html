@@ -65,7 +65,7 @@
             ⚙️ Panel
           </a>
 
-          <button type="button" onclick="cerrarSesion()" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all">
+          <button type="button" id="btnSalir" class="px-3 py-2 text-xs font-bold text-red-200 bg-red-950/60 border border-red-800 rounded-xl hover:bg-red-900 transition-all">
             🚪 Salir
           </button>
         </div>
@@ -259,131 +259,147 @@
   <script src="auth.js"></script>
 
   <script>
-    const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
-    // Reemplaza por tu anon/public Key válida obtenida de Supabase (Settings -> API)
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ra3lkcndkZXhhY3h2ZmJ0b3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjU0MzgsImV4cCI6MjA5OTcwMTQzOH0.ekbFeG6r176fbanPDUin0O_jwDcnmRRUVrJL3ohgXeE';              
-    
-    let client;
-    try {
-      client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (err) {
-      console.error('Error al inicializar Supabase:', err);
-    }
-
-    const form = document.getElementById('formVale');
-    const inputNeto = document.getElementById('valor_neto');
-    const inputTotal = document.getElementById('valor_total');
-    const btnGuardar = document.getElementById('btnGuardar');
-    const btnTexto = document.getElementById('btnTexto');
-
-    // Cálculo automático bidireccional fluido
-    let calculando = false;
-
-    inputNeto.addEventListener('input', () => {
-      if (calculando) return;
-      calculando = true;
-      const val = parseFloat(inputNeto.value);
-      if (!isNaN(val) && val > 0) {
-        inputTotal.value = Math.round(val * 1.19);
-      } else {
-        inputTotal.value = '';
+    document.addEventListener('DOMContentLoaded', () => {
+      const SUPABASE_URL = 'https://okkydrwdexacxvfbtopb.supabase.co'; 
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ra3lkcndkZXhhY3h2ZmJ0b3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjU0MzgsImV4cCI6MjA5OTcwMTQzOH0.ekbFeG6r176fbanPDUin0O_jwDcnmRRUVrJL3ohgXeE';              
+      
+      // Inicialización segura reutilizando la instancia si ya existe en window
+      let client = window.supabaseClient;
+      if (!client) {
+        client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClient = client;
       }
-      calculando = false;
-    });
 
-    inputTotal.addEventListener('input', () => {
-      if (calculando) return;
-      calculando = true;
-      const val = parseFloat(inputTotal.value);
-      if (!isNaN(val) && val > 0) {
-        inputNeto.value = Math.round(val / 1.19);
-      } else {
-        inputNeto.value = '';
-      }
-      calculando = false;
-    });
+      const form = document.getElementById('formVale');
+      const inputNeto = document.getElementById('valor_neto');
+      const inputTotal = document.getElementById('valor_total');
+      const btnGuardar = document.getElementById('btnGuardar');
+      const btnTexto = document.getElementById('btnTexto');
+      const btnSalir = document.getElementById('btnSalir');
 
-    // Guardar Vale
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
-      const medioPagoRadio = document.querySelector('input[name="medio_pago"]:checked');
-
-      if (!empresaRadio) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Falta un dato',
-          text: 'Por favor selecciona la Empresa.',
-          timer: 2500,
-          showConfirmButton: false,
-          customClass: { popup: 'swal2-popup-accessible' }
+      if (btnSalir) {
+        btnSalir.addEventListener('click', () => {
+          if (typeof cerrarSesion === 'function') {
+            cerrarSesion();
+          } else {
+            window.location.href = 'login.html';
+          }
         });
-        return;
       }
 
-      btnGuardar.disabled = true;
-      btnTexto.innerText = 'GUARDANDO EN LA BASE DE DATOS...';
+      // CÁLCULO BIDIRECCIONAL DIRECTO (Neto <-> Total)
+      let updating = false;
 
-      try {
-        const datosVale = {
-          nombre_empresa: empresaRadio.value,
-          marca: document.getElementById('marca').value.toUpperCase().trim(),
-          patente: document.getElementById('patente').value.toUpperCase().trim(),
-          detalle: document.getElementById('detalle').value.trim(),
-          valor_neto: parseInt(inputNeto.value, 10) || 0,
-          valor_total: parseInt(inputTotal.value, 10) || 0,
-          medio_pago: medioPagoRadio ? medioPagoRadio.value : 'Efectivo'
-        };
+      inputNeto.addEventListener('keyup', calcularDesdeNeto);
+      inputNeto.addEventListener('input', calcularDesdeNeto);
 
-        const { data, error } = await client
-          .from('ordenes')
-          .insert([datosVale])
-          .select();
+      function calcularDesdeNeto() {
+        if (updating) return;
+        updating = true;
+        const val = parseFloat(inputNeto.value);
+        if (!isNaN(val) && val > 0) {
+          inputTotal.value = Math.round(val * 1.19);
+        } else {
+          inputTotal.value = '';
+        }
+        updating = false;
+      }
 
-        if (error) {
-          console.error('Detalle error Supabase:', error);
-          throw error;
+      inputTotal.addEventListener('keyup', calcularDesdeTotal);
+      inputTotal.addEventListener('input', calcularDesdeTotal);
+
+      function calcularDesdeTotal() {
+        if (updating) return;
+        updating = true;
+        const val = parseFloat(inputTotal.value);
+        if (!isNaN(val) && val > 0) {
+          inputNeto.value = Math.round(val / 1.19);
+        } else {
+          inputNeto.value = '';
+        }
+        updating = false;
+      }
+
+      // ENVÍO DE FORMULARIO E INSERCIÓN
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const empresaRadio = document.querySelector('input[name="empresa_option"]:checked');
+        const medioPagoRadio = document.querySelector('input[name="medio_pago"]:checked');
+
+        if (!empresaRadio) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Falta un dato',
+            text: 'Por favor selecciona la Empresa.',
+            timer: 2500,
+            showConfirmButton: false,
+            customClass: { popup: 'swal2-popup-accessible' }
+          });
+          return;
         }
 
-        const idGenerado = (data && data.length > 0) ? data[0].id : 'N/A';
+        btnGuardar.disabled = true;
+        btnTexto.innerText = 'GUARDANDO EN LA BASE DE DATOS...';
 
-        // Reset del formulario conservando los radio por defecto
-        form.reset();
-        const particularRadio = document.querySelector('input[name="empresa_option"][value="Particular"]');
-        const efectivoRadio = document.querySelector('input[name="medio_pago"][value="Efectivo"]');
-        if (particularRadio) particularRadio.checked = true;
-        if (efectivoRadio) efectivoRadio.checked = true;
+        try {
+          const datosVale = {
+            nombre_empresa: empresaRadio.value,
+            marca: document.getElementById('marca').value.toUpperCase().trim(),
+            patente: document.getElementById('patente').value.toUpperCase().trim(),
+            detalle: document.getElementById('detalle').value.trim(),
+            valor_neto: parseInt(inputNeto.value, 10) || 0,
+            valor_total: parseInt(inputTotal.value, 10) || 0,
+            medio_pago: medioPagoRadio ? medioPagoRadio.value : 'Efectivo'
+          };
 
-        // Alerta exitosa con cierre automático (2.5s)
-        Swal.fire({
-          icon: 'success',
-          title: '¡VALE GUARDADO!',
-          html: `
-            <div class="text-slate-800 text-lg mt-2 font-medium">
-              <p class="text-3xl font-black text-blue-600 mb-2">Folio: #${idGenerado}</p>
-              <p><b>Vehículo:</b> ${datosVale.marca}</p>
-              <p><b>Patente:</b> ${datosVale.patente}</p>
-            </div>
-          `,
-          timer: 2500,
-          showConfirmButton: false,
-          timerProgressBar: true,
-          customClass: { popup: 'swal2-popup-accessible' }
-        });
+          const { data, error } = await client
+            .from('ordenes')
+            .insert([datosVale])
+            .select();
 
-      } catch (err) {
-        console.error('Error al intentar guardar:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error al registrar',
-          text: err.message || 'Verifica la consola para más detalles (F12).',
-          customClass: { popup: 'swal2-popup-accessible' }
-        });
-      } finally {
-        btnGuardar.disabled = false;
-        btnTexto.innerText = 'GUARDAR Y REGISTRAR VALE';
-      }
+          if (error) {
+            console.error('Error retornado por Supabase:', error);
+            throw error;
+          }
+
+          const idGenerado = (data && data.length > 0) ? data[0].id : 'OK';
+
+          form.reset();
+          const particularRadio = document.querySelector('input[name="empresa_option"][value="Particular"]');
+          const efectivoRadio = document.querySelector('input[name="medio_pago"][value="Efectivo"]');
+          if (particularRadio) particularRadio.checked = true;
+          if (efectivoRadio) efectivoRadio.checked = true;
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡VALE GUARDADO!',
+            html: `
+              <div class="text-slate-800 text-lg mt-2 font-medium">
+                <p class="text-3xl font-black text-blue-600 mb-2">Folio: #${idGenerado}</p>
+                <p><b>Vehículo:</b> ${datosVale.marca}</p>
+                <p><b>Patente:</b> ${datosVale.patente}</p>
+              </div>
+            `,
+            timer: 2500,
+            showConfirmButton: false,
+            timerProgressBar: true,
+            customClass: { popup: 'swal2-popup-accessible' }
+          });
+
+        } catch (err) {
+          console.error('Detalle técnico de la falla:', err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al registrar',
+            text: err.message || 'Verifica la consola para más detalles (F12).',
+            customClass: { popup: 'swal2-popup-accessible' }
+          });
+        } finally {
+          btnGuardar.disabled = false;
+          btnTexto.innerText = 'GUARDAR Y REGISTRAR VALE';
+        }
+      });
     });
   </script>
 </body>
