@@ -15,19 +15,8 @@
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- === SUPABASE SDK === -->
+  <!-- === SUPABASE SDK & AUTH.JS === -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- === INICIALIZACIÓN DE SUPABASE Y SCRIPT DE AUTENTICACIÓN === -->
-  <script>
-    // CREDENCIALES DE SUPABASE
-    const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
-    const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY';
-
-    // Inicializar cliente global
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.supabaseClient = supabaseClient;
-  </script>
   <script src="auth.js"></script>
 
   <style>
@@ -101,7 +90,7 @@
 
 <body class="d-flex flex-column justify-content-between min-vh-100 p-2 p-md-4">
 
-  <!-- Contenedor donde auth.js renderizará el login si no hay sesión activa -->
+  <!-- Contenedor donde auth.js renderiza el login si no hay sesión activa -->
   <div id="authContainer"></div>
 
   <!-- Navegación y Sesión -->
@@ -398,8 +387,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // INSERTA AQUÍ TU API KEY OBTENIDA DE BOOSTR.CL (Ej: "eyJhbGci...")
-    const BOOST_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnQiOiJWSUNUT1IgTSBTIE1JUkFOREEiLCJwbGFuIjoiZnJlZSIsImFkZG9ucyI6IiIsImV4Y2x1ZGVzIjoiIiwicmF0ZSI6IjV4MTAiLCJjdXN0b20iOnsiZG9jdW1lbnRfbnVtYmVyX2RhaWx5X2xpbWl0IjowLCJwbGF0ZXNfZGFpbHlfbGltaXQiOjV9LCJpYXQiOjE3ODY5OTkyMzMsImV4cCI6MTc4OTU5MTIzM30.glMjAi_WhmMWBOdgylX1SI7m5AVbAQ6HI7QMRYatvQ4";
+    // INSERTA TU API KEY VÁLIDA DE BOOSTR.CL AQUÍ
+    const BOOST_API_KEY = "TU_BOOSTR_API_KEY_AQUI";
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('fecha').valueAsDate = new Date();
@@ -485,7 +474,7 @@
       }
     }
 
-    // Guardar Informe en Supabase (Tabla: informes_alineacion)
+    // Guardar Informe en Supabase (Usando el cliente que inicializa auth.js)
     async function guardarInformeBD() {
       const patenteInput = document.getElementById('patente');
       if (!patenteInput.value.trim()) {
@@ -512,10 +501,11 @@
       };
 
       try {
-        const client = window.supabaseClient;
+        // Obtiene el cliente global expuesto por auth.js o la variable de ventana
+        const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
 
         if (!client) {
-          throw new Error('Instancia de Supabase no inicializada.');
+          throw new Error('No se detectó la sesión de Supabase activada por auth.js.');
         }
 
         // Inserción en la tabla informes_alineacion
@@ -528,7 +518,6 @@
         if (error) throw error;
 
         if (data && data.id) {
-          // Formatea el ID autoincremental de Supabase a formato chileno (ej: 13481 -> 13.481)
           const folioFormateado = Number(data.id).toLocaleString('es-CL');
           document.getElementById('folio').innerText = `FOL-${folioFormateado}`;
         }
