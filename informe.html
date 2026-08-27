@@ -15,8 +15,19 @@
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Supabase Client & Módulo Centralizado de Autenticación -->
+  <!-- === SUPABASE SDK === -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- === INICIALIZACIÓN DE SUPABASE Y SCRIPT DE AUTENTICACIÓN === -->
+  <script>
+    // CREDENCIALES DE SUPABASE
+    const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
+    const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY';
+
+    // Inicializar cliente global
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = supabaseClient;
+  </script>
   <script src="auth.js"></script>
 
   <style>
@@ -64,15 +75,15 @@
       text-align: center;
     }
 
-    /* Ocultar elementos de autenticación residuales en la vista principal */
-    #loginOverlay, #authContainer, .auth-box {
+    /* Evitar superposición del panel de Auth si no hay sesión */
+    #authContainer:not(:empty) {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 255, 255, 0.98);
-      z-index: 9999;
+      background: #ffffff;
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -89,6 +100,9 @@
 </head>
 
 <body class="d-flex flex-column justify-content-between min-vh-100 p-2 p-md-4">
+
+  <!-- Contenedor donde auth.js renderizará el login si no hay sesión activa -->
+  <div id="authContainer"></div>
 
   <!-- Navegación y Sesión -->
   <div class="container max-w-5xl mb-3 no-print">
@@ -122,7 +136,7 @@
       <div class="col-12 col-md-4 text-md-end">
         <div class="d-inline-block bg-light border rounded-3 p-2 text-center min-w-[140px]">
           <span class="d-block small font-semibold text-muted text-uppercase" style="font-size: 10px;">FOLIO INFORME</span>
-          <span id="folio" class="h6 fw-bold text-primary mb-0">FOL-AUTO</span>
+          <span id="folio" class="h6 fw-bold text-primary mb-0">FOL-NUEVO</span>
         </div>
         <div class="mt-2">
           <input type="date" id="fecha" class="form-control form-control-sm text-center d-inline-block w-auto border-slate-300">
@@ -176,6 +190,7 @@
 
       <!-- DIAGRAMA INTERACTIVO Y MEDICIONES -->
       <div class="diagram-container mb-4 overflow-x-auto">
+        
         <svg class="h-100 opacity-75" style="max-height: 460px;" viewBox="0 0 200 400" fill="none">
           <rect x="35" y="30" width="130" height="340" rx="40" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/>
           <path d="M 50 110 Q 100 95 150 110 L 142 140 Q 100 135 58 140 Z" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
@@ -354,7 +369,7 @@
         </p>
       </div>
 
-      <!-- BOTONES INDEPENDIENTES: GUARDAR, PDF/DIGITAL E IMPRIMIR -->
+      <!-- BOTONES INDEPENDIENTES DE ACCIÓN -->
       <div class="d-flex flex-wrap justify-content-end gap-2 mt-4 no-print">
         <button type="button" id="btnGuardar" onclick="guardarInformeBD()" class="btn btn-primary rounded-3 fw-bold d-flex align-items-center gap-2 px-3 shadow-sm">
           <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -388,7 +403,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('fecha').valueAsDate = new Date();
 
-      // Formateo automático de ángulos
+      // Formateo automático de ángulos (° ')
       document.querySelectorAll('.auto-format').forEach(input => {
         input.addEventListener('blur', function() {
           let val = this.value.trim();
@@ -462,7 +477,7 @@
       }
     }
 
-    // ACCIÓN 1: Guardar en Base de Datos
+    // Guardar Informe en Supabase
     async function guardarInformeBD() {
       const patenteInput = document.getElementById('patente');
       if (!patenteInput.value.trim()) {
@@ -489,24 +504,27 @@
       };
 
       try {
-        const supabaseClient = window.client || window.supabaseClient || (typeof supabase !== 'undefined' ? supabase : null);
+        const client = window.supabaseClient;
 
-        if (!supabaseClient) {
-          throw new Error('Instancia de Supabase no encontrada en el documento.');
+        if (!client) {
+          throw new Error('Instancia de Supabase no inicializada.');
         }
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
           .from('informes_geometria')
           .insert([payload])
-          .select('id');
+          .select('id')
+          .single();
 
         if (error) throw error;
 
-        if (data && data[0]?.id) {
-          document.getElementById('folio').innerText = `FOL-${data[0].id}`;
+        if (data && data.id) {
+          // Formatea el ID autoincremental de Supabase a formato chileno (ej: 13481 -> 13.481)
+          const folioFormateado = Number(data.id).toLocaleString('es-CL');
+          document.getElementById('folio').innerText = `FOL-${folioFormateado}`;
         }
         
-        alert('✅ Informe guardado correctamente en la base de datos.');
+        alert('✅ Informe guardado con éxito.');
         return true;
       } catch (error) {
         console.error('Error al guardar:', error);
@@ -518,19 +536,19 @@
       }
     }
 
-    // ACCIÓN 2: Exportar como PDF para envío Digital
+    // Exportar PDF / WhatsApp (Guardar + Imprimir/PDF)
     async function exportarPDF() {
-      await guardarInformeBD();
-      window.print(); // Al seleccionar "Guardar como PDF" en el diálogo de impresión se genera el archivo para adjuntar a WhatsApp/Mail.
+      const ok = await guardarInformeBD();
+      if (ok) window.print();
     }
 
-    // ACCIÓN 3: Imprimir directamente
+    // Imprimir en Papel
     async function imprimirDirecto() {
-      await guardarInformeBD();
-      window.print();
+      const ok = await guardarInformeBD();
+      if (ok) window.print();
     }
 
-    // Función táctil para semáforos
+    // Selección de estados (Semáforos)
     function setStatus(btn) {
       const parent = btn.parentElement;
       const isSelected = btn.classList.contains('active');
