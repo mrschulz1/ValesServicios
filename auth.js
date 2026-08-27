@@ -3,9 +3,12 @@ const SUPABASE_URL = "https://okkydrwdexacxvfbtopb.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ra3lkcndkZXhhY3h2ZmJ0b3BiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjU0MzgsImV4cCI6MjA5OTcwMTQzOH0.ekbFeG6r176fbanPDUin0O_jwDcnmRRUVrJL3ohgXeE";
 
 // Instancia global de Supabase
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   db: { schema: 'public' }
 });
+
+// Alias local para que funcionen client.auth sin errores
+const client = window.supabaseClient;
 
 // 1. Inyectar el Modal de Login en el DOM si no existe
 function inyectarModalLogin() {
