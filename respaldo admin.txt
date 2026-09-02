@@ -86,7 +86,7 @@
               <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
             </span>
           </div>
-          <p class="text-sm font-medium text-slate-500 mt-0.5">Gestion de Vales</p>
+          <p class="text-sm font-medium text-slate-500 mt-0.5">Gestión de Vales</p>
         </div>
       </div>
 
@@ -119,11 +119,11 @@
       </div>
     </div>
 
-    <!-- Tabla de Vales -->
+    <!-- Tabla de Vales con Contenedor de Scroll Fijo -->
     <div class="bg-white rounded-3xl shadow-xl border-2 border-slate-200 overflow-hidden">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto max-h-[580px] overflow-y-auto">
         <table class="w-full text-left border-collapse">
-          <thead>
+          <thead class="sticky top-0 z-10">
             <tr class="bg-slate-900 text-white text-xs uppercase font-extrabold tracking-wider border-b-4 border-blue-600">
               <th class="py-4 px-3 text-center">FOLIO</th>
               <th class="py-4 px-3">FECHA</th>
@@ -146,6 +146,20 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Barra de Paginación -->
+      <div class="bg-slate-50 px-5 py-3.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-slate-600">
+        <span id="infoPaginacion">Mostrando registros...</span>
+        <div class="flex items-center gap-2">
+          <button id="btnPrevPage" onclick="cambiarPagina(-1)" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+            ← Anterior
+          </button>
+          <span id="numPagina" class="px-2 font-extrabold text-blue-600">Página 1</span>
+          <button id="btnNextPage" onclick="cambiarPagina(1)" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+            Siguiente →
+          </button>
+        </div>
       </div>
     </div>
 
@@ -225,8 +239,23 @@
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let valesLocales = [];
+    let valesFiltrados = [];
     let ultimoIdIngresado = null;
     let realtimeChannel = null;
+
+    // Control de Paginación
+    let paginaActual = 1;
+    const registrosPorPagina = 10;
+
+    // Función auxiliar para formatear la fecha SIN sufrir desfase por zona horaria UTC
+    function formatearFechaSINDesfase(fechaIso) {
+      if (!fechaIso) return 'N/A';
+      const fechaSolo = String(fechaIso).split('T')[0];
+      const partes = fechaSolo.split('-');
+      if (partes.length !== 3) return 'N/A';
+      const [year, month, day] = partes;
+      return `${day}/${month}/${year}`;
+    }
 
     // Control de Autenticación
     document.addEventListener('DOMContentLoaded', async () => {
@@ -297,7 +326,9 @@
         if (error) throw error;
 
         valesLocales = vales || [];
-        renderizarTabla(valesLocales);
+        valesFiltrados = [...valesLocales];
+        paginaActual = 1;
+        renderizarTabla();
 
       } catch (err) {
         console.error('Error:', err);
@@ -342,11 +373,11 @@
         .subscribe();
     }
 
-    // Renderizar Filas
-    function renderizarTabla(lista) {
+    // Renderizar Filas con Paginación
+    function renderizarTabla() {
       const tbody = document.getElementById('tablaValesBody');
 
-      if (!lista || lista.length === 0) {
+      if (!valesFiltrados || valesFiltrados.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="10" class="py-8 text-center text-slate-400 font-bold">
@@ -354,14 +385,21 @@
             </td>
           </tr>
         `;
+        actualizarPaginacionUI(0, 0, 0, 0);
         return;
       }
 
-      tbody.innerHTML = lista.map(vale => {
-        const fecha = vale.created_at ? new Date(vale.created_at).toLocaleDateString('es-CL', {
-          day: '2-digit', month: '2-digit', year: 'numeric'
-        }) : 'N/A';
+      // Cálculo de rango de paginación
+      const totalRegistros = valesFiltrados.length;
+      const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+      if (paginaActual > totalPaginas) paginaActual = totalPaginas;
 
+      const inicio = (paginaActual - 1) * registrosPorPagina;
+      const fin = Math.min(inicio + registrosPorPagina, totalRegistros);
+      const paginaVales = valesFiltrados.slice(inicio, fin);
+
+      tbody.innerHTML = paginaVales.map(vale => {
+        const fecha = formatearFechaSINDesfase(vale.created_at || vale.fecha);
         const netoFormatted = (vale.valor_neto || 0).toLocaleString('es-CL');
         const totalFormatted = (vale.valor_total || 0).toLocaleString('es-CL');
 
@@ -395,18 +433,47 @@
           </tr>
         `;
       }).join('');
+
+      actualizarPaginacionUI(inicio + 1, fin, totalRegistros, totalPaginas);
+    }
+
+    function actualizarPaginacionUI(inicio, fin, total, totalPaginas) {
+      const infoPAG = document.getElementById('infoPaginacion');
+      const numPAG = document.getElementById('numPagina');
+      const btnPrev = document.getElementById('btnPrevPage');
+      const btnNext = document.getElementById('btnNextPage');
+
+      if (total === 0) {
+        infoPAG.innerText = 'Sin datos';
+        numPAG.innerText = 'Página 0 de 0';
+        btnPrev.disabled = true;
+        btnNext.disabled = true;
+        return;
+      }
+
+      infoPAG.innerText = `Mostrando ${inicio} a ${fin} de ${total} vales`;
+      numPAG.innerText = `Página ${paginaActual} de ${totalPaginas}`;
+
+      btnPrev.disabled = (paginaActual <= 1);
+      btnNext.disabled = (paginaActual >= totalPaginas);
+    }
+
+    function cambiarPagina(delta) {
+      paginaActual += delta;
+      renderizarTabla();
     }
 
     // Filtro de Búsqueda
     function filtrarTabla() {
       const query = document.getElementById('inputBuscar').value.toLowerCase().trim();
-      const filtrados = valesLocales.filter(vale => {
+      valesFiltrados = valesLocales.filter(vale => {
         return (vale.id && vale.id.toString().includes(query)) ||
                (vale.patente && vale.patente.toLowerCase().includes(query)) ||
                (vale.nombre_empresa && vale.nombre_empresa.toLowerCase().includes(query)) ||
                (vale.marca && vale.marca.toLowerCase().includes(query));
       });
-      renderizarTabla(filtrados);
+      paginaActual = 1;
+      renderizarTabla();
     }
 
     // Calculador de IVA en Modal
