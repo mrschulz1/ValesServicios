@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es">
- <head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260903-03-1632ed8","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Canva Sans":"YAFLd8sKbwc,2","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YAFdJksXcAk,0","Libre Baskerville":"YACgEUFdPdA,0","Manrope":"YAHO2b2feC4,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YADLjI9qxTA,0","Nunito":"YACgEX8C5Gg,0","Oleo Script":"YACgEQQ14jI,0","Phantom Sans":"YAHO2E8Pb88,0","Playfair Display":"YACgEYmuCJE,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YADWjpfPmdk,0","Raleway":"YACgEVg3xZg,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Spectral":"YAHO2rVUHIM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Ubuntu":"YACgERDU--Q,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YADlN8CFZ8Q,0","ui-sans-serif":"YACkoN-xg4g,0"}}');</script><script src="/_sdk/9e99ecf74af2a081.telemetry_sdk.js" integrity="sha512-tZ7fmfTx2KpCLjXQnEuL9azQ4A5+7+xumsx6r/WYVD0zCP/8LP8hDeCypMQesmP+WyAew4g7l5Ah23Bjd6yoVg=="></script>
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informe de Alineación Vehicular</title>
@@ -36,7 +36,7 @@
 
     .report-shell {
       width: 100%;
-      min-height: calc(100 * min(var(--vh, 1vh), 1vh));
+      min-height: 100vh;
       background:
         radial-gradient(circle at 90% 3%, rgba(20, 184, 166, 0.15), transparent 23rem),
         linear-gradient(135deg, #edf5f6 0%, #f8fafc 48%, #e5f1f1 100%);
@@ -257,15 +257,8 @@
 
     .measure-table tr:last-child td { border-bottom: 0; }
 
-    .value-before {
-      color: #9f1239;
-      font-weight: 700;
-    }
-
-    .value-after {
-      color: #047857;
-      font-weight: 800;
-    }
+    .value-before { color: #9f1239; font-weight: 700; }
+    .value-after { color: #047857; font-weight: 800; }
 
     .mini-badge {
       display: inline-flex;
@@ -307,77 +300,93 @@
       .detail-hidden { display: block !important; }
     }
   </style>
-  <script src="/_sdk/fbe2ebfd64647c54.data_sdk.js" type="text/javascript" integrity="sha512-vkTX6CfvpHc3WbjK+tFJCaDuw4ERA4aEV/e5/7+MMJPMTF4RJYCI6CAwJBT/gtDW+dba4uLSsPUgDjVDHWtgUQ=="></script>
-  <script src="/_sdk/fcb6dc01f91829ac.resizing_sdk.js" type="text/javascript" integrity="sha512-YK8JfnN705qaEaVhiL7pcVB2Rs/BbdX5yxV55Az8zT/1JanyEWTw9HqCF915m9iV1YEaoil8qsjJz03l1Kb0Ug=="></script>
  </head>
- <body data-template-id="__page-root">
+ <body>
   <div class="report-shell">
    <div class="report-paper">
     <header class="panel p-4 p-md-5 mb-4">
      <div class="top-rule mb-4"></div>
      <div class="d-flex flex-column flex-lg-row justify-content-between gap-4">
       <div class="d-flex gap-3 align-items-start">
-       <div class="brand-mark" aria-hidden="true"><i data-lucide="gauge" style="width:25px;height:25px;"></i>
+       <div class="brand-mark" aria-hidden="true">
+        <i data-lucide="gauge" style="width:25px;height:25px;"></i>
        </div>
        <div>
-        <p data-template-id="workshop-name" class="canva-text eyebrow mb-2"></p>
-        <h1 data-template-id="report-title" class="canva-text fs-2 fw-bold mb-2"></h1>
-        <p data-template-id="report-subtitle" class="canva-text mb-0" style="color:#627d98;"></p>
+        <p class="eyebrow mb-2">Taller Mecánico &amp; Alineación</p>
+        <h1 class="fs-2 fw-bold mb-2">Informe de Alineación Vehicular</h1>
+        <p class="mb-0" style="color:#627d98;">Geometría computarizada y diagnóstico de suspensión</p>
        </div>
       </div>
       <div class="d-flex flex-column align-items-lg-end justify-content-between gap-3">
        <div class="text-lg-end">
-        <p data-template-id="report-number-label" class="canva-text eyebrow mb-1"></p>
-        <p data-template-id="report-number" class="canva-text fw-bold fs-5 mb-0"></p>
-       </div><button id="print-button" data-template-id="print-button" type="button" class="canva-button focus-ring btn px-3 py-2 fw-bold" style="background:#102a43;color:#ffffff;border:none;"> <i data-lucide="printer" style="width:17px;height:17px;" class="me-2"></i><span data-template-id="print-button-text" class="canva-text"></span> </button>
+        <p class="eyebrow mb-1">Orden de Servicio</p>
+        <p class="fw-bold fs-5 mb-0">#AL-2026-0892</p>
+       </div>
+       <button id="print-button" type="button" class="focus-ring btn px-3 py-2 fw-bold" style="background:#102a43;color:#ffffff;border:none;">
+        <i data-lucide="printer" style="width:17px;height:17px;" class="me-2 inline-block"></i>
+        <span>Imprimir Informe</span>
+       </button>
       </div>
      </div>
     </header>
+
     <main>
      <section class="row g-4 mb-4" aria-label="Datos de la orden">
       <div class="col-lg-7">
-       <article data-template-id="vehicle-info-panel" class="canva-panel panel h-100 p-4">
-        <div class="d-flex align-items-center gap-2 mb-4"><i data-lucide="car-front" style="width:21px;height:21px;color:#0f766e;"></i>
-         <h2 data-template-id="vehicle-info-title" class="canva-text h5 fw-bold mb-0"></h2>
+       <article class="panel h-100 p-4">
+        <div class="d-flex align-items-center gap-2 mb-4">
+         <i data-lucide="car-front" style="width:21px;height:21px;color:#0f766e;"></i>
+         <h2 class="h5 fw-bold mb-0">Información del Vehículo y Cliente</h2>
         </div>
         <div class="row g-4">
          <div class="col-sm-6">
-          <p data-template-id="client-label" class="canva-text eyebrow mb-1"></p>
-          <p data-template-id="client-value" class="canva-text fw-semibold mb-0"></p>
+          <p class="eyebrow mb-1">Cliente</p>
+          <p class="fw-semibold mb-0">Juan Pérez</p>
          </div>
          <div class="col-sm-6">
-          <p data-template-id="vehicle-label" class="canva-text eyebrow mb-1"></p>
-          <p data-template-id="vehicle-value" class="canva-text fw-semibold mb-0"></p>
+          <p class="eyebrow mb-1">Vehículo / Modelo</p>
+          <p class="fw-semibold mb-0">Audi A3 2.0 TFSI (2018)</p>
          </div>
          <div class="col-sm-6">
-          <p data-template-id="plate-label" class="canva-text eyebrow mb-1"></p>
-          <p data-template-id="plate-value" class="canva-text fw-semibold mb-0"></p>
+          <p class="eyebrow mb-1">Patente / Marcación</p>
+          <p class="fw-semibold mb-0">BB-CL-88</p>
          </div>
          <div class="col-sm-6">
-          <p data-template-id="date-label" class="canva-text eyebrow mb-1"></p>
-          <p data-template-id="date-value" class="canva-text fw-semibold mb-0"></p>
+          <p class="eyebrow mb-1">Fecha del Servicio</p>
+          <p class="fw-semibold mb-0">03 de Septiembre, 2026</p>
          </div>
         </div>
        </article>
       </div>
       <div class="col-lg-5">
-       <article data-template-id="diagnosis-panel" class="canva-panel panel h-100 p-4" style="background:#f0fdfa;">
-        <p data-template-id="diagnosis-label" class="canva-text eyebrow mb-2"></p>
-        <h2 data-template-id="diagnosis-title" class="canva-text h4 fw-bold mb-3"></h2>
-        <div data-template-id="diagnosis-status" class="canva-tag status-pill good mb-3"><span class="status-dot"></span> <span data-template-id="diagnosis-status-text" class="canva-text"></span>
+       <article class="panel h-100 p-4" style="background:#f0fdfa;">
+        <p class="eyebrow mb-2">Resultado General</p>
+        <h2 class="h4 fw-bold mb-3">Diagnóstico del Servicio</h2>
+        <div class="status-pill warning mb-3">
+         <span class="status-dot"></span>
+         <span>Alineado con Observación</span>
         </div>
-        <p data-template-id="diagnosis-description" class="canva-text mb-0" style="color:#486581;"></p>
+        <p class="mb-0" style="color:#486581;">Alineación del eje delantero completada según especificaciones. El eje trasero requiere inspección adicional en bujes.</p>
        </article>
       </div>
      </section>
+
      <section class="panel p-4 p-md-5 mb-4" aria-labelledby="visual-title">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
        <div>
-        <p data-template-id="visual-eyebrow" class="canva-text eyebrow mb-2"></p>
-        <h2 data-template-id="visual-title" class="canva-text h3 fw-bold mb-1"></h2>
-        <p data-template-id="visual-description" class="canva-text mb-0" style="color:#627d98;"></p>
+        <p class="eyebrow mb-2">Esquema Gráfico</p>
+        <h2 id="visual-title" class="h3 fw-bold mb-1">Estado Visual por Rueda</h2>
+        <p class="mb-0" style="color:#627d98;">Representación topológica de la geometría del chasis</p>
        </div>
-       <div class="d-flex gap-3 small fw-semibold" style="color:#486581;"><span class="d-flex align-items-center gap-1"><span class="status-dot" style="color:#16a34a;"></span><span data-template-id="legend-good" class="canva-text"></span></span> <span class="d-flex align-items-center gap-1"><span class="status-dot" style="color:#f59e0b;"></span><span data-template-id="legend-review" class="canva-text"></span></span>
+       <div class="d-flex gap-3 small fw-semibold" style="color:#486581;">
+        <span class="d-flex align-items-center gap-1">
+         <span class="status-dot" style="color:#16a34a;"></span>
+         <span>Dentro de Tolerancia</span>
+        </span>
+        <span class="d-flex align-items-center gap-1">
+         <span class="status-dot" style="color:#f59e0b;"></span>
+         <span>Requiere Revisión</span>
+        </span>
        </div>
       </div>
       <div class="vehicle-board" role="img" aria-label="Diagrama superior del vehículo con estado de alineación por rueda">
@@ -388,180 +397,208 @@
        <div class="wheel good-wheel rl"></div>
        <div class="wheel warn-wheel rr"></div>
        <div class="wheel-note note-fl">
-        <i data-lucide="circle-check"></i><span data-template-id="wheel-front-left" class="canva-text"></span>
+        <i data-lucide="circle-check"></i>
+        <span>Del. Izquierda: Correcta</span>
        </div>
        <div class="wheel-note note-fr">
-        <i data-lucide="circle-check"></i><span data-template-id="wheel-front-right" class="canva-text"></span>
+        <i data-lucide="circle-check"></i>
+        <span>Del. Derecha: Correcta</span>
        </div>
        <div class="wheel-note note-rl">
-        <i data-lucide="circle-check"></i><span data-template-id="wheel-rear-left" class="canva-text"></span>
+        <i data-lucide="circle-check"></i>
+        <span>Tras. Izquierda: Correcta</span>
        </div>
        <div class="wheel-note note-rr">
-        <i data-lucide="triangle-alert" style="color:#f59e0b;"></i><span data-template-id="wheel-rear-right" class="canva-text"></span>
+        <i data-lucide="triangle-alert" style="color:#f59e0b;"></i>
+        <span>Tras. Derecha: Desviada (+0.25°)</span>
        </div>
       </div>
      </section>
+
      <section class="row g-3 mb-4" aria-label="Resumen de valores">
       <div class="col-sm-6 col-xl-3">
-       <article data-template-id="toe-card" class="canva-card summary-card" style="color:#047857;">
+       <article class="summary-card" style="color:#047857;">
         <div class="d-flex justify-content-between align-items-start">
          <div class="metric-icon" style="background:#d1fae5;">
           <i data-lucide="move-horizontal" style="width:20px;height:20px;"></i>
-         </div><span data-template-id="toe-badge" class="canva-tag mini-badge" style="background:#d1fae5;color:#047857;"></span>
+         </div>
+         <span class="mini-badge" style="background:#d1fae5;color:#047857;">Óptimo</span>
         </div>
-        <p data-template-id="toe-label" class="canva-text fw-semibold mt-3 mb-2" style="color:#334e68;"></p>
-        <p data-template-id="toe-value" class="canva-text metric-value mb-1"></p>
-        <p data-template-id="toe-detail" class="canva-text small mb-0" style="color:#627d98;"></p>
+        <p class="fw-semibold mt-3 mb-2" style="color:#334e68;">Convergencia Total</p>
+        <p class="metric-value mb-1">+0.12°</p>
+        <p class="small mb-0" style="color:#627d98;">Eje Delantero</p>
        </article>
       </div>
+
       <div class="col-sm-6 col-xl-3">
-       <article data-template-id="camber-card" class="canva-card summary-card" style="color:#047857;">
+       <article class="summary-card" style="color:#047857;">
         <div class="d-flex justify-content-between align-items-start">
          <div class="metric-icon" style="background:#d1fae5;">
           <i data-lucide="move-up-right" style="width:20px;height:20px;"></i>
-         </div><span data-template-id="camber-badge" class="canva-tag mini-badge" style="background:#d1fae5;color:#047857;"></span>
+         </div>
+         <span class="mini-badge" style="background:#d1fae5;color:#047857;">Óptimo</span>
         </div>
-        <p data-template-id="camber-label" class="canva-text fw-semibold mt-3 mb-2" style="color:#334e68;"></p>
-        <p data-template-id="camber-value" class="canva-text metric-value mb-1"></p>
-        <p data-template-id="camber-detail" class="canva-text small mb-0" style="color:#627d98;"></p>
+        <p class="fw-semibold mt-3 mb-2" style="color:#334e68;">Cámber (Caída)</p>
+        <p class="metric-value mb-1">-0.85°</p>
+        <p class="small mb-0" style="color:#627d98;">Eje Delantero</p>
        </article>
       </div>
+
       <div class="col-sm-6 col-xl-3">
-       <article data-template-id="caster-card" class="canva-card summary-card" style="color:#047857;">
+       <article class="summary-card" style="color:#047857;">
         <div class="d-flex justify-content-between align-items-start">
          <div class="metric-icon" style="background:#d1fae5;">
           <i data-lucide="rotate-cw" style="width:20px;height:20px;"></i>
-         </div><span data-template-id="caster-badge" class="canva-tag mini-badge" style="background:#d1fae5;color:#047857;"></span>
+         </div>
+         <span class="mini-badge" style="background:#d1fae5;color:#047857;">Óptimo</span>
         </div>
-        <p data-template-id="caster-label" class="canva-text fw-semibold mt-3 mb-2" style="color:#334e68;"></p>
-        <p data-template-id="caster-value" class="canva-text metric-value mb-1"></p>
-        <p data-template-id="caster-detail" class="canva-text small mb-0" style="color:#627d98;"></p>
+        <p class="fw-semibold mt-3 mb-2" style="color:#334e68;">Cáster (Avance)</p>
+        <p class="metric-value mb-1">+4.20°</p>
+        <p class="small mb-0" style="color:#627d98;">Eje Delantero</p>
        </article>
       </div>
+
       <div class="col-sm-6 col-xl-3">
-       <article data-template-id="steering-card" class="canva-card summary-card" style="color:#a16207;">
+       <article class="summary-card" style="color:#a16207;">
         <div class="d-flex justify-content-between align-items-start">
          <div class="metric-icon" style="background:#fef3c7;">
           <i data-lucide="circle-dot-dashed" style="width:20px;height:20px;"></i>
-         </div><span data-template-id="steering-badge" class="canva-tag mini-badge" style="background:#fef3c7;color:#a16207;"></span>
+         </div>
+         <span class="mini-badge" style="background:#fef3c7;color:#a16207;">Alerta</span>
         </div>
-        <p data-template-id="steering-label" class="canva-text fw-semibold mt-3 mb-2" style="color:#334e68;"></p>
-        <p data-template-id="steering-value" class="canva-text metric-value mb-1"></p>
-        <p data-template-id="steering-detail" class="canva-text small mb-0" style="color:#627d98;"></p>
+        <p class="fw-semibold mt-3 mb-2" style="color:#334e68;">Ángulo de Empuje</p>
+        <p class="metric-value mb-1">+0.18°</p>
+        <p class="small mb-0" style="color:#627d98;">Eje Trasero</p>
        </article>
       </div>
      </section>
+
      <section class="panel p-4 p-md-5 mb-4" aria-labelledby="measurements-title">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
        <div>
-        <p data-template-id="measurements-eyebrow" class="canva-text eyebrow mb-2"></p>
-        <h2 data-template-id="measurements-title" class="canva-text h3 fw-bold mb-1"></h2>
-        <p data-template-id="measurements-description" class="canva-text mb-0" style="color:#627d98;"></p>
+        <p class="eyebrow mb-2">Telemetría</p>
+        <h2 id="measurements-title" class="h3 fw-bold mb-1">Mediciones Detalladas</h2>
+        <p class="mb-0" style="color:#627d98;">Comparativa de valores iniciales versus finales</p>
        </div>
-       <div class="no-print"><button id="detail-button" type="button" class="focus-ring btn fw-bold px-3 py-2" style="background:#e0f2fe;color:#075985;border:none;"> <i data-lucide="table-properties" style="width:17px;height:17px;" class="me-2"></i> <span data-template-id="detail-button-show" class="canva-text"></span> <span data-template-id="detail-button-hide" class="canva-text d-none"></span> </button>
+       <div class="no-print">
+        <button id="detail-button" type="button" class="focus-ring btn fw-bold px-3 py-2" style="background:#e0f2fe;color:#075985;border:none;">
+         <i data-lucide="table-properties" style="width:17px;height:17px;" class="me-2 inline-block"></i>
+         <span id="detail-button-show">Mostrar Tabla Completa</span>
+         <span id="detail-button-hide" class="d-none">Ocultar Tabla</span>
+        </button>
        </div>
       </div>
       <div id="measurement-details" class="detail-hidden mt-4 overflow-auto">
        <table class="measure-table w-100">
         <thead>
          <tr>
-          <th data-template-id="table-parameter" class="canva-text"></th>
-          <th data-template-id="table-position" class="canva-text"></th>
-          <th data-template-id="table-before" class="canva-text"></th>
-          <th data-template-id="table-after" class="canva-text"></th>
-          <th data-template-id="table-reference" class="canva-text"></th>
-          <th data-template-id="table-status" class="canva-text"></th>
+          <th>Parámetro</th>
+          <th>Posición</th>
+          <th>Antes</th>
+          <th>Después</th>
+          <th>Rango Ref.</th>
+          <th>Estado</th>
          </tr>
         </thead>
         <tbody>
          <tr>
-          <td data-template-id="row1-parameter" class="canva-text fw-semibold"></td>
-          <td data-template-id="row1-position" class="canva-text"></td>
-          <td data-template-id="row1-before" class="canva-text value-before"></td>
-          <td data-template-id="row1-after" class="canva-text value-after"></td>
-          <td data-template-id="row1-reference" class="canva-text" style="color:#627d98;"></td>
-          <td><span data-template-id="row1-status" class="canva-tag mini-badge" style="background:#d1fae5;color:#047857;"></span></td>
+          <td class="fw-semibold">Convergencia</td>
+          <td>Delantera Izq.</td>
+          <td class="value-before">-0.20°</td>
+          <td class="value-after">+0.06°</td>
+          <td style="color:#627d98;">+0.00° / +0.10°</td>
+          <td><span class="mini-badge" style="background:#d1fae5;color:#047857;">Correcto</span></td>
          </tr>
          <tr>
-          <td data-template-id="row2-parameter" class="canva-text fw-semibold"></td>
-          <td data-template-id="row2-position" class="canva-text"></td>
-          <td data-template-id="row2-before" class="canva-text value-before"></td>
-          <td data-template-id="row2-after" class="canva-text value-after"></td>
-          <td data-template-id="row2-reference" class="canva-text" style="color:#627d98;"></td>
-          <td><span data-template-id="row2-status" class="canva-tag mini-badge" style="background:#d1fae5;color:#047857;"></span></td>
+          <td class="fw-semibold">Convergencia</td>
+          <td>Delantera Der.</td>
+          <td class="value-before">-0.15°</td>
+          <td class="value-after">+0.06°</td>
+          <td style="color:#627d98;">+0.00° / +0.10°</td>
+          <td><span class="mini-badge" style="background:#d1fae5;color:#047857;">Correcto</span></td>
          </tr>
          <tr>
-          <td data-template-id="row3-parameter" class="canva-text fw-semibold"></td>
-          <td data-template-id="row3-position" class="canva-text"></td>
-          <td data-template-id="row3-before" class="canva-text value-before"></td>
-          <td data-template-id="row3-after" class="canva-text value-after"></td>
-          <td data-template-id="row3-reference" class="canva-text" style="color:#627d98;"></td>
-          <td><span data-template-id="row3-status" class="canva-tag mini-badge" style="background:#d1fae5;color:#047857;"></span></td>
+          <td class="fw-semibold">Cámber</td>
+          <td>Delantera Izq.</td>
+          <td class="value-before">-1.40°</td>
+          <td class="value-after">-0.85°</td>
+          <td style="color:#627d98;">-1.00° / -0.50°</td>
+          <td><span class="mini-badge" style="background:#d1fae5;color:#047857;">Correcto</span></td>
          </tr>
          <tr>
-          <td data-template-id="row4-parameter" class="canva-text fw-semibold"></td>
-          <td data-template-id="row4-position" class="canva-text"></td>
-          <td data-template-id="row4-before" class="canva-text value-before"></td>
-          <td data-template-id="row4-after" class="canva-text value-after"></td>
-          <td data-template-id="row4-reference" class="canva-text" style="color:#627d98;"></td>
-          <td><span data-template-id="row4-status" class="canva-tag mini-badge" style="background:#fef3c7;color:#a16207;"></span></td>
+          <td class="fw-semibold">Convergencia</td>
+          <td>Trasera Der.</td>
+          <td class="value-before">+0.45°</td>
+          <td class="value-after">+0.30°</td>
+          <td style="color:#627d98;">+0.05° / +0.15°</td>
+          <td><span class="mini-badge" style="background:#fef3c7;color:#a16207;">Fuera de Rango</span></td>
          </tr>
         </tbody>
        </table>
       </div>
      </section>
+
      <section class="row g-4 mb-4">
       <div class="col-lg-7">
-       <article data-template-id="recommendation-panel" class="canva-panel panel p-4 h-100">
+       <article class="panel p-4 h-100">
         <div class="d-flex gap-3">
-         <div class="metric-icon" style="background:#e0f2fe;color:#0369a1;"><i data-lucide="clipboard-check" style="width:21px;height:21px;"></i>
+         <div class="metric-icon" style="background:#e0f2fe;color:#0369a1;">
+          <i data-lucide="clipboard-check" style="width:21px;height:21px;"></i>
          </div>
          <div>
-          <p data-template-id="recommendation-eyebrow" class="canva-text eyebrow mb-2"></p>
-          <h2 data-template-id="recommendation-title" class="canva-text h5 fw-bold mb-2"></h2>
-          <p data-template-id="recommendation-text" class="canva-text mb-0" style="color:#486581;"></p>
+          <p class="eyebrow mb-2">Informe Técnico</p>
+          <h2 class="h5 fw-bold mb-2">Recomendaciones del Especialista</h2>
+          <p class="mb-0" style="color:#486581;">Se corrigió el desvío del volante y la convergencia delantera. Se sugiere realizar cambio de bujes en el tren trasero para corregir al 100% el cámber posterior derecho.</p>
          </div>
         </div>
        </article>
       </div>
       <div class="col-lg-5">
-       <aside data-template-id="client-note-panel" class="canva-panel client-note rounded-4 p-4 h-100">
-        <div class="d-flex gap-3"><i data-lucide="lightbulb" style="width:22px;height:22px;color:#a16207;flex:0 0 auto;"></i>
+       <aside class="client-note rounded-4 p-4 h-100">
+        <div class="d-flex gap-3">
+         <i data-lucide="lightbulb" style="width:22px;height:22px;color:#a16207;flex:0 0 auto;"></i>
          <div>
-          <h2 data-template-id="client-note-title" class="canva-text h6 fw-bold mb-2" style="color:#854d0e;"></h2>
-          <p data-template-id="client-note-text" class="canva-text small mb-0" style="color:#713f12;"></p>
+          <h2 class="h6 fw-bold mb-2" style="color:#854d0e;">Nota para el Cliente</h2>
+          <p class="small mb-0" style="color:#713f12;">Se aconseja rotar los neumáticos en 5.000 km y volver a chequear balanceo para asegurar la máxima durabilidad de la banda de rodamiento.</p>
          </div>
         </div>
        </aside>
       </div>
      </section>
     </main>
+
     <footer class="text-center px-3 pt-2">
-     <p data-template-id="footer-text" class="canva-text small mb-0" style="color:#627d98;"></p>
+     <p class="small mb-0" style="color:#627d98;">Sistema Web de Informe Geométrico © 2026 - Taller de Alineación y Chasis</p>
     </footer>
    </div>
   </div>
-  <script src="/_sdk/e10c717c7e974dd1.editing_sdk.js" integrity="sha512-BcrhlH+uc7adjbcWhp1iZYPDDw0dRJh9MMJKYNtKQ35BtD5tMsxKlz53TSV8BnEY+0eujtTiWSFjanv0cOjj1g=="></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      lucide.createIcons();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
 
       const printButton = document.getElementById("print-button");
       const detailButton = document.getElementById("detail-button");
       const detailPanel = document.getElementById("measurement-details");
-      const showText = document.querySelector('[data-template-id="detail-button-show"]');
-      const hideText = document.querySelector('[data-template-id="detail-button-hide"]');
+      const showText = document.getElementById("detail-button-show");
+      const hideText = document.getElementById("detail-button-hide");
 
-      printButton.addEventListener("click", function () {
-        window.print();
-      });
+      if (printButton) {
+        printButton.addEventListener("click", function () {
+          window.print();
+        });
+      }
 
-      detailButton.addEventListener("click", function () {
-        const isHidden = detailPanel.classList.toggle("detail-hidden");
-        showText.classList.toggle("d-none", !isHidden);
-        hideText.classList.toggle("d-none", isHidden);
-        detailButton.setAttribute("aria-expanded", String(!isHidden));
-      });
+      if (detailButton && detailPanel) {
+        detailButton.addEventListener("click", function () {
+          const isHidden = detailPanel.classList.toggle("detail-hidden");
+          if (showText) showText.classList.toggle("d-none", !isHidden);
+          if (hideText) hideText.classList.toggle("d-none", isHidden);
+          detailButton.setAttribute("aria-expanded", String(!isHidden));
+        });
+      }
     });
   </script>
  </body>
