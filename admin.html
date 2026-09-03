@@ -31,11 +31,18 @@
     }
     .fila-nueva { animation: highlightRow 3s ease-out forwards; }
     
-    @media print {
+    @media print {  
       body * { visibility: hidden; }
       #areaImpresion, #areaImpresion * { visibility: visible; }
       #areaImpresion { position: absolute; left: 0; top: 0; width: 100%; }
+      
+      /* Regla para garantizar que los colores e imágenes de fondo se impriman correctamente */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
     }
+
   </style>
 </head>
 

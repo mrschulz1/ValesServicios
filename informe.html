@@ -53,18 +53,24 @@
       border: 1px solid #cbd5e1;
       border-radius: 1rem;
       padding: 1rem;
-      min-height: 620px;
+      min-height: 640px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .auto-format {
       font-family: monospace;
-      font-size: 0.825rem;
+      font-size: 0.8rem;
       text-align: center;
     }
+    .ref-val {
+      font-size: 9px;
+      color: #64748b;
+      display: block;
+      line-height: 1;
+      margin-top: 1px;
+    }
 
-    /* Evitar superposición del panel de Auth si no hay sesión */
     #authContainer:not(:empty) {
       position: fixed;
       top: 0;
@@ -90,10 +96,10 @@
 
 <body class="d-flex flex-column justify-content-between min-vh-100 p-2 p-md-4">
 
-  <!-- Contenedor donde auth.js renderiza el login si no hay sesión activa -->
+  <!-- Contenedor Auth Supabase -->
   <div id="authContainer"></div>
 
-  <!-- Navegación y Sesión -->
+  <!-- Navegación -->
   <div class="container max-w-5xl mb-3 no-print">
     <div class="d-flex justify-content-between align-items-center">
       <button type="button" onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm font-semibold rounded-3">
@@ -134,9 +140,8 @@
     </div>
 
     <form id="informeForm">
-      <!-- Datos del Vehículo y Propietario -->
+      <!-- Datos del Vehículo -->
       <div class="row g-2 mb-4">
-        
         <div class="col-6 col-md-2">
           <label class="form-label small fw-bold text-muted text-uppercase mb-1">Patente</label>
           <div class="input-group input-group-sm">
@@ -148,12 +153,12 @@
 
         <div class="col-6 col-md-2">
           <label class="form-label small fw-bold text-muted text-uppercase mb-1">Marca</label>
-          <input type="text" id="marca" placeholder="EJ: AUDI" class="form-control form-control-sm text-uppercase border-slate-300">
+          <input type="text" id="marca" placeholder="EJ: AUDI" class="form-control form-control-sm text-uppercase border-slate-300" onchange="actualizarToleranciasPorVehiculo()">
         </div>
 
         <div class="col-6 col-md-2">
           <label class="form-label small fw-bold text-muted text-uppercase mb-1">Modelo</label>
-          <input type="text" id="modelo" placeholder="EJ: A3" class="form-control form-control-sm text-uppercase border-slate-300">
+          <input type="text" id="modelo" placeholder="EJ: A3" class="form-control form-control-sm text-uppercase border-slate-300" onchange="actualizarToleranciasPorVehiculo()">
         </div>
 
         <div class="col-6 col-md-2">
@@ -195,7 +200,7 @@
         </svg>
 
         <!-- DELANTERA IZQUIERDA -->
-        <div class="position-absolute top-0 start-0 m-2 m-md-3 wheel-card" style="width: 260px;">
+        <div class="position-absolute top-0 start-0 m-2 m-md-3 wheel-card" style="width: 270px;">
           <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
             <span class="small fw-bold text-uppercase text-dark">Delantera Izq.</span>
             <div class="d-flex gap-1">
@@ -205,29 +210,38 @@
             </div>
           </div>
           <div class="row g-1 text-center small text-muted font-semibold mb-1" style="font-size: 10px;">
-            <div class="col-4">MEDIDA</div><div class="col-4">ANTES</div><div class="col-4">DESPUÉS</div>
+            <div class="col-4">PARÁMETRO</div><div class="col-4">VIENE (ANTES)</div><div class="col-4">SE VA (DESPUÉS)</div>
           </div>
           <div class="d-flex flex-column gap-1">
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Converg.</div>
-              <div class="col-4"><input type="text" id="izq_del_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="-0 15"></div>
-              <div class="col-4"><input type="text" id="izq_del_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0 05"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Converg.</span>
+                <span class="ref-val" id="ref_del_conv">Tol: 0°00' - 0°10'</span>
+              </div>
+              <div class="col-4"><input type="text" id="izq_del_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="-0°15'"></div>
+              <div class="col-4"><input type="text" id="izq_del_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0°05'"></div>
             </div>
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Cámber</div>
-              <div class="col-4"><input type="text" id="izq_del_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-1 20"></div>
-              <div class="col-4"><input type="text" id="izq_del_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-0 45"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Cámber</span>
+                <span class="ref-val" id="ref_del_camb">Tol: -1°00' - -0°30'</span>
+              </div>
+              <div class="col-4"><input type="text" id="izq_del_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-1°20'"></div>
+              <div class="col-4"><input type="text" id="izq_del_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-0°45'"></div>
             </div>
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Cáster</div>
-              <div class="col-4"><input type="text" id="izq_del_cast_antes" class="form-control form-control-sm auto-format p-0" placeholder="+2 50"></div>
-              <div class="col-4"><input type="text" id="izq_del_cast_despues" class="form-control form-control-sm auto-format p-0" placeholder="+3 10"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Cáster</span>
+                <span class="ref-val" id="ref_del_cast">Tol: +2°45' - +3°30'</span>
+              </div>
+              <div class="col-4"><input type="text" id="izq_del_cast_antes" class="form-control form-control-sm auto-format p-0" placeholder="+2°50'"></div>
+              <div class="col-4"><input type="text" id="izq_del_cast_despues" class="form-control form-control-sm auto-format p-0" placeholder="+3°10'"></div>
             </div>
           </div>
         </div>
 
         <!-- DELANTERA DERECHA -->
-        <div class="position-absolute top-0 end-0 m-2 m-md-3 wheel-card" style="width: 260px;">
+        <div class="position-absolute top-0 end-0 m-2 m-md-3 wheel-card" style="width: 270px;">
           <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
             <span class="small fw-bold text-uppercase text-dark">Delantera Der.</span>
             <div class="d-flex gap-1">
@@ -237,29 +251,38 @@
             </div>
           </div>
           <div class="row g-1 text-center small text-muted font-semibold mb-1" style="font-size: 10px;">
-            <div class="col-4">MEDIDA</div><div class="col-4">ANTES</div><div class="col-4">DESPUÉS</div>
+            <div class="col-4">PARÁMETRO</div><div class="col-4">VIENE (ANTES)</div><div class="col-4">SE VA (DESPUÉS)</div>
           </div>
           <div class="d-flex flex-column gap-1">
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Converg.</div>
-              <div class="col-4"><input type="text" id="der_del_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="-0 10"></div>
-              <div class="col-4"><input type="text" id="der_del_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0 05"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Converg.</span>
+                <span class="ref-val" id="ref_del_conv_der">Tol: 0°00' - 0°10'</span>
+              </div>
+              <div class="col-4"><input type="text" id="der_del_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="-0°10'"></div>
+              <div class="col-4"><input type="text" id="der_del_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0°05'"></div>
             </div>
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Cámber</div>
-              <div class="col-4"><input type="text" id="der_del_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-0 40"></div>
-              <div class="col-4"><input type="text" id="der_del_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-0 45"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Cámber</span>
+                <span class="ref-val" id="ref_del_camb_der">Tol: -1°00' - -0°30'</span>
+              </div>
+              <div class="col-4"><input type="text" id="der_del_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-0°40'"></div>
+              <div class="col-4"><input type="text" id="der_del_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-0°45'"></div>
             </div>
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Cáster</div>
-              <div class="col-4"><input type="text" id="der_del_cast_antes" class="form-control form-control-sm auto-format p-0" placeholder="+3 00"></div>
-              <div class="col-4"><input type="text" id="der_del_cast_despues" class="form-control form-control-sm auto-format p-0" placeholder="+3 15"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Cáster</span>
+                <span class="ref-val" id="ref_del_cast_der">Tol: +2°45' - +3°30'</span>
+              </div>
+              <div class="col-4"><input type="text" id="der_del_cast_antes" class="form-control form-control-sm auto-format p-0" placeholder="+3°00'"></div>
+              <div class="col-4"><input type="text" id="der_del_cast_despues" class="form-control form-control-sm auto-format p-0" placeholder="+3°15'"></div>
             </div>
           </div>
         </div>
 
         <!-- TRASERA IZQUIERDA -->
-        <div class="position-absolute bottom-0 start-0 m-2 m-md-3 wheel-card" style="width: 260px;">
+        <div class="position-absolute bottom-0 start-0 m-2 m-md-3 wheel-card" style="width: 270px;">
           <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
             <span class="small fw-bold text-uppercase text-dark">Trasera Izq.</span>
             <div class="d-flex gap-1">
@@ -269,24 +292,30 @@
             </div>
           </div>
           <div class="row g-1 text-center small text-muted font-semibold mb-1" style="font-size: 10px;">
-            <div class="col-4">MEDIDA</div><div class="col-4">ANTES</div><div class="col-4">DESPUÉS</div>
+            <div class="col-4">PARÁMETRO</div><div class="col-4">VIENE (ANTES)</div><div class="col-4">SE VA (DESPUÉS)</div>
           </div>
           <div class="d-flex flex-column gap-1">
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Converg.</div>
-              <div class="col-4"><input type="text" id="izq_tras_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="+0 08"></div>
-              <div class="col-4"><input type="text" id="izq_tras_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0 02"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Converg.</span>
+                <span class="ref-val" id="ref_tras_conv">Tol: +0°01' - +0°08'</span>
+              </div>
+              <div class="col-4"><input type="text" id="izq_tras_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="+0°08'"></div>
+              <div class="col-4"><input type="text" id="izq_tras_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0°02'"></div>
             </div>
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Cámber</div>
-              <div class="col-4"><input type="text" id="izq_tras_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-1 15"></div>
-              <div class="col-4"><input type="text" id="izq_tras_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-1 00"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Cámber</span>
+                <span class="ref-val" id="ref_tras_camb">Tol: -1°15' - -0°45'</span>
+              </div>
+              <div class="col-4"><input type="text" id="izq_tras_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-1°15'"></div>
+              <div class="col-4"><input type="text" id="izq_tras_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-1°00'"></div>
             </div>
           </div>
         </div>
 
         <!-- TRASERA DERECHA -->
-        <div class="position-absolute bottom-0 end-0 m-2 m-md-3 wheel-card" style="width: 260px;">
+        <div class="position-absolute bottom-0 end-0 m-2 m-md-3 wheel-card" style="width: 270px;">
           <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
             <span class="small fw-bold text-uppercase text-dark">Trasera Der.</span>
             <div class="d-flex gap-1">
@@ -296,18 +325,24 @@
             </div>
           </div>
           <div class="row g-1 text-center small text-muted font-semibold mb-1" style="font-size: 10px;">
-            <div class="col-4">MEDIDA</div><div class="col-4">ANTES</div><div class="col-4">DESPUÉS</div>
+            <div class="col-4">PARÁMETRO</div><div class="col-4">VIENE (ANTES)</div><div class="col-4">SE VA (DESPUÉS)</div>
           </div>
           <div class="d-flex flex-column gap-1">
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Converg.</div>
-              <div class="col-4"><input type="text" id="der_tras_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="+0 05"></div>
-              <div class="col-4"><input type="text" id="der_tras_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0 02"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Converg.</span>
+                <span class="ref-val" id="ref_tras_conv_der">Tol: +0°01' - +0°08'</span>
+              </div>
+              <div class="col-4"><input type="text" id="der_tras_conv_antes" class="form-control form-control-sm auto-format p-0" placeholder="+0°05'"></div>
+              <div class="col-4"><input type="text" id="der_tras_conv_despues" class="form-control form-control-sm auto-format p-0" placeholder="+0°02'"></div>
             </div>
             <div class="row g-1 align-items-center">
-              <div class="col-4 small text-secondary">Cámber</div>
-              <div class="col-4"><input type="text" id="der_tras_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-1 05"></div>
-              <div class="col-4"><input type="text" id="der_tras_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-1 00"></div>
+              <div class="col-4 text-start">
+                <span class="small text-secondary">Cámber</span>
+                <span class="ref-val" id="ref_tras_camb_der">Tol: -1°15' - -0°45'</span>
+              </div>
+              <div class="col-4"><input type="text" id="der_tras_camb_antes" class="form-control form-control-sm auto-format p-0" placeholder="-1°05'"></div>
+              <div class="col-4"><input type="text" id="der_tras_camb_despues" class="form-control form-control-sm auto-format p-0" placeholder="-1°00'"></div>
             </div>
           </div>
         </div>
@@ -315,10 +350,10 @@
         <!-- ÁNGULO DE EMPUJE -->
         <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2 mb-md-3 bg-white border rounded-3 px-3 py-1 shadow-sm d-flex align-items-center gap-2 small">
           <span class="fw-bold text-dark">EMPUJE:</span>
-          <span class="text-muted">Antes:</span>
-          <input type="text" id="empuje_antes" class="form-control form-control-sm auto-format p-0 text-center" style="width: 50px;" placeholder="0 05">
-          <span class="text-muted">Después:</span>
-          <input type="text" id="empuje_despues" class="form-control form-control-sm auto-format p-0 text-center" style="width: 50px;" placeholder="0 00">
+          <span class="text-muted">Viene:</span>
+          <input type="text" id="empuje_antes" class="form-control form-control-sm auto-format p-0 text-center" style="width: 50px;" placeholder="0°05'">
+          <span class="text-muted">Se Va:</span>
+          <input type="text" id="empuje_despues" class="form-control form-control-sm auto-format p-0 text-center" style="width: 50px;" placeholder="0°00'">
         </div>
 
       </div>
@@ -358,7 +393,7 @@
         </p>
       </div>
 
-      <!-- BOTONES INDEPENDIENTES DE ACCIÓN -->
+      <!-- BOTONES DE ACCIÓN -->
       <div class="d-flex flex-wrap justify-content-end gap-2 mt-4 no-print">
         <button type="button" id="btnGuardar" onclick="guardarInformeBD()" class="btn btn-primary rounded-3 fw-bold d-flex align-items-center gap-2 px-3 shadow-sm">
           <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -387,8 +422,46 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // INSERTA TU API KEY VÁLIDA DE BOOSTR.CL AQUÍ
-    const BOOST_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnQiOiJWSUNUT1IgTSBTIE1JUkFOREEiLCJwbGFuIjoiZnJlZSIsImFkZG9ucyI6IiIsImV4Y2x1ZGVzIjoiIiwicmF0ZSI6IjV4MTAiLCJjdXN0b20iOnsiZG9jdW1lbnRfbnVtYmVyX2RhaWx5X2xpbWl0IjowLCJwbGF0ZXNfZGFpbHlfbGltaXQiOjV9LCJpYXQiOjE3ODY5OTkyMzMsImV4cCI6MTc4OTU5MTIzM30.glMjAi_WhmMWBOdgylX1SI7m5AVbAQ6HI7QMRYatvQ4";
+    const BOOST_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnQiOiJWSUNUT1IgTSBTIE1JUk Miranda Miranda... "; // Reemplaza por tu API Key válida
+
+    // CATÁLOGO DE PARÁMETROS Estándar / Fabricante por Marca/Modelo
+    const PARAMETROS_CATALOGO = {
+      'DEFAULT': {
+        del_conv: "0°00' - 0°10'",
+        del_camb: "-1°00' - -0°30'",
+        del_cast: "+2°45' - +3°30'",
+        tras_conv: "+0°01' - +0°08'",
+        tras_camb: "-1°15' - -0°45'"
+      },
+      'AUDI_A3': {
+        del_conv: "+0°05' - +0°15'",
+        del_camb: "-0°55' - -0°25'",
+        del_cast: "+7°10' - +7°50'",
+        tras_conv: "+0°10' - +0°20'",
+        tras_camb: "-1°20' - -0°40'"
+      },
+      'TOYOTA_HILUX': {
+        del_conv: "+0°00' - +0°12'",
+        del_camb: "+0°10' - +0°50'",
+        del_cast: "+2°30' - +3°30'",
+        tras_conv: "EJE RÍGIDO",
+        tras_camb: "EJE RÍGIDO"
+      },
+      'NISSAN_VERSA': {
+        del_conv: "+0°02' - +0°10'",
+        del_camb: "-0°45' - +0°15'",
+        del_cast: "+4°00' - +5°00'",
+        tras_conv: "+0°00' - +0°15'",
+        tras_camb: "-1°30' - -0°30'"
+      },
+      'HYUNDAI_ACCENT': {
+        del_conv: "0°00' - +0°10'",
+        del_camb: "-0°30' - +0°30'",
+        del_cast: "+3°30' - +4°30'",
+        tras_conv: "+0°05' - +0°20'",
+        tras_camb: "-1°00' - 0°00'"
+      }
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('fecha').valueAsDate = new Date();
@@ -398,9 +471,7 @@
         input.addEventListener('blur', function() {
           let val = this.value.trim();
           if (!val) return;
-          this.value = val.includes('/') 
-            ? val.split('/').map(p => formatValue(p.trim())).join(' / ') 
-            : formatValue(val);
+          this.value = formatValue(val);
         });
       });
 
@@ -416,7 +487,7 @@
         return val;
       }
 
-      // Evento blur/enter para la patente
+      // Evento blur/enter para patente
       const inputPatente = document.getElementById('patente');
       if (inputPatente) {
         inputPatente.addEventListener('blur', buscarDatosVehiculo);
@@ -429,7 +500,28 @@
       }
     });
 
-    // Consulta de Patente mediante la API de Boostr
+    // Actualiza los labels de tolerancias de referencia según la marca/modelo
+    function actualizarToleranciasPorVehiculo() {
+      const marca = document.getElementById('marca').value.toUpperCase().trim();
+      const modelo = document.getElementById('modelo').value.toUpperCase().trim();
+      const clave = `${marca}_${modelo}`;
+
+      const tol = PARAMETROS_CATALOGO[clave] || PARAMETROS_CATALOGO['DEFAULT'];
+
+      document.getElementById('ref_del_conv').innerText = `Tol: ${tol.del_conv}`;
+      document.getElementById('ref_del_conv_der').innerText = `Tol: ${tol.del_conv}`;
+      document.getElementById('ref_del_camb').innerText = `Tol: ${tol.del_camb}`;
+      document.getElementById('ref_del_camb_der').innerText = `Tol: ${tol.del_camb}`;
+      document.getElementById('ref_del_cast').innerText = `Tol: ${tol.del_cast}`;
+      document.getElementById('ref_del_cast_der').innerText = `Tol: ${tol.del_cast}`;
+
+      document.getElementById('ref_tras_conv').innerText = `Tol: ${tol.tras_conv}`;
+      document.getElementById('ref_tras_conv_der').innerText = `Tol: ${tol.tras_conv}`;
+      document.getElementById('ref_tras_camb').innerText = `Tol: ${tol.tras_camb}`;
+      document.getElementById('ref_tras_camb_der').innerText = `Tol: ${tol.tras_camb}`;
+    }
+
+    // Consulta de Patente vía API Boostr
     async function buscarDatosVehiculo() {
       const inputPatente = document.getElementById('patente');
       const loadingPatente = document.getElementById('loadingPatente');
@@ -449,9 +541,7 @@
           }
         });
 
-        if (!response.ok) {
-          throw new Error(`Respuesta HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const resData = await response.json();
         const vehicle = resData.data || resData;
@@ -462,19 +552,21 @@
           document.getElementById('anio').value = String(vehicle.year || vehicle.anio || '');
           document.getElementById('vin').value = String(vehicle.vin || vehicle.chasis || '').toUpperCase();
 
+          actualizarToleranciasPorVehiculo();
+
           loadingPatente.innerText = '✓ Datos cargados';
           loadingPatente.className = 'd-block small font-semibold text-success mt-1';
         }
       } catch (err) {
         console.warn('API Boostr Error:', err);
-        loadingPatente.innerText = 'ℹ️ Ingreso manual (API no disponible o Key inválida)';
+        loadingPatente.innerText = 'ℹ️ Ingreso manual';
         loadingPatente.className = 'd-block small font-semibold text-warning mt-1';
       } finally {
         setTimeout(() => loadingPatente.className = 'd-none', 4000);
       }
     }
 
-    // Guardar Informe en Supabase (Usando el cliente que inicializa auth.js)
+    // Guardar Informe completo en Supabase
     async function guardarInformeBD() {
       const patenteInput = document.getElementById('patente');
       if (!patenteInput.value.trim()) {
@@ -487,6 +579,7 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
 
+      // Recolección estructurada de datos del vehículo y de la alineación
       const payload = {
         patente: patenteInput.value.toUpperCase().trim(),
         marca: document.getElementById('marca').value,
@@ -497,18 +590,50 @@
         tecnico: document.getElementById('tecnico').value,
         fecha: document.getElementById('fecha').value,
         estado_general: document.getElementById('estado_general').value,
-        observaciones: document.getElementById('observaciones').value
+        observaciones: document.getElementById('observaciones').value,
+        
+        // Estructura JSON con las mediciones "Viene" (antes) / "Se Va" (después)
+        mediciones: {
+          del_izq: {
+            conv_antes: document.getElementById('izq_del_conv_antes').value,
+            conv_despues: document.getElementById('izq_del_conv_despues').value,
+            camb_antes: document.getElementById('izq_del_camb_antes').value,
+            camb_despues: document.getElementById('izq_del_camb_despues').value,
+            cast_antes: document.getElementById('izq_del_cast_antes').value,
+            cast_despues: document.getElementById('izq_del_cast_despues').value
+          },
+          del_der: {
+            conv_antes: document.getElementById('der_del_conv_antes').value,
+            conv_despues: document.getElementById('der_del_conv_despues').value,
+            camb_antes: document.getElementById('der_del_camb_antes').value,
+            camb_despues: document.getElementById('der_del_camb_despues').value,
+            cast_antes: document.getElementById('der_del_cast_antes').value,
+            cast_despues: document.getElementById('der_del_cast_despues').value
+          },
+          tras_izq: {
+            conv_antes: document.getElementById('izq_tras_conv_antes').value,
+            conv_despues: document.getElementById('izq_tras_conv_despues').value,
+            camb_antes: document.getElementById('izq_tras_camb_antes').value,
+            camb_despues: document.getElementById('izq_tras_camb_despues').value
+          },
+          tras_der: {
+            conv_antes: document.getElementById('der_tras_conv_antes').value,
+            conv_despues: document.getElementById('der_tras_conv_despues').value,
+            camb_antes: document.getElementById('der_tras_camb_antes').value,
+            camb_despues: document.getElementById('der_tras_camb_despues').value
+          },
+          empuje: {
+            antes: document.getElementById('empuje_antes').value,
+            despues: document.getElementById('empuje_despues').value
+          }
+        }
       };
 
       try {
-        // Obtiene el cliente global expuesto por auth.js o la variable de ventana
         const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
 
-        if (!client) {
-          throw new Error('No se detectó la sesión de Supabase activada por auth.js.');
-        }
+        if (!client) throw new Error('No se detectó la sesión de Supabase activada por auth.js.');
 
-        // Inserción en la tabla informes_alineacion
         const { data, error } = await client
           .from('informes_alineacion')
           .insert([payload])
@@ -522,7 +647,7 @@
           document.getElementById('folio').innerText = `FOL-${folioFormateado}`;
         }
         
-        alert('✅ Informe guardado con éxito.');
+        alert('✅ Informe de alineación guardado exitosamente en la base de datos.');
         return true;
       } catch (error) {
         console.error('Error al guardar:', error);
@@ -534,19 +659,16 @@
       }
     }
 
-    // Exportar PDF / WhatsApp
     async function exportarPDF() {
       const ok = await guardarInformeBD();
       if (ok) window.print();
     }
 
-    // Imprimir en Papel
     async function imprimirDirecto() {
       const ok = await guardarInformeBD();
       if (ok) window.print();
     }
 
-    // Selección de estados (Semáforos)
     function setStatus(btn) {
       const parent = btn.parentElement;
       const isSelected = btn.classList.contains('active');
