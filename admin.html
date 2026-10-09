@@ -31,18 +31,15 @@
     }
     .fila-nueva { animation: highlightRow 3s ease-out forwards; }
     
-    @media print {  
+    @media print {
       body * { visibility: hidden; }
       #areaImpresion, #areaImpresion * { visibility: visible; }
       #areaImpresion { position: absolute; left: 0; top: 0; width: 100%; }
-      
-      /* Regla para garantizar que los colores e imágenes de fondo se impriman correctamente */
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
     }
-
   </style>
 </head>
 
@@ -114,7 +111,7 @@
       </div>
     </div>
 
-    <!-- Barra de Filtros y Módulo de Reportes -->
+    <!-- Barra de Filtros -->
     <div class="bg-white p-5 rounded-3xl shadow-lg border-2 border-slate-200 space-y-4">
       <div class="flex items-center justify-between border-b pb-3 border-slate-100">
         <h3 class="text-sm font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
@@ -124,13 +121,11 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <!-- Búsqueda General -->
         <div>
-          <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Buscar Búsqueda General</label>
+          <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Buscar General</label>
           <input type="text" id="inputBuscar" onkeyup="aplicarFiltros()" placeholder="Patente, Folio..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 bg-slate-50">
         </div>
 
-        <!-- Filtro Empresa -->
         <div>
           <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Empresa / Cliente</label>
           <select id="selectEmpresa" onchange="aplicarFiltros()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 bg-slate-50">
@@ -138,13 +133,11 @@
           </select>
         </div>
 
-        <!-- Filtro Mes -->
         <div>
           <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Mes y Año</label>
           <input type="month" id="selectMes" onchange="aplicarFiltros()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 bg-slate-50">
         </div>
 
-        <!-- Botones de Acción de Reportes -->
         <div class="flex items-end gap-2">
           <button onclick="generarEstadoCuenta()" class="flex-1 py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer">
             📄 Estado de Cuenta
@@ -203,22 +196,22 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- MODAL PARA VISTA IMPRESIÓN / REPORTES -->
+  <!-- MODAL PARA VISTA IMPRESIÓN / REPORTES / VOUCHER -->
   <!-- ========================================== -->
   <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full border-2 border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border-2 border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
       <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
         <h3 id="tituloModalReporte" class="text-base font-black uppercase">Reporte Generado</h3>
         <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
       </div>
 
       <div id="areaImpresion" class="p-6 overflow-y-auto space-y-6 text-slate-800">
-        <!-- El contenido dinámico del reporte se insertará aquí -->
+        <!-- Contenido generado dinámicamente -->
       </div>
 
       <div class="p-4 bg-slate-100 border-t border-slate-200 flex justify-end gap-3">
         <button onclick="cerrarModalReporte()" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300">Cerrar</button>
-        <button onclick="window.print()" class="px-5 py-2 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 shadow-md">🖨️ IMPRIMIR / DESCARGAR PDF</button>
+        <button onclick="window.print()" class="px-5 py-2 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 shadow-md">🖨️ IMPRIMIR / PDF</button>
       </div>
     </div>
   </div>
@@ -301,7 +294,6 @@
     let ultimoIdIngresado = null;
     let realtimeChannel = null;
 
-    // Control de Paginación
     let paginaActual = 1;
     const registrosPorPagina = 10;
 
@@ -315,7 +307,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // Establecer mes actual por defecto
       const hoy = new Date();
       const mesActual = hoy.toISOString().slice(0, 7);
       document.getElementById('selectMes').value = mesActual;
@@ -326,6 +317,13 @@
       } else {
         mostrarLogin();
       }
+
+      // Cerrar dropdowns si se hace clic fuera de ellos
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-container')) {
+          document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+        }
+      });
     });
 
     client.auth.onAuthStateChange((event, session) => {
@@ -349,7 +347,6 @@
       if (realtimeChannel) client.removeChannel(realtimeChannel);
     }
 
-    // Login Form
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
@@ -376,7 +373,6 @@
       }
     });
 
-    // Cargar Vales desde Supabase
     async function cargarVales() {
       try {
         const { data: vales, error } = await client
@@ -402,7 +398,6 @@
       }
     }
 
-    // Llenar selector de empresas dinámicamente
     function poblarSelectorEmpresas() {
       const select = document.getElementById('selectEmpresa');
       const empresas = [...new Set(valesLocales.map(v => v.nombre_empresa).filter(Boolean))].sort();
@@ -413,7 +408,6 @@
       });
     }
 
-    // Escuchador en Tiempo Real
     function suscribirRealtime() {
       if (realtimeChannel) client.removeChannel(realtimeChannel);
 
@@ -439,24 +433,20 @@
         .subscribe();
     }
 
-    // Aplicar Filtros (Búsqueda, Empresa y Mes)
     function aplicarFiltros() {
       const q = document.getElementById('inputBuscar').value.toLowerCase().trim();
       const empSelect = document.getElementById('selectEmpresa').value.toLowerCase();
-      const mesSelect = document.getElementById('selectMes').value; // YYYY-MM
+      const mesSelect = document.getElementById('selectMes').value;
 
       valesFiltrados = valesLocales.filter(vale => {
-        // Coincidencia con búsqueda general
         const matchQ = !q || 
           (vale.id && vale.id.toString().includes(q)) ||
           (vale.patente && vale.patente.toLowerCase().includes(q)) ||
           (vale.nombre_empresa && vale.nombre_empresa.toLowerCase().includes(q)) ||
           (vale.marca && vale.marca.toLowerCase().includes(q));
 
-        // Coincidencia con Empresa
         const matchEmp = !empSelect || (vale.nombre_empresa && vale.nombre_empresa.toLowerCase() === empSelect);
 
-        // Coincidencia con Mes
         let matchMes = true;
         if (mesSelect) {
           const fechaIso = vale.created_at || vale.fecha;
@@ -481,7 +471,17 @@
       aplicarFiltros();
     }
 
-    // Renderizar Filas con Paginación
+    // Toggle para menú desplegable en cada fila
+    function toggleDropdown(id, e) {
+      e.stopPropagation();
+      document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu.id !== `dropdown-${id}`) menu.classList.add('hidden');
+      });
+      const el = document.getElementById(`dropdown-${id}`);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    // Renderizar Filas de la Tabla
     function renderizarTabla() {
       const tbody = document.getElementById('tablaValesBody');
 
@@ -524,10 +524,24 @@
             <td class="py-3.5 px-3 text-xs font-bold text-slate-700">${vale.medio_pago || '-'}</td>
             <td class="py-3.5 px-3 text-right font-bold text-slate-700">$${netoFormatted}</td>
             <td class="py-3.5 px-3 text-right font-black text-slate-900">$${totalFormatted}</td>
-            <td class="py-3.5 px-3 text-center">
-              <div class="flex items-center justify-center gap-1.5">
-                <button onclick="abrirModalEdit(${vale.id})" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-xl font-bold text-xs" title="Editar">✏️</button>
-                <button onclick="eliminarVale(${vale.id})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl font-bold text-xs" title="Eliminar">🗑️</button>
+            
+            <!-- COLUMNA ACCIONES CON DROPDOWN ÚNICO -->
+            <td class="py-3.5 px-3 text-center relative dropdown-container">
+              <button onclick="toggleDropdown(${vale.id}, event)" class="p-2 text-slate-600 hover:bg-slate-200 rounded-xl font-bold text-base leading-none transition-all cursor-pointer" title="Opciones">
+                ⋮
+              </button>
+
+              <div id="dropdown-${vale.id}" class="dropdown-menu hidden absolute right-2 mt-1 w-44 bg-white rounded-2xl shadow-xl border border-slate-200 z-30 overflow-hidden text-left py-1">
+                <button onclick="abrirModalEdit(${vale.id})" class="w-full px-4 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-all">
+                  ✏️ Editar Vale
+                </button>
+                <button onclick="imprimirVoucher(${vale.id})" class="w-full px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-2 transition-all">
+                  🧾 Ver Voucher
+                </button>
+                <div class="border-t border-slate-100 my-1"></div>
+                <button onclick="eliminarVale(${vale.id})" class="w-full px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-all">
+                  🗑️ Eliminar
+                </button>
               </div>
             </td>
           </tr>
@@ -563,8 +577,84 @@
     }
 
     // ==========================================
-    // MÓDULO REPORTES: ESTADO DE CUENTA
+    // MÓDULO VOUCHER / COMPROBANTE INDIVIDUAL
     // ==========================================
+    function imprimirVoucher(id) {
+      const vale = valesLocales.find(v => v.id === id);
+      if (!vale) return;
+
+      const area = document.getElementById('areaImpresion');
+      document.getElementById('tituloModalReporte').innerText = `COMPROBANTE DE VALE DE SERVICIO #${vale.id}`;
+
+      area.innerHTML = `
+        <div class="border-2 border-slate-900 p-6 rounded-3xl space-y-5 bg-white text-slate-900">
+          <!-- Encabezado Voucher -->
+          <div class="flex justify-between items-center border-b-2 border-slate-900 pb-4">
+            <div class="flex items-center space-x-3">
+              <img src="logooriginal.png" alt="Logo" class="h-12 w-auto object-contain" onerror="this.style.display='none'">
+              <div>
+                <h2 class="text-lg font-black text-slate-900">ALINEACIONES BUSTAMANTE</h2>
+                <p class="text-xs text-slate-500 font-bold">Comprobante de Servicio en Taller</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-3 py-1 bg-blue-600 text-white rounded-xl text-lg font-black">
+                FOLIO #${vale.id}
+              </span>
+              <p class="text-xs font-bold text-slate-500 mt-1">Fecha: ${formatearFechaSINDesfase(vale.created_at || vale.fecha)}</p>
+            </div>
+          </div>
+
+          <!-- Datos Cliente / Vehículo -->
+          <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs">
+            <div>
+              <p class="text-slate-400 font-extrabold uppercase">Empresa / Cliente:</p>
+              <p class="text-sm font-black text-slate-900">${vale.nombre_empresa || '-'}</p>
+            </div>
+            <div>
+              <p class="text-slate-400 font-extrabold uppercase">Medio de Pago:</p>
+              <p class="text-sm font-black text-slate-900">${vale.medio_pago || '-'}</p>
+            </div>
+            <div>
+              <p class="text-slate-400 font-extrabold uppercase">Vehículo / Marca:</p>
+              <p class="text-sm font-black text-slate-900 uppercase">${vale.marca || '-'}</p>
+            </div>
+            <div>
+              <p class="text-slate-400 font-extrabold uppercase">Patente:</p>
+              <p class="text-base font-black text-blue-900 tracking-wider uppercase">${vale.patente || '-'}</p>
+            </div>
+          </div>
+
+          <!-- Detalle -->
+          <div class="space-y-1">
+            <p class="text-xs font-black uppercase text-slate-500">Detalle del Servicio:</p>
+            <div class="p-3 bg-slate-100 rounded-xl border border-slate-200 text-sm font-medium">
+              ${vale.detalle || 'Alineación / Balanceo general'}
+            </div>
+          </div>
+
+          <!-- Valores Totales -->
+          <div class="bg-slate-900 text-white p-4 rounded-2xl flex justify-between items-center">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase">Monto Neto</p>
+              <p class="text-sm font-bold">$${(vale.valor_neto || 0).toLocaleString('es-CL')}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] text-slate-400 font-extrabold uppercase">Total Pagado / A Cobrar</p>
+              <p class="text-2xl font-black text-green-400">$${(vale.valor_total || 0).toLocaleString('es-CL')}</p>
+            </div>
+          </div>
+
+          <div class="pt-6 border-t border-dashed border-slate-300 text-center text-[10px] text-slate-400 font-bold">
+            Gracias por su preferencia • Alineaciones Bustamante © 2026
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modalReporte').classList.remove('hidden');
+    }
+
+    // Reporte Estado de Cuenta
     function generarEstadoCuenta() {
       const empresa = document.getElementById('selectEmpresa').value;
       const mesAño = document.getElementById('selectMes').value;
@@ -601,7 +691,6 @@
           <tr class="border-b border-slate-200">
             <td class="py-2 px-3 text-center font-bold">#${v.id}</td>
             <td class="py-2 px-3 text-xs">${formatearFechaSINDesfase(v.created_at || v.fecha)}</td>
-            <td class="py-2 px-3 font-mono font-bold">${v.marca || '-'}</td>
             <td class="py-2 px-3 font-mono font-bold">${v.patente || '-'}</td>
             <td class="py-2 px-3 text-xs">${v.detalle || '-'}</td>
             <td class="py-2 px-3 text-xs font-bold">${v.medio_pago || '-'}</td>
@@ -667,9 +756,7 @@
       document.getElementById('modalReporte').classList.remove('hidden');
     }
 
-    // ==========================================
-    // MÓDULO REPORTES: VENTAS MENSUALES
-    // ==========================================
+    // Reporte Ventas Mensuales
     function generarInformeVentas() {
       const mesAño = document.getElementById('selectMes').value;
 
