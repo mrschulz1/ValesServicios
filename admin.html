@@ -195,7 +195,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-extrabold text-slate-800 mb-1">Mes y Año</label>
+            <label class="block text-xs font-extrabold text-slate-800 mb-1">Mes y Año (Opcional)</label>
             <input type="month" id="selectMes" onchange="aplicarFiltros()" class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-800 bg-white">
           </div>
 
@@ -369,9 +369,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const hoy = new Date();
-      const mesActual = hoy.toISOString().slice(0, 7);
-      document.getElementById('selectMes').value = mesActual;
+      // Inicia con mes libre para permitir búsquedas globales
+      document.getElementById('selectMes').value = '';
 
       const { data: { session } } = await client.auth.getSession();
       if (session) {
@@ -482,7 +481,7 @@
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: `¡Vale ingresado exitosamente! Folio #${nuevoVale.id}`,
+            title: `¡Nuevo Vale ingresado! Folio #${nuevoVale.id}`,
             showConfirmButton: false,
             timer: 4000
           });
@@ -494,6 +493,7 @@
         .subscribe();
     }
 
+    // FILTRO INTELIGENTE: Si escribe en Búsqueda General, busca en todo el historial sin bloquear por mes
     function aplicarFiltros() {
       const q = document.getElementById('inputBuscar').value.toLowerCase().trim();
       const empSelect = document.getElementById('selectEmpresa').value.toLowerCase();
@@ -509,13 +509,9 @@
         const matchEmp = !empSelect || (vale.nombre_empresa && vale.nombre_empresa.toLowerCase() === empSelect);
 
         let matchMes = true;
-        if (mesSelect) {
+        if (mesSelect && !q) {
           const fechaIso = vale.created_at || vale.fecha;
-          if (fechaIso) {
-            matchMes = fechaIso.startsWith(mesSelect);
-          } else {
-            matchMes = false;
-          }
+          matchMes = fechaIso ? fechaIso.startsWith(mesSelect) : false;
         }
 
         return matchQ && matchEmp && matchMes;
