@@ -85,3 +85,4 @@ async function cerrarSesion() {
 
 // Ejecutar automáticamente al cargar cualquier HTML
 document.addEventListener('DOMContentLoaded', gestionarSesion);
+
