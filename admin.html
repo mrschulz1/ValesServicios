@@ -49,31 +49,31 @@
     /* Resaltado intenso para vales recién ingresados */
     @keyframes highlightRow {
       0% {
-        background-color: #facc15;
-        box-shadow: inset 4px 0 0 #ca8a04;
+        background-color: #7ef959;
+        box-shadow: inset 4px 0 0 #eab308;
       }
       100% {
-        background-color: #bbf7d0;
-        box-shadow: inset 4px 0 0 #15803d;
+        background-color: #transparent;
+        box-shadow: inset 4px 0 0 #16a34a;
       }
     }
-    .fila-nueva { animation: highlightRow 3.5s ease-out forwards; }
+    .fila-nueva { animation: highlightRow 4.5s ease-out forwards; }
 
     /* Filas destacadas por estado o selección */
     .fila-pendiente-credito {
       background-color: #fde68a !important;
-      box-shadow: inset 4px 0 0 #d97706;
+      box-shadow: inset 3px 0 0 #f59e0b;
     }
     .fila-pendiente-credito:hover {
       background-color: #fcd34d !important;
     }
 
     .fila-seleccionada {
-      background-color: #bfdbfe !important;
-      box-shadow: inset 4px 0 0 #1d4ed8;
+      background-color: #eff6ff !important;
+      box-shadow: inset 4px 0 0 #2563eb;
     }
     .fila-seleccionada:hover {
-      background-color: #93c5fd !important;
+      background-color: #dbeafe !important;
     }
 
     /* REGLAS EXCLUSIVAS DE IMPRESIÓN PARA PAPEL CARTA */
@@ -1001,9 +1001,10 @@
         const esCredito = vale.medio_pago === 'Credito empresa';
         const estaMarcado = idsSeleccionados.has(vale.id);
 
-        let claseFila = esNuevo ? 'fila-nueva font-bold' : 'hover:bg-slate-100';
-        if (esCredito && !pagado) claseFila = 'fila-pendiente-credito';
+        let claseFila = 'hover:bg-slate-50';
+        if (esCredito && !pagado) claseFila = 'fila-pendiente-credito hover:bg-slate-50';
         if (estaMarcado) claseFila = 'fila-seleccionada';
+        if (esNuevo) claseFila = 'fila-nueva font-semibold';
 
         let badgeEstado = '';
         if (esCredito) {
