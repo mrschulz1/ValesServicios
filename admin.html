@@ -53,7 +53,7 @@
         box-shadow: inset 4px 0 0 #eab308;
       }
       100% {
-        background-color: #transparent;
+        background-color: transparent;
         box-shadow: inset 4px 0 0 #16a34a;
       }
     }
@@ -64,10 +64,6 @@
       background-color: #fde68a !important;
       box-shadow: inset 3px 0 0 #f59e0b;
     }
-    .fila-pendiente-credito:hover {
-      background-color: #fcd34d !important;
-    }
-
     .fila-seleccionada {
       background-color: #eff6ff !important;
       box-shadow: inset 4px 0 0 #2563eb;
@@ -1002,7 +998,7 @@
         const estaMarcado = idsSeleccionados.has(vale.id);
 
         let claseFila = 'hover:bg-slate-50';
-        if (esCredito && !pagado) claseFila = 'fila-pendiente-credito hover:bg-slate-50';
+        //if (esCredito && !pagado) claseFila = 'fila-pendiente-credito hover:bg-slate-50';
         if (estaMarcado) claseFila = 'fila-seleccionada';
         if (esNuevo) claseFila = 'fila-nueva font-semibold';
 
