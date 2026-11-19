@@ -18,20 +18,63 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; }
+  body { font-family: 'Inter', sans-serif; }
     
+    /* Popups y notificaciones SweetAlert2 de alto contraste */
     .swal2-popup-accessible {
       border-radius: 1.5rem !important;
       padding: 2rem !important;
       width: 92% !important;
       max-width: 480px !important;
+      border: 2px solid #0f172a !important;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.28) !important;
     }
-    
+
+    .swal2-toast.swal2-show {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+      border: 2px solid #38bdf8 !important;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.4) !important;
+    }
+
+    .swal2-toast .swal2-title {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+    }
+
+    .swal2-toast .swal2-icon {
+      margin-top: 0 !important;
+    }
+
+    /* Resaltado intenso para vales recién ingresados */
     @keyframes highlightRow {
-      0% { background-color: #fef08a; }
-      100% { background-color: #f0fdf4; }
+      0% {
+        background-color: #facc15;
+        box-shadow: inset 4px 0 0 #ca8a04;
+      }
+      100% {
+        background-color: #bbf7d0;
+        box-shadow: inset 4px 0 0 #15803d;
+      }
     }
-    .fila-nueva { animation: highlightRow 3s ease-out forwards; }
+    .fila-nueva { animation: highlightRow 3.5s ease-out forwards; }
+
+    /* Filas destacadas por estado o selección */
+    .fila-pendiente-credito {
+      background-color: #fde68a !important;
+      box-shadow: inset 4px 0 0 #d97706;
+    }
+    .fila-pendiente-credito:hover {
+      background-color: #fcd34d !important;
+    }
+
+    .fila-seleccionada {
+      background-color: #bfdbfe !important;
+      box-shadow: inset 4px 0 0 #1d4ed8;
+    }
+    .fila-seleccionada:hover {
+      background-color: #93c5fd !important;
+    }
 
     /* REGLAS EXCLUSIVAS DE IMPRESIÓN PARA PAPEL CARTA */
     @media print {
@@ -73,7 +116,8 @@
       }
 
       #modalReporte > div > div:first-child,
-      #modalReporte > div > div:last-child {
+      #modalReporte > div > div:last-child,
+      .no-print {
         display: none !important;
       }
 
@@ -135,7 +179,7 @@
   <!-- ========================================== -->
   <!-- SECCIÓN 2: PANEL DE CONTROL -->
   <!-- ========================================== -->
-  <div id="adminSection" class="hidden max-w-6xl mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto">
+  <div id="adminSection" class="hidden max-w-7xl mx-auto w-full bg-white rounded-3xl shadow-2xl border-2 border-slate-200 overflow-hidden my-auto">
     
     <!-- Encabezado Estilo Index -->
     <div class="bg-slate-900 text-white p-5 sm:p-7 border-b-4 border-blue-600">
@@ -150,7 +194,7 @@
                 <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
               </span>
             </div>
-            <p class="text-sm font-medium text-slate-300 mt-0.5">Administración de Vales y Reportes</p>
+            <p class="text-sm font-medium text-slate-300 mt-0.5">Administración de Vales y Control de Créditos</p>
           </div>
         </div>
 
@@ -174,14 +218,19 @@
 
       <!-- Módulo de Filtros y Reportes Especiales -->
       <div class="bg-blue-50/70 p-4 sm:p-5 rounded-2xl border-2 border-blue-200 space-y-4">
-        <div class="flex items-center justify-between border-b pb-3 border-blue-200">
+        <div class="flex flex-wrap items-center justify-between border-b pb-3 border-blue-200 gap-2">
           <p class="text-xs font-black uppercase text-blue-900 tracking-wide flex items-center gap-1.5">
             <span>📊</span> Filtros y Reportes Especiales
           </p>
-          <button onclick="limpiarFiltros()" class="text-xs font-bold text-blue-700 hover:underline">Limpiar Filtros</button>
+          <div class="flex items-center gap-4">
+            <span id="resumenDeudaBadge" class="text-xs font-black text-amber-800 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full">
+              Pendiente Crédito: $0
+            </span>
+            <button onclick="limpiarFiltros()" class="text-xs font-bold text-blue-700 hover:underline">Limpiar Filtros</button>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">Buscar General</label>
             <input type="text" id="inputBuscar" onkeyup="aplicarFiltros()" placeholder="Patente, Folio..." class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-800 bg-white">
@@ -195,12 +244,21 @@
           </div>
 
           <div>
+            <label class="block text-xs font-extrabold text-slate-800 mb-1">Estado de Cobro</label>
+            <select id="selectEstadoPago" onchange="aplicarFiltros()" class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-800 bg-white">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">⏳ Pendientes Crédito</option>
+              <option value="pagado">✅ Pagados / Cancelados</option>
+            </select>
+          </div>
+
+          <div>
             <label class="block text-xs font-extrabold text-slate-800 mb-1">Mes y Año (Opcional)</label>
             <input type="month" id="selectMes" onchange="aplicarFiltros()" class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-800 bg-white">
           </div>
 
           <div class="flex items-end gap-2">
-            <button onclick="generarEstadoCuenta()" class="flex-1 py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer">
+            <button onclick="generarEstadoCuenta()" class="flex-1 py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer" title="Ver y liquidar vales de una empresa">
               📄 Estado Cuenta
             </button>
             <button onclick="generarInformeVentas()" class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer">
@@ -210,12 +268,36 @@
         </div>
       </div>
 
+      <!-- Barra de Selección Múltiple (Aparece al marcar 1 o más vales) -->
+      <div id="barraSeleccionMasiva" class="hidden bg-slate-900 text-white px-5 py-3.5 rounded-2xl border-2 border-blue-500 shadow-lg flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3 text-xs">
+          <span class="px-3 py-1 bg-blue-600 rounded-full font-black">
+            <span id="contadorSeleccionados">0</span> seleccionados
+          </span>
+          <span class="font-bold text-slate-300">
+            Suma total: <strong id="sumaSeleccionados" class="text-green-400 font-black text-sm">$0</strong>
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="abrirModalEdicionMasiva()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black rounded-xl shadow transition-all cursor-pointer">
+            ✏️ Editar Seleccionados
+          </button>
+          <button onclick="limpiarSeleccionMasiva()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition-all cursor-pointer">
+            Limpiar selección
+          </button>
+        </div>
+      </div>
+
       <!-- Tabla de Vales -->
       <div class="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm">
         <div class="overflow-x-auto max-h-[580px] overflow-y-auto">
           <table class="w-full text-left border-collapse">
             <thead class="sticky top-0 z-10">
               <tr class="bg-slate-900 text-white text-xs uppercase font-extrabold tracking-wider border-b-4 border-blue-600">
+                <th class="py-4 px-3 text-center w-10">
+                  <input type="checkbox" id="chkSeleccionarPagina" onchange="toggleSeleccionarPagina(this)" title="Seleccionar vales de esta página" class="w-4 h-4 rounded border-slate-400 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                </th>
                 <th class="py-4 px-3 text-center">FOLIO</th>
                 <th class="py-4 px-3">FECHA</th>
                 <th class="py-4 px-3">EMPRESA</th>
@@ -223,6 +305,7 @@
                 <th class="py-4 px-3">PATENTE</th>
                 <th class="py-4 px-3">DETALLE</th>
                 <th class="py-4 px-3">PAGO</th>
+                <th class="py-4 px-3 text-center">ESTADO</th>
                 <th class="py-4 px-3 text-right">NETO</th>
                 <th class="py-4 px-3 text-right">TOTAL</th>
                 <th class="py-4 px-3 text-center">ACCIONES</th>
@@ -230,7 +313,7 @@
             </thead>
             <tbody id="tablaValesBody" class="divide-y divide-slate-200 text-sm font-medium text-slate-700">
               <tr id="filaCargando">
-                <td colspan="10" class="py-12 text-center text-slate-500 font-bold">
+                <td colspan="12" class="py-12 text-center text-slate-500 font-bold">
                   <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-3"></div>
                   <p>Cargando Vales de Servicio...</p>
                 </td>
@@ -261,7 +344,7 @@
   <!-- MODAL PARA VISTA IMPRESIÓN / REPORTES -->
   <!-- ========================================== -->
   <div id="modalReporte" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border-2 border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full border-2 border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
       <div class="p-5 bg-slate-900 text-white flex justify-between items-center border-b-4 border-blue-600">
         <h3 id="tituloModalReporte" class="text-base font-black uppercase tracking-tight">Reporte Generado</h3>
         <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-white font-bold text-xl leading-none">✕</button>
@@ -271,15 +354,85 @@
         <!-- Contenido generado dinámicamente -->
       </div>
 
-      <div class="p-4 bg-slate-100 border-t-2 border-slate-200 flex justify-end gap-3">
-        <button onclick="cerrarModalReporte()" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300">Cerrar</button>
-        <button onclick="window.print()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md border-b-2 border-blue-800">🖨️ IMPRIMIR / PDF</button>
+      <div id="footerModalReporte" class="p-4 bg-slate-100 border-t-2 border-slate-200 flex flex-wrap justify-between items-center gap-3">
+        <div id="contenedorBotonLiquidar"></div>
+        <div class="flex gap-3 ml-auto">
+          <button onclick="cerrarModalReporte()" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300">Cerrar</button>
+          <button onclick="window.print()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md border-b-2 border-blue-800">🖨️ IMPRIMIR / PDF</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ========================================== -->
-  <!-- MODAL DE EDICIÓN -->
+  <!-- MODAL DE EDICIÓN MASIVA -->
+  <!-- ========================================== -->
+  <div id="modalEditMasivo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full border-2 border-slate-200 overflow-hidden p-6 sm:p-8 space-y-5">
+      <div class="flex justify-between items-center border-b pb-4 border-slate-200">
+        <div>
+          <h3 class="text-xl font-black text-slate-900">Edición Masiva</h3>
+          <p class="text-xs font-bold text-blue-600">Aplicará a <span id="masivoCantidadLabel">0</span> vales seleccionados</p>
+        </div>
+        <button onclick="cerrarModalEdicionMasiva()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+      </div>
+
+      <form id="formEditMasivo" class="space-y-4">
+        <p class="text-[11px] font-bold text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          Marca la casilla de los campos que deseas modificar en todos los vales seleccionados. Los campos sin marcar conservarán su valor original.
+        </p>
+
+        <!-- Empresa -->
+        <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200 space-y-2">
+          <label class="flex items-center gap-2 text-xs font-extrabold uppercase text-slate-800 cursor-pointer">
+            <input type="checkbox" id="chkMasivoEmpresa" class="w-4 h-4 text-blue-600 rounded">
+            Cambiar Empresa / Cliente
+          </label>
+          <input type="text" id="masivoEmpresa" placeholder="Nombre de empresa" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-800 text-xs bg-white">
+        </div>
+
+        <!-- Medio de Pago -->
+        <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200 space-y-2">
+          <label class="flex items-center gap-2 text-xs font-extrabold uppercase text-slate-800 cursor-pointer">
+            <input type="checkbox" id="chkMasivoMedioPago" class="w-4 h-4 text-blue-600 rounded">
+            Cambiar Medio de Pago
+          </label>
+          <select id="masivoMedioPago" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-800 text-xs bg-white">
+            <option value="Credito empresa">🏢 Crédito Empresa</option>
+            <option value="Transferencia">📲 Transferencia</option>
+            <option value="Efectivo">💵 Efectivo</option>
+            <option value="Tarjeta">💳 Tarjeta</option>
+          </select>
+        </div>
+
+        <!-- Estado Pagado y Fecha Pago -->
+        <div class="bg-blue-50/70 p-3 rounded-xl border-2 border-blue-200 space-y-3">
+          <label class="flex items-center gap-2 text-xs font-extrabold uppercase text-blue-950 cursor-pointer">
+            <input type="checkbox" id="chkMasivoEstadoPago" class="w-4 h-4 text-blue-600 rounded">
+            Cambiar Estado de Cobro
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <select id="masivoPagado" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-800 text-xs bg-white">
+              <option value="true">✅ Pagado / Cancelado</option>
+              <option value="false">⏳ Pendiente de Pago</option>
+            </select>
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase text-slate-600 mb-0.5">Fecha de Pago (si pagado)</label>
+              <input type="date" id="masivoFechaPago" class="w-full px-3 py-1.5 rounded-xl border-2 border-slate-300 font-bold text-slate-800 text-xs bg-white">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
+          <button type="button" onclick="cerrarModalEdicionMasiva()" class="px-4 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-200">Cancelar</button>
+          <button type="submit" id="btnGuardarMasivo" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl border-b-2 border-blue-800 shadow-md cursor-pointer">APLICAR A SELECCIONADOS</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE EDICIÓN INDIVIDUAL -->
   <!-- ========================================== -->
   <div id="modalEdit" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full border-2 border-slate-200 overflow-hidden p-6 sm:p-8 space-y-5">
@@ -323,14 +476,27 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Medio de Pago</label>
-          <select id="editMedioPago" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-800 bg-white">
-            <option value="Efectivo">💵 Efectivo</option>
-            <option value="Tarjeta">💳 Tarjeta</option>
-            <option value="Transferencia">📲 Transferencia</option>
-            <option value="Credito empresa">🏢 Crédito Empresa</option>
-          </select>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Medio de Pago</label>
+            <select id="editMedioPago" onchange="ajustarCheckPagadoSegunMedio()" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-800 bg-white">
+              <option value="Efectivo">💵 Efectivo</option>
+              <option value="Tarjeta">💳 Tarjeta</option>
+              <option value="Transferencia">📲 Transferencia</option>
+              <option value="Credito empresa">🏢 Crédito Empresa</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold uppercase text-slate-700 mb-1">Fecha de Pago</label>
+            <input type="date" id="editFechaPago" class="w-full px-3 py-2 rounded-xl border-2 border-slate-300 font-bold text-slate-800 bg-white">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <input type="checkbox" id="editPagado" class="w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer">
+          <label for="editPagado" class="text-xs font-black text-slate-800 cursor-pointer select-none">
+            ✅ Vale Pagado / Cancelado por el cliente
+          </label>
         </div>
 
         <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
@@ -353,6 +519,7 @@
 
     let valesLocales = [];
     let valesFiltrados = [];
+    let idsSeleccionados = new Set();
     let ultimoIdIngresado = null;
     let realtimeChannel = null;
 
@@ -368,8 +535,12 @@
       return `${day}/${month}/${year}`;
     }
 
+    function estaPagado(vale) {
+      if (vale.medio_pago !== 'Credito empresa') return true;
+      return vale.pagado === true;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
-      // Inicia con mes libre para permitir búsquedas globales
       document.getElementById('selectMes').value = '';
 
       const { data: { session } } = await client.auth.getSession();
@@ -443,14 +614,22 @@
         if (error) throw error;
 
         valesLocales = vales || [];
+        // Limpiar IDs seleccionados que ya no existan
+        const idsVigentes = new Set(valesLocales.map(v => v.id));
+        idsSeleccionados.forEach(id => {
+          if (!idsVigentes.has(id)) idsSeleccionados.delete(id);
+        });
+
         poblarSelectorEmpresas();
+        actualizarResumenDeuda();
+        actualizarBarraSeleccionMasiva();
         aplicarFiltros();
 
       } catch (err) {
         console.error('Error:', err);
         document.getElementById('tablaValesBody').innerHTML = `
           <tr>
-            <td colspan="10" class="py-8 text-center text-red-600 font-bold">
+            <td colspan="12" class="py-8 text-center text-red-600 font-bold">
               ❌ Error al obtener los vales: ${err.message}
             </td>
           </tr>
@@ -458,14 +637,25 @@
       }
     }
 
+    function actualizarResumenDeuda() {
+      const empSelect = document.getElementById('selectEmpresa').value.toLowerCase();
+      const deudaTotal = valesLocales
+        .filter(v => !estaPagado(v) && (!empSelect || (v.nombre_empresa && v.nombre_empresa.toLowerCase() === empSelect)))
+        .reduce((acc, v) => acc + (v.valor_total || 0), 0);
+
+      document.getElementById('resumenDeudaBadge').innerText = `Pendiente Crédito: $${deudaTotal.toLocaleString('es-CL')}`;
+    }
+
     function poblarSelectorEmpresas() {
       const select = document.getElementById('selectEmpresa');
+      const valorActual = select.value;
       const empresas = [...new Set(valesLocales.map(v => v.nombre_empresa).filter(Boolean))].sort();
       
       select.innerHTML = '<option value="">Todas las empresas</option>';
       empresas.forEach(emp => {
         select.innerHTML += `<option value="${emp}">${emp}</option>`;
       });
+      select.value = valorActual;
     }
 
     function suscribirRealtime() {
@@ -483,7 +673,8 @@
             icon: 'success',
             title: `¡Nuevo Vale ingresado! Folio #${nuevoVale.id}`,
             showConfirmButton: false,
-            timer: 4000
+            timer: 4000,
+            customClass: { popup: 'swal2-toast' },
           });
 
           cargarVales();
@@ -493,10 +684,10 @@
         .subscribe();
     }
 
-    // FILTRO INTELIGENTE: Si escribe en Búsqueda General, busca en todo el historial sin bloquear por mes
     function aplicarFiltros() {
       const q = document.getElementById('inputBuscar').value.toLowerCase().trim();
       const empSelect = document.getElementById('selectEmpresa').value.toLowerCase();
+      const estadoSelect = document.getElementById('selectEstadoPago').value;
       const mesSelect = document.getElementById('selectMes').value;
 
       valesFiltrados = valesLocales.filter(vale => {
@@ -508,15 +699,21 @@
 
         const matchEmp = !empSelect || (vale.nombre_empresa && vale.nombre_empresa.toLowerCase() === empSelect);
 
+        const pagado = estaPagado(vale);
+        let matchEstado = true;
+        if (estadoSelect === 'pendiente') matchEstado = !pagado;
+        if (estadoSelect === 'pagado') matchEstado = pagado;
+
         let matchMes = true;
         if (mesSelect && !q) {
           const fechaIso = vale.created_at || vale.fecha;
           matchMes = fechaIso ? fechaIso.startsWith(mesSelect) : false;
         }
 
-        return matchQ && matchEmp && matchMes;
+        return matchQ && matchEmp && matchEstado && matchMes;
       });
 
+      actualizarResumenDeuda();
       paginaActual = 1;
       renderizarTabla();
     }
@@ -524,9 +721,156 @@
     function limpiarFiltros() {
       document.getElementById('inputBuscar').value = '';
       document.getElementById('selectEmpresa').value = '';
+      document.getElementById('selectEstadoPago').value = '';
       document.getElementById('selectMes').value = '';
       aplicarFiltros();
     }
+
+    // ==========================================
+    // SELECCIÓN MÚLTIPLE Y EDICIÓN EN LOTE
+    // ==========================================
+    function toggleSeleccionarVale(id, checked) {
+      if (checked) {
+        idsSeleccionados.add(id);
+      } else {
+        idsSeleccionados.delete(id);
+      }
+      actualizarBarraSeleccionMasiva();
+      sincronizarCheckboxCabecera();
+    }
+
+    function toggleSeleccionarPagina(masterChk) {
+      const checks = document.querySelectorAll('.chk-fila-vale');
+      checks.forEach(chk => {
+        const id = parseInt(chk.dataset.id, 10);
+        chk.checked = masterChk.checked;
+        if (masterChk.checked) {
+          idsSeleccionados.add(id);
+        } else {
+          idsSeleccionados.delete(id);
+        }
+      });
+      actualizarBarraSeleccionMasiva();
+    }
+
+    function sincronizarCheckboxCabecera() {
+      const masterChk = document.getElementById('chkSeleccionarPagina');
+      const checks = Array.from(document.querySelectorAll('.chk-fila-vale'));
+      if (!masterChk || checks.length === 0) {
+        if (masterChk) masterChk.checked = false;
+        return;
+      }
+      masterChk.checked = checks.every(chk => chk.checked);
+    }
+
+    function limpiarSeleccionMasiva() {
+      idsSeleccionados.clear();
+      document.querySelectorAll('.chk-fila-vale').forEach(chk => chk.checked = false);
+      const masterChk = document.getElementById('chkSeleccionarPagina');
+      if (masterChk) masterChk.checked = false;
+      actualizarBarraSeleccionMasiva();
+    }
+
+    function actualizarBarraSeleccionMasiva() {
+      const barra = document.getElementById('barraSeleccionMasiva');
+      const cantEl = document.getElementById('contadorSeleccionados');
+      const sumaEl = document.getElementById('sumaSeleccionados');
+
+      if (idsSeleccionados.size === 0) {
+        barra.classList.add('hidden');
+        return;
+      }
+
+      const seleccionados = valesLocales.filter(v => idsSeleccionados.has(v.id));
+      const suma = seleccionados.reduce((acc, v) => acc + (v.valor_total || 0), 0);
+
+      cantEl.innerText = seleccionados.length;
+      sumaEl.innerText = `$${suma.toLocaleString('es-CL')}`;
+      barra.classList.remove('hidden');
+    }
+
+    function abrirModalEdicionMasiva() {
+      if (idsSeleccionados.size === 0) return;
+      document.getElementById('masivoCantidadLabel').innerText = idsSeleccionados.size;
+      document.getElementById('chkMasivoEmpresa').checked = false;
+      document.getElementById('chkMasivoMedioPago').checked = false;
+      document.getElementById('chkMasivoEstadoPago').checked = false;
+      document.getElementById('masivoEmpresa').value = '';
+      document.getElementById('masivoFechaPago').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modalEditMasivo').classList.remove('hidden');
+    }
+
+    function cerrarModalEdicionMasiva() {
+      document.getElementById('modalEditMasivo').classList.add('hidden');
+    }
+
+    document.getElementById('formEditMasivo').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (idsSeleccionados.size === 0) return;
+
+      const cambiarEmp = document.getElementById('chkMasivoEmpresa').checked;
+      const cambiarMedio = document.getElementById('chkMasivoMedioPago').checked;
+      const cambiarEstado = document.getElementById('chkMasivoEstadoPago').checked;
+
+      if (!cambiarEmp && !cambiarMedio && !cambiarEstado) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin cambios marcados',
+          text: 'Marca al menos un campo para aplicar a los vales seleccionados.',
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+        return;
+      }
+
+      const payload = {};
+      if (cambiarEmp) {
+        payload.nombre_empresa = document.getElementById('masivoEmpresa').value.trim();
+      }
+      if (cambiarMedio) {
+        payload.medio_pago = document.getElementById('masivoMedioPago').value;
+      }
+      if (cambiarEstado) {
+        const estaPagadoNuevo = document.getElementById('masivoPagado').value === 'true';
+        const fechaInput = document.getElementById('masivoFechaPago').value;
+        payload.pagado = estaPagadoNuevo;
+        payload.fecha_pago = estaPagadoNuevo ? (fechaInput || new Date().toISOString().split('T')[0]) : null;
+      }
+
+      const btn = document.getElementById('btnGuardarMasivo');
+      btn.disabled = true;
+      btn.innerText = 'APLICANDO...';
+
+      try {
+        const idsArray = Array.from(idsSeleccionados);
+        const { error } = await client
+          .from('ordenes')
+          .update(payload)
+          .in('id', idsArray);
+
+        if (error) throw error;
+
+        cerrarModalEdicionMasiva();
+        limpiarSeleccionMasiva();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Edición masiva completada!',
+          text: `Se actualizaron ${idsArray.length} vales.`,
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error en edición masiva',
+          text: err.message,
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'APLICAR A SELECCIONADOS';
+      }
+    });
 
     function toggleDropdown(id, e) {
       e.stopPropagation();
@@ -537,18 +881,105 @@
       if (el) el.classList.toggle('hidden');
     }
 
+    // ==========================================
+    // CAMBIO RÁPIDO DE ESTADO DE PAGO (CHECK)
+    // ==========================================
+    async function toggleEstadoPago(id) {
+      const vale = valesLocales.find(v => v.id === id);
+      if (!vale) return;
+
+      const actualmentePagado = estaPagado(vale);
+
+      if (!actualmentePagado) {
+        const hoyStr = new Date().toISOString().split('T')[0];
+        const { value: formValues } = await Swal.fire({
+          title: `Registrar Pago Vale #${vale.id}`,
+          html: `
+            <div class="text-left space-y-3 text-xs">
+              <p class="font-bold text-slate-700">Empresa: <span class="text-slate-900">${vale.nombre_empresa}</span></p>
+              <p class="font-bold text-slate-700">Monto a cancelar: <span class="text-emerald-600 font-black text-base">$${(vale.valor_total || 0).toLocaleString('es-CL')}</span></p>
+              <div>
+                <label class="block font-extrabold uppercase text-slate-600 mb-1">Fecha en que se pagó:</label>
+                <input id="swalFechaPago" type="date" value="${hoyStr}" class="w-full px-3 py-2 border-2 border-slate-300 rounded-xl font-bold">
+              </div>
+              <div>
+                <label class="block font-extrabold uppercase text-slate-600 mb-1">Forma de liquidación:</label>
+                <select id="swalMedioLiq" class="w-full px-3 py-2 border-2 border-slate-300 rounded-xl font-bold">
+                  <option value="Transferencia">📲 Transferencia</option>
+                  <option value="Efectivo">💵 Efectivo</option>
+                  <option value="Tarjeta">💳 Tarjeta</option>
+                  <option value="Cheque">🏦 Cheque</option>
+                </select>
+              </div>
+            </div>
+          `,
+          showCancelButton: true,
+          confirmButtonColor: '#059669',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: '✅ Confirmar Pago',
+          cancelButtonText: 'Cancelar',
+          customClass: { popup: 'swal2-popup-accessible' },
+          preConfirm: () => ({
+            fecha_pago: document.getElementById('swalFechaPago').value || hoyStr,
+            medio_pago_liquidacion: document.getElementById('swalMedioLiq').value
+          })
+        });
+
+        if (formValues) {
+          const { error } = await client
+            .from('ordenes')
+            .update({
+              pagado: true,
+              fecha_pago: formValues.fecha_pago,
+              medio_pago_liquidacion: formValues.medio_pago_liquidacion
+            })
+            .eq('id', id);
+
+          if (error) {
+            Swal.fire('Error', error.message, 'error');
+          } else {
+            Swal.fire({ icon: 'success', title: '¡Vale marcado como PAGADO!', timer: 1800, showConfirmButton: false });
+          }
+        }
+      } else {
+        const confirmar = await Swal.fire({
+          title: `¿Volver Vale #${vale.id} a PENDIENTE?`,
+          text: 'Se quitará la marca de pagado de este crédito empresa.',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#d97706',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'Sí, dejar pendiente',
+          cancelButtonText: 'Cancelar',
+          customClass: { popup: 'swal2-popup-accessible' }
+        });
+
+        if (confirmar.isConfirmed) {
+          const { error } = await client
+            .from('ordenes')
+            .update({ pagado: false, fecha_pago: null, medio_pago_liquidacion: null })
+            .eq('id', id);
+
+          if (!error) {
+            Swal.fire({ icon: 'info', title: 'Vale marcado como Pendiente', timer: 1500, showConfirmButton: false });
+          }
+        }
+      }
+    }
+
     function renderizarTabla() {
       const tbody = document.getElementById('tablaValesBody');
 
       if (!valesFiltrados || valesFiltrados.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="10" class="py-8 text-center text-slate-400 font-bold">
+            <td colspan="12" class="py-8 text-center text-slate-400 font-bold">
               No hay vales para los filtros seleccionados.
             </td>
           </tr>
         `;
         actualizarPaginacionUI(0, 0, 0, 0);
+        sincronizarCheckboxCabecera();
         return;
       }
 
@@ -566,10 +997,43 @@
         const totalFormatted = (vale.valor_total || 0).toLocaleString('es-CL');
 
         const esNuevo = vale.id === ultimoIdIngresado;
-        const claseFila = esNuevo ? 'fila-nueva font-bold' : 'hover:bg-slate-50';
+        const pagado = estaPagado(vale);
+        const esCredito = vale.medio_pago === 'Credito empresa';
+        const estaMarcado = idsSeleccionados.has(vale.id);
+
+        let claseFila = esNuevo ? 'fila-nueva font-bold' : 'hover:bg-slate-100';
+        if (esCredito && !pagado) claseFila = 'fila-pendiente-credito';
+        if (estaMarcado) claseFila = 'fila-seleccionada';
+
+        let badgeEstado = '';
+        if (esCredito) {
+          if (pagado) {
+            const fechaAbono = vale.fecha_pago ? ` (${formatearFechaSINDesfase(vale.fecha_pago)})` : '';
+            badgeEstado = `
+              <button onclick="toggleEstadoPago(${vale.id})" title="Clic para revertir a pendiente" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-600 text-white border border-emerald-800 hover:bg-emerald-700 transition-all cursor-pointer">
+                ✅ PAGADO${fechaAbono}
+              </button>
+            `;
+          } else {
+            badgeEstado = `
+              <button onclick="toggleEstadoPago(${vale.id})" title="Clic para marcar como pagado" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-500 text-slate-950 border border-amber-700 hover:bg-amber-600 transition-all cursor-pointer">
+                ⏳ PENDIENTE
+              </button>
+            `;
+          }
+        } else {
+          badgeEstado = `
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-slate-200 text-slate-800 border border-slate-300">
+              Contado
+            </span>
+          `;
+        }
 
         return `
           <tr class="${claseFila} transition-all border-b border-slate-200">
+            <td class="py-3.5 px-3 text-center">
+              <input type="checkbox" class="chk-fila-vale w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" data-id="${vale.id}" ${estaMarcado ? 'checked' : ''} onchange="toggleSeleccionarVale(${vale.id}, this.checked)">
+            </td>
             <td class="py-3.5 px-3 text-center font-black text-blue-600">#${vale.id}</td>
             <td class="py-3.5 px-3 text-xs font-semibold text-slate-600">${fecha}</td>
             <td class="py-3.5 px-3 font-bold text-slate-900">${vale.nombre_empresa || '-'}</td>
@@ -577,6 +1041,7 @@
             <td class="py-3.5 px-3 font-black tracking-wider text-blue-900 uppercase">${vale.patente || '-'}</td>
             <td class="py-3.5 px-3 text-xs text-slate-600 max-w-xs truncate">${vale.detalle || '-'}</td>
             <td class="py-3.5 px-3 text-xs font-bold text-slate-700">${vale.medio_pago || '-'}</td>
+            <td class="py-3.5 px-3 text-center">${badgeEstado}</td>
             <td class="py-3.5 px-3 text-right font-bold text-slate-700">$${netoFormatted}</td>
             <td class="py-3.5 px-3 text-right font-black text-slate-900">$${totalFormatted}</td>
             
@@ -585,7 +1050,13 @@
                 ⋮
               </button>
 
-              <div id="dropdown-${vale.id}" class="dropdown-menu hidden absolute right-2 mt-1 w-44 bg-white rounded-2xl shadow-xl border-2 border-slate-200 z-30 overflow-hidden text-left py-1">
+              <div id="dropdown-${vale.id}" class="dropdown-menu hidden absolute right-2 mt-1 w-48 bg-white rounded-2xl shadow-xl border-2 border-slate-200 z-30 overflow-hidden text-left py-1">
+                ${esCredito ? `
+                  <button onclick="toggleEstadoPago(${vale.id})" class="w-full px-4 py-2 text-xs font-black ${pagado ? 'text-amber-700 hover:bg-amber-50' : 'text-emerald-700 hover:bg-emerald-50'} flex items-center gap-2 transition-all">
+                    ${pagado ? '⏳ Marcar Pendiente' : '✅ Marcar Pagado'}
+                  </button>
+                  <div class="border-t border-slate-100 my-1"></div>
+                ` : ''}
                 <button onclick="abrirModalEdit(${vale.id})" class="w-full px-4 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-all">
                   ✏️ Editar Vale
                 </button>
@@ -603,6 +1074,7 @@
       }).join('');
 
       actualizarPaginacionUI(inicio + 1, fin, totalRegistros, totalPaginas);
+      sincronizarCheckboxCabecera();
     }
 
     function actualizarPaginacionUI(inicio, fin, total, totalPaginas) {
@@ -637,13 +1109,18 @@
       const vale = valesLocales.find(v => v.id === id);
       if (!vale) return;
 
+      document.getElementById('contenedorBotonLiquidar').innerHTML = '';
       const area = document.getElementById('areaImpresion');
       document.getElementById('tituloModalReporte').innerText = `COMPROBANTE DE VALE DE SERVICIO #${vale.id}`;
+
+      const pagado = estaPagado(vale);
+      const textoEstado = vale.medio_pago === 'Credito empresa' 
+        ? (pagado ? `PAGADO (${formatearFechaSINDesfase(vale.fecha_pago)})` : 'PENDIENTE DE PAGO')
+        : 'CANCELADO';
 
       area.innerHTML = `
         <div style="page-break-inside: avoid; break-inside: avoid;" class="border-2 border-slate-900 p-5 rounded-3xl space-y-3.5 bg-white text-slate-900 max-w-lg mx-auto shadow-none">
           
-          <!-- Encabezado Voucher -->
           <div class="flex justify-between items-center border-b-2 border-slate-900 pb-3">
             <div class="flex items-center space-x-3">
               <img src="logooriginal.png" alt="Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
@@ -660,7 +1137,6 @@
             </div>
           </div>
 
-          <!-- Datos Cliente / Vehículo -->
           <div class="grid grid-cols-2 gap-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs">
             <div>
               <p class="text-slate-400 font-extrabold uppercase text-[10px]">Empresa / Cliente:</p>
@@ -668,7 +1144,7 @@
             </div>
             <div>
               <p class="text-slate-400 font-extrabold uppercase text-[10px]">Medio de Pago:</p>
-              <p class="text-xs font-black text-slate-900">${vale.medio_pago || '-'}</p>
+              <p class="text-xs font-black text-slate-900">${vale.medio_pago || '-'} (${textoEstado})</p>
             </div>
             <div>
               <p class="text-slate-400 font-extrabold uppercase text-[10px]">Vehículo / Marca:</p>
@@ -680,7 +1156,6 @@
             </div>
           </div>
 
-          <!-- Detalle del Servicio -->
           <div class="space-y-1">
             <p class="text-[10px] font-black uppercase text-slate-500">Detalle del Servicio:</p>
             <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200 text-xs font-medium">
@@ -688,7 +1163,6 @@
             </div>
           </div>
 
-          <!-- Valores Totales -->
           <div class="bg-slate-900 text-white p-3 rounded-2xl flex justify-between items-center">
             <div>
               <p class="text-[9px] text-slate-400 font-bold uppercase">Monto Neto</p>
@@ -709,7 +1183,9 @@
       document.getElementById('modalReporte').classList.remove('hidden');
     }
 
-    // Reporte Estado de Cuenta
+    // ==========================================
+    // ESTADO DE CUENTA CON CHECKS Y LIQUIDACIÓN
+    // ==========================================
     function generarEstadoCuenta() {
       const empresa = document.getElementById('selectEmpresa').value;
       const mesAño = document.getElementById('selectMes').value;
@@ -738,18 +1214,29 @@
 
       let totalNeto = 0;
       let totalGral = 0;
+      let totalPendiente = 0;
 
       const filas = valesEmpresa.map(v => {
         totalNeto += (v.valor_neto || 0);
         totalGral += (v.valor_total || 0);
+        const pagado = estaPagado(v);
+        if (!pagado) totalPendiente += (v.valor_total || 0);
+
         return `
-          <tr class="border-b border-slate-200">
-            <td class="py-2 px-3 text-center font-bold">#${v.id}</td>
-            <td class="py-2 px-3 text-xs">${formatearFechaSINDesfase(v.created_at || v.fecha)}</td>
-            <td class="py-2 px-3 font-mono font-bold">${v.patente || '-'}</td>
-            <td class="py-2 px-3 text-xs">${v.detalle || '-'}</td>
-            <td class="py-2 px-3 text-xs font-bold">${v.medio_pago || '-'}</td>
-            <td class="py-2 px-3 text-right font-bold">$${(v.valor_total || 0).toLocaleString('es-CL')}</td>
+          <tr class="border-b border-slate-200 ${!pagado ? 'bg-amber-50/40' : ''}">
+            <td class="py-2 px-2 text-center no-print">
+              ${!pagado 
+                ? `<input type="checkbox" class="chk-liquidar w-4 h-4 text-emerald-600 rounded cursor-pointer" data-id="${v.id}" data-monto="${v.valor_total || 0}" onchange="recalcularSeleccionLiquidacion()" checked>` 
+                : '✅'}
+            </td>
+            <td class="py-2 px-2 text-center font-bold">#${v.id}</td>
+            <td class="py-2 px-2 text-xs">${formatearFechaSINDesfase(v.created_at || v.fecha)}</td>
+            <td class="py-2 px-2 font-mono font-bold">${v.patente || '-'}</td>
+            <td class="py-2 px-2 text-xs">${v.detalle || '-'}</td>
+            <td class="py-2 px-2 text-center text-[10px] font-black">
+              ${pagado ? '<span class="text-emerald-700">PAGADO</span>' : '<span class="text-amber-700">PENDIENTE</span>'}
+            </td>
+            <td class="py-2 px-2 text-right font-bold">$${(v.valor_total || 0).toLocaleString('es-CL')}</td>
           </tr>
         `;
       }).join('');
@@ -765,30 +1252,31 @@
           </div>
           <div class="text-right">
             <p class="text-sm font-black text-blue-600">ESTADO DE CUENTA</p>
-            <p class="text-xs text-slate-500">Periodo: ${mesAño || 'Todos'}</p>
+            <p class="text-xs text-slate-500">Periodo: ${mesAño || 'Histórico Completo'}</p>
           </div>
         </div>
 
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex justify-between items-center text-xs">
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-wrap justify-between items-center gap-4 text-xs">
           <div>
             <p class="text-slate-500 font-bold uppercase">Cliente / Empresa:</p>
             <p class="text-base font-black text-slate-900">${empresa}</p>
           </div>
           <div class="text-right">
-            <p class="text-slate-500 font-bold uppercase">Total Servicios:</p>
-            <p class="text-base font-black text-blue-600">${valesEmpresa.length} Vales</p>
+            <p class="text-slate-500 font-bold uppercase">Saldo Pendiente por Cobrar:</p>
+            <p class="text-lg font-black text-amber-600">$${totalPendiente.toLocaleString('es-CL')}</p>
           </div>
         </div>
 
         <table class="w-full text-left text-xs border-collapse">
           <thead>
             <tr class="bg-slate-100 border-b-2 border-slate-300 font-black uppercase text-slate-700">
-              <th class="py-2 px-3 text-center">Folio</th>
-              <th class="py-2 px-3">Fecha</th>
-              <th class="py-2 px-3">Patente</th>
-              <th class="py-2 px-3">Detalle</th>
-              <th class="py-2 px-3">Pago</th>
-              <th class="py-2 px-3 text-right">Total ($)</th>
+              <th class="py-2 px-2 text-center no-print">Sel.</th>
+              <th class="py-2 px-2 text-center">Folio</th>
+              <th class="py-2 px-2">Fecha</th>
+              <th class="py-2 px-2">Patente</th>
+              <th class="py-2 px-2">Detalle</th>
+              <th class="py-2 px-2 text-center">Estado</th>
+              <th class="py-2 px-2 text-right">Total ($)</th>
             </tr>
           </thead>
           <tbody>
@@ -796,19 +1284,109 @@
           </tbody>
         </table>
 
-        <div class="bg-slate-900 text-white p-4 rounded-2xl flex justify-between items-center mt-4">
+        <div class="bg-slate-900 text-white p-4 rounded-2xl flex flex-wrap justify-between items-center gap-4 mt-4">
           <div>
-            <p class="text-xs text-slate-400 font-bold">Monto Neto Consolidado:</p>
-            <p class="text-sm font-bold">$${totalNeto.toLocaleString('es-CL')}</p>
+            <p class="text-xs text-slate-400 font-bold">Total Histórico Listado:</p>
+            <p class="text-sm font-bold">$${totalGral.toLocaleString('es-CL')} (Neto: $${totalNeto.toLocaleString('es-CL')})</p>
           </div>
-          <div class="text-right">
-            <p class="text-xs text-slate-400 font-extrabold uppercase">Total General a Cobrar / Facturar:</p>
-            <p class="text-2xl font-black text-green-400">$${totalGral.toLocaleString('es-CL')}</p>
+          <div class="text-right no-print">
+            <p class="text-xs text-emerald-300 font-extrabold uppercase">Total Marcado para Pagar:</p>
+            <p id="montoSeleccionadoLiq" class="text-2xl font-black text-green-400">$${totalPendiente.toLocaleString('es-CL')}</p>
           </div>
         </div>
       `;
 
+      const btnCont = document.getElementById('contenedorBotonLiquidar');
+      if (totalPendiente > 0) {
+        btnCont.innerHTML = `
+          <button onclick="liquidarSeleccionados()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md border-b-2 border-emerald-800 cursor-pointer">
+            ✅ Marcar Seleccionados como PAGADOS
+          </button>
+        `;
+      } else {
+        btnCont.innerHTML = `<span class="text-xs font-bold text-emerald-700">✅ Todo al día con esta empresa</span>`;
+      }
+
       document.getElementById('modalReporte').classList.remove('hidden');
+    }
+
+    function recalcularSeleccionLiquidacion() {
+      const checks = document.querySelectorAll('.chk-liquidar:checked');
+      let suma = 0;
+      checks.forEach(c => {
+        suma += parseInt(c.dataset.monto, 10) || 0;
+      });
+      const el = document.getElementById('montoSeleccionadoLiq');
+      if (el) el.innerText = `$${suma.toLocaleString('es-CL')}`;
+    }
+
+    async function liquidarSeleccionados() {
+      const checks = Array.from(document.querySelectorAll('.chk-liquidar:checked'));
+      if (checks.length === 0) {
+        Swal.fire('Sin selección', 'Marca al menos un vale pendiente con el check.', 'warning');
+        return;
+      }
+
+      const ids = checks.map(c => parseInt(c.dataset.id, 10));
+      const total = checks.reduce((acc, c) => acc + (parseInt(c.dataset.monto, 10) || 0), 0);
+      const hoyStr = new Date().toISOString().split('T')[0];
+
+      const { value: formValues } = await Swal.fire({
+        title: `Liquidar ${ids.length} Vales`,
+        html: `
+          <div class="text-left space-y-3 text-xs">
+            <p class="font-bold text-slate-700">Folios incluidos: <span class="font-black text-blue-700">#${ids.join(', #')}</span></p>
+            <p class="font-bold text-slate-700">Total abono recibido: <span class="font-black text-emerald-600 text-base">$${total.toLocaleString('es-CL')}</span></p>
+            <div>
+              <label class="block font-extrabold uppercase text-slate-600 mb-1">Fecha de pago:</label>
+              <input id="swalBatchFecha" type="date" value="${hoyStr}" class="w-full px-3 py-2 border-2 border-slate-300 rounded-xl font-bold">
+            </div>
+            <div>
+              <label class="block font-extrabold uppercase text-slate-600 mb-1">Medio de abono:</label>
+              <select id="swalBatchMedio" class="w-full px-3 py-2 border-2 border-slate-300 rounded-xl font-bold">
+                <option value="Transferencia">📲 Transferencia</option>
+                <option value="Efectivo">💵 Efectivo</option>
+                <option value="Cheque">🏦 Cheque</option>
+                <option value="Tarjeta">💳 Tarjeta</option>
+              </select>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '✅ Confirmar Liquidación',
+        cancelButtonText: 'Cancelar',
+        customClass: { popup: 'swal2-popup-accessible' },
+        preConfirm: () => ({
+          fecha_pago: document.getElementById('swalBatchFecha').value || hoyStr,
+          medio_pago_liquidacion: document.getElementById('swalBatchMedio').value
+        })
+      });
+
+      if (formValues) {
+        const { error } = await client
+          .from('ordenes')
+          .update({
+            pagado: true,
+            fecha_pago: formValues.fecha_pago,
+            medio_pago_liquidacion: formValues.medio_pago_liquidacion
+          })
+          .in('id', ids);
+
+        if (error) {
+          Swal.fire('Error', error.message, 'error');
+        } else {
+          cerrarModalReporte();
+          Swal.fire({
+            icon: 'success',
+            title: `¡${ids.length} vales liquidados!`,
+            text: `Se registró el abono de $${total.toLocaleString('es-CL')}.`,
+            timer: 2500,
+            showConfirmButton: false
+          });
+        }
+      }
     }
 
     // Reporte Ventas Mensuales
@@ -825,6 +1403,7 @@
         return;
       }
 
+      document.getElementById('contenedorBotonLiquidar').innerHTML = '';
       const valesDelMes = valesFiltrados;
 
       let totalNeto = 0;
@@ -898,7 +1477,7 @@
       document.getElementById('modalReporte').classList.add('hidden');
     }
 
-    // Modal Edición
+    // Modal Edición Individual
     let editCalculando = false;
     const editNetoInput = document.getElementById('editNeto');
     const editTotalInput = document.getElementById('editTotal');
@@ -919,6 +1498,16 @@
       editCalculando = false;
     });
 
+    function ajustarCheckPagadoSegunMedio() {
+      const medio = document.getElementById('editMedioPago').value;
+      const chk = document.getElementById('editPagado');
+      if (medio !== 'Credito empresa') {
+        chk.checked = true;
+      } else {
+        chk.checked = false;
+      }
+    }
+
     function abrirModalEdit(id) {
       const vale = valesLocales.find(v => v.id === id);
       if (!vale) return;
@@ -932,6 +1521,8 @@
       document.getElementById('editNeto').value = vale.valor_neto || '';
       document.getElementById('editTotal').value = vale.valor_total || '';
       document.getElementById('editMedioPago').value = vale.medio_pago || 'Efectivo';
+      document.getElementById('editPagado').checked = estaPagado(vale);
+      document.getElementById('editFechaPago').value = vale.fecha_pago || '';
 
       document.getElementById('modalEdit').classList.remove('hidden');
     }
@@ -948,6 +1539,14 @@
       btn.disabled = true;
       btn.innerText = 'GUARDANDO...';
 
+      const pagadoChecked = document.getElementById('editPagado').checked;
+      let fechaPagoVal = document.getElementById('editFechaPago').value || null;
+      if (pagadoChecked && !fechaPagoVal) {
+        fechaPagoVal = new Date().toISOString().split('T')[0];
+      } else if (!pagadoChecked) {
+        fechaPagoVal = null;
+      }
+
       try {
         const actualizados = {
           nombre_empresa: document.getElementById('editEmpresa').value.trim(),
@@ -956,7 +1555,9 @@
           detalle: document.getElementById('editDetalle').value.trim(),
           valor_neto: parseInt(editNetoInput.value, 10) || 0,
           valor_total: parseInt(editTotalInput.value, 10) || 0,
-          medio_pago: document.getElementById('editMedioPago').value
+          medio_pago: document.getElementById('editMedioPago').value,
+          pagado: pagadoChecked,
+          fecha_pago: fechaPagoVal
         };
 
         const { error } = await client.from('ordenes').update(actualizados).eq('id', id);
